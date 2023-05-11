@@ -84,7 +84,6 @@ jobs:
         env: 
            CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
 
-      - name: Test
-        run: go test -v ./...
-        env: 
-           CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
+# Tests run via Bazel for now...
+#      - name: Test
+#        run: go test -v ./...
