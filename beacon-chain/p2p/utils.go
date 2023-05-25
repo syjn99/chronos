@@ -25,7 +25,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const keyPath = "nodekey"
+const keyPath = "network-keys"
 const metaDataPath = "metaData"
 
 const dialTimeout = 1 * time.Second
