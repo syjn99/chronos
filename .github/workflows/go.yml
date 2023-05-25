@@ -9,7 +9,7 @@ on:
 jobs:
   formatting:
     name: Formatting
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
 
   gosec:
     name: Gosec scan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     env:
       GO111MODULE: on
     steps:
@@ -38,7 +38,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -57,7 +57,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
