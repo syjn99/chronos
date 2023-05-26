@@ -41,3 +41,7 @@ jwt.hex
 
 # manual testing
 tmp
+
+# Ignore generated files
+under/node-*
+under/bootnode
