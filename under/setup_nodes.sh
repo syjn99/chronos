@@ -47,7 +47,8 @@ bazel run //cmd/beacon-chain:beacon-chain -- \\
     -monitoring-port"=${monitorport}" \\
     -grpc-gateway-port"=${rpcgatewayport}" \\
     -p2p-local-ip 127.0.0.1 \\
-    -bootstrap-node=$BASEDIR/bootnode
+    -bootstrap-node=$BASEDIR/bootnode \\
+    -verbosity=debug
 EOF
 
     # Make the new shell script executable

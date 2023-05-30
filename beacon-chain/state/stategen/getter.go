@@ -2,6 +2,7 @@ package stategen
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
@@ -58,6 +59,7 @@ func (s *State) StateByRoot(ctx context.Context, blockRoot [32]byte) (state.Beac
 	if blockRoot == params.BeaconConfig().ZeroHash {
 		root, err := s.beaconDB.GenesisBlockRoot(ctx)
 		if err != nil {
+			fmt.Println("I'm here ~~~~4")
 			return nil, errors.Wrap(err, "could not get genesis block root")
 		}
 		blockRoot = root
@@ -78,7 +80,7 @@ func (s *State) ActiveNonSlashedBalancesByRoot(ctx context.Context, blockRoot [3
 	epoch := time.CurrentEpoch(st)
 
 	balances := make([]uint64, st.NumValidators())
-	var balanceAccretor = func(idx int, val state.ReadOnlyValidator) error {
+	balanceAccretor := func(idx int, val state.ReadOnlyValidator) error {
 		if helpers.IsActiveNonSlashedValidatorUsingTrie(val, epoch) {
 			balances[idx] = val.EffectiveBalance()
 		} else {

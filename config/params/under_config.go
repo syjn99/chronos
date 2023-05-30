@@ -1,8 +1,10 @@
 package params
 
 import (
+	"fmt"
 	"math"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
 )
 
@@ -73,21 +75,22 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.DomainBeaconProposer = bytesutil.ToBytes4(bytesutil.Bytes4(0))
 	underConfig.DomainBeaconAttester = bytesutil.ToBytes4(bytesutil.Bytes4(1))
 	underConfig.DomainRandao = bytesutil.ToBytes4(bytesutil.Bytes4(2))
-	underConfig.DomainDeposit = bytesutil.ToBytes4(bytesutil.Bytes4(3))
+	underConfig.DomainDeposit = bytesutil.ToBytes4(hexutil.MustDecode("03000000"))
+	fmt.Println("underConfig.DomainDeposit : ", underConfig.DomainDeposit)
 	underConfig.DomainVoluntaryExit = bytesutil.ToBytes4(bytesutil.Bytes4(4))
-	underConfig.GenesisForkVersion = []byte{0, 0, 0, 4}
+	// underConfig.GenesisForkVersion = []byte{0, 0, 0, 4}
 
 	underConfig.DepositContractTreeDepth = 32
 	underConfig.FarFutureEpoch = math.MaxUint64
 	underConfig.FarFutureSlot = math.MaxUint64
 
 	// New Altair params
-	underConfig.AltairForkVersion = []byte{1, 0, 0, 4} // Highest byte set to 0x01 to avoid collisions with mainnet versioning
-	underConfig.AltairForkEpoch = math.MaxUint64 - 1
-	underConfig.BellatrixForkVersion = []byte{2, 0, 0, 4}
-	underConfig.BellatrixForkEpoch = math.MaxUint64 - 1
-	underConfig.CapellaForkVersion = []byte{3, 0, 0, 4}
-	underConfig.CapellaForkEpoch = math.MaxUint64 - 1
+	// underConfig.AltairForkVersion = []byte{1, 0, 0, 4} // Highest byte set to 0x01 to avoid collisions with mainnet versioning
+	// underConfig.AltairForkEpoch = math.MaxUint64 - 1
+	// underConfig.BellatrixForkVersion = []byte{2, 0, 0, 4}
+	// underConfig.BellatrixForkEpoch = math.MaxUint64 - 1
+	// underConfig.CapellaForkVersion = []byte{3, 0, 0, 4}
+	// underConfig.CapellaForkEpoch = math.MaxUint64 - 1
 
 	underConfig.SyncCommitteeSize = 32
 	underConfig.InactivityScoreBias = 4
