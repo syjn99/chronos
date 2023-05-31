@@ -71,7 +71,7 @@ func main() {
 	log.Info(localNode.Node().String())
 
 	if *outfile != "" {
-		err := file.WriteFile(*outfile, []byte(localNode.Node().String()))
+		err := file.WriteFile(*outfile, []byte("[\n\t"+localNode.Node().String()+"\n]"))
 		if err != nil {
 			panic(err)
 		}

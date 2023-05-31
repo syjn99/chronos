@@ -3,12 +3,16 @@ echo $BASEDIR
 
 # Clear former data
 rm -rf $BASEDIR/node-*
+rm -rf $BASEDIR/bootnode.yaml
 
 # Run the command and capture the output
-bazel run //tools/enr-calculator:enr-calculator -- --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 --ipAddress 127.0.0.1 --udp-port 12000 --tcp-port 13000 --out $BASEDIR/bootnode
+bazel run //tools/enr-calculator:enr-calculator -- --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 --ipAddress 127.0.0.1 --udp-port 12000 --tcp-port 13000 --out $BASEDIR/bootnode.yaml
 
 # Create the shell scripts for each validator
 for i in $(seq 0 1); do
+    mkdir -p $BASEDIR/node-$i
+    cp $BASEDIR/artifacts/network_keys/network-keys$i $BASEDIR/node-$i/network-keys
+
     # Define the name of the new shell script
     script_name="$BASEDIR/node-$i/run_node.sh"
 
@@ -47,7 +51,7 @@ bazel run //cmd/beacon-chain:beacon-chain -- \\
     -monitoring-port"=${monitorport}" \\
     -grpc-gateway-port"=${rpcgatewayport}" \\
     -p2p-local-ip 127.0.0.1 \\
-    -bootstrap-node=$BASEDIR/bootnode \\
+    -bootstrap-node=$BASEDIR/bootnode.yaml \\
     -verbosity=debug
 EOF
 

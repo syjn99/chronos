@@ -1,7 +1,6 @@
 package params
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -76,7 +75,6 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.DomainBeaconAttester = bytesutil.ToBytes4(bytesutil.Bytes4(1))
 	underConfig.DomainRandao = bytesutil.ToBytes4(bytesutil.Bytes4(2))
 	underConfig.DomainDeposit = bytesutil.ToBytes4(hexutil.MustDecode("0x03000000"))
-	fmt.Println("underConfig.DomainDeposit : ", underConfig.DomainDeposit)
 	underConfig.DomainVoluntaryExit = bytesutil.ToBytes4(bytesutil.Bytes4(4))
 	// underConfig.GenesisForkVersion = []byte{0, 0, 0, 4}
 	underConfig.GenesisForkVersion = (hexutil.MustDecode("0x20000089"))
