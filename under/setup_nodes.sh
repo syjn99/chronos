@@ -35,7 +35,7 @@ for i in $(seq 0 1); do
 KAIROS_PATH=$BASEDIR/../../kairos/under/node-$i/geth
 echo \$KAIROS_PATH
 
-bazel run //cmd/beacon-chain:beacon-chain -- \\
+bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
     -datadir=$BASEDIR/node-$i \\
     -min-sync-peers=0 \\
     -chain-config-file=$BASEDIR/config.yml \\
