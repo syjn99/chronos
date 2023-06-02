@@ -12,15 +12,15 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig := mainnetBeaconConfig.Copy()
 	// Misc
 	underConfig.MaxCommitteesPerSlot = 4
-	underConfig.TargetCommitteeSize = 4
+	underConfig.TargetCommitteeSize = 2
 	underConfig.MaxValidatorsPerCommittee = 2048
 	underConfig.MinPerEpochChurnLimit = 4
 	underConfig.ChurnLimitQuotient = 32
 	underConfig.ShuffleRoundCount = 10
 	underConfig.MinGenesisActiveValidatorCount = 64
 	underConfig.MinGenesisTime = 1685040000
-	underConfig.GenesisDelay = 300 // 5 minutes
-	underConfig.TargetAggregatorsPerCommittee = 16
+	underConfig.GenesisDelay = 30 // 5 minutes
+	underConfig.TargetAggregatorsPerCommittee = 2
 
 	// Gwei values
 	underConfig.MinDepositAmount = 1e9
@@ -48,8 +48,8 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.SecondsPerETH1Block = 5
 
 	// State vector lengths
-	underConfig.EpochsPerHistoricalVector = 64
-	underConfig.EpochsPerSlashingsVector = 64
+	underConfig.EpochsPerHistoricalVector = 65536
+	underConfig.EpochsPerSlashingsVector = 8192
 	underConfig.HistoricalRootsLimit = 16777216
 	underConfig.ValidatorRegistryLimit = 1099511627776
 
@@ -58,7 +58,7 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.WhistleBlowerRewardQuotient = 512
 	underConfig.ProposerRewardQuotient = 8
 	underConfig.InactivityPenaltyQuotient = 33554432
-	underConfig.MinSlashingPenaltyQuotient = 64
+	underConfig.MinSlashingPenaltyQuotient = 8192
 	underConfig.ProportionalSlashingMultiplier = 2
 
 	// Max operations per block
