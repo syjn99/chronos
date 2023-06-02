@@ -48,8 +48,8 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.SecondsPerETH1Block = 5
 
 	// State vector lengths
-	underConfig.EpochsPerHistoricalVector = 65536
-	underConfig.EpochsPerSlashingsVector = 8192
+	underConfig.EpochsPerHistoricalVector = 64
+	underConfig.EpochsPerSlashingsVector = 64
 	underConfig.HistoricalRootsLimit = 16777216
 	underConfig.ValidatorRegistryLimit = 1099511627776
 
@@ -58,7 +58,7 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.WhistleBlowerRewardQuotient = 512
 	underConfig.ProposerRewardQuotient = 8
 	underConfig.InactivityPenaltyQuotient = 33554432
-	underConfig.MinSlashingPenaltyQuotient = 8192
+	underConfig.MinSlashingPenaltyQuotient = 64
 	underConfig.ProportionalSlashingMultiplier = 2
 
 	// Max operations per block
