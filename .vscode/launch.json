@@ -34,12 +34,12 @@
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/validator",
             "args": [
-                "--datadir","${workspaceFolder}/under/node-1/validatordata",
+                "--datadir","${workspaceFolder}/under/node-0/validatordata",
                 "--accept-terms-of-use",
                 "--force-clear-db",
                 "--chain-config-file","${workspaceFolder}/under/config.yml",
                 "--config-file","${workspaceFolder}/under/config.yml",
-                "--wallet-dir","${workspaceFolder}/under/test",
+                "--wallet-dir","${workspaceFolder}/under/wallet",
                 "--wallet-password-file", "${workspaceFolder}/under/artifacts/wallet/password.txt",
             ]
         },

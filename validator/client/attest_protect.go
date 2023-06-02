@@ -14,8 +14,10 @@ import (
 	"go.opencensus.io/trace"
 )
 
-var failedAttLocalProtectionErr = "attempted to make slashable attestation, rejected by local slashing protection"
-var failedPostAttSignExternalErr = "attempted to make slashable attestation, rejected by external slasher service"
+var (
+	failedAttLocalProtectionErr  = "attempted to make slashable attestation, rejected by local slashing protection"
+	failedPostAttSignExternalErr = "attempted to make slashable attestation, rejected by external slasher service"
+)
 
 // Checks if an attestation is slashable by comparing it with the attesting
 // history for the given public key in our DB. If it is not, we then update the history
