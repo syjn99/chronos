@@ -1,0 +1,18 @@
+"%CHRONOS_PATH%" 
+    -datadir="%DATADIR%"
+    -min-sync-peers=0 ^
+    -chain-config-file="%BASEDIR%config.yml" ^
+    -config-file="%BASEDIR%config.yml" ^
+    -chain-id=813 ^
+    -execution-endpoint=http://localhost:%authport% ^
+    -accept-terms-of-use ^
+    -jwt-secret=%KAIROS_PATH%jwtsecret ^
+    -contract-deployment-block=0 ^
+    -p2p-udp-port=%udpport% ^
+    -p2p-tcp-port=%tcpport% ^
+    -rpc-port=%rpcport% ^
+    -monitoring-port=%monitorport% ^
+    -grpc-gateway-port=%rpcgatewayport% ^
+    -p2p-local-ip 127.0.0.1 ^
+    -bootstrap-node="%BASEDIR%bootnode.yaml" ^
+    -verbosity=debug

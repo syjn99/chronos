@@ -1,17 +1,34 @@
 @echo off
-set BASEDIR=%cd%
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+set BASEDIR=%~dp0
 echo %BASEDIR%
 
+SET ENRPATH=%BASEDIR%..\bin\enr-calculator.exe
+echo %ENRPATH%
 rem Clear former data
-del /S /Q %BASEDIR%\node-* >nul 2>&1
-del /S /Q %BASEDIR%\bootnode.yaml >nul 2>&1
+for /d %%i in (%BASEDIR%node-*) do (
+    echo hi
+    echo %%i | findstr /r /c:"[0-9]*$">nul && (
+        echo Deleting: %%i
+        rmdir /s /q "%%i"
+    )
+)
+
+del /S /Q %BASEDIR%bootnode.yaml >nul 2>&1
 
 rem Run the command and capture the output
-enr-calculator.exe -- --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 --ipAddress 127.0.0.1 --udp-port 12000 --tcp-port 13000 --out %BASEDIR%\bootnode.yaml
+"%ENRPATH%" ^
+    --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 ^
+    --ipAddress 127.0.0.1 ^
+    --udp-port 12000 ^
+    --tcp-port 13000 ^
+    --out "%BASEDIR%bootnode.yaml"
 
-rem Create the batch scripts for each validator
+
+echo hi
 for /L %%i in (0,1,1) do (
-    mkdir %BASEDIR%\node-%%i >nul 2>&1
+    mkdir "%BASEDIR%\node-%%i" >nul 2>&1
     copy %BASEDIR%\artifacts\network_keys\network-keys%%i %BASEDIR%\node-%%i\network-keys
 
     rem Define the name of the new batch script
@@ -26,30 +43,23 @@ for /L %%i in (0,1,1) do (
     set /a "rpcgatewayport=3500 + %%i"
 
     rem Copy the necessary files to the validator directories
-    mkdir %BASEDIR%\node-%%i >nul 2>&1
+    mkdir "%BASEDIR%\node-%%i" >nul 2>&1
 
-    rem Create the new batch script
     (
-        echo @echo off
-        echo set "KAIROS_PATH=%BASEDIR%\..\..\kairos\under\node-%%i\geth"
-        echo echo ^%KAIROS_PATH^%
-        echo beacon-chain.exe -- ^
-        echo    -datadir=%BASEDIR%\node-%%i ^
-        echo    -min-sync-peers=0 ^
-        echo    -chain-config-file=%BASEDIR%\config.yml ^
-        echo    -config-file=%BASEDIR%\config.yml ^
-        echo    -chain-id=813 ^
-        echo    -execution-endpoint=http://localhost:^%authport^% ^
-        echo    -accept-terms-of-use ^
-        echo    -jwt-secret=^%KAIROS_PATH^%\jwtsecret ^
-        echo    -contract-deployment-block=0 ^
-        echo    -p2p-udp-port="^%udpport^%" ^
-        echo    -p2p-tcp-port="^%tcpport^%" ^
-        echo    -rpc-port="^%rpcport^%" ^
-        echo    -monitoring-port="^%monitorport^%" ^
-        echo    -grpc-gateway-port="^%rpcgatewayport^%" ^
-        echo    -p2p-local-ip 127.0.0.1 ^
-        echo    -bootstrap-node=%BASEDIR%\bootnode.yaml ^
-        echo    -verbosity=debug
-    ) > "%script_name%"
+        echo SET "BASEDIR=%BASEDIR%"
+        echo SET "CHRONOS_PATH=%BASEDIR%..\bin\beacon-chain.exe"
+        echo SET "KAIROS_PATH=%BASEDIR%..\bin\geth.exe"
+        echo SET "DATADIR=%BASEDIR%node-%%i"
+        echo SET "authport=!authport%!"
+        echo SET "rpcport=!rpcport%!"
+        echo SET "monitorport=!monitorport!"
+        echo SET "udpport=!udpport!"
+        echo SET "tcpport=!tcpport!"
+        echo SET "rpcgatewayport=!rpcgatewayport!"
+    ) >> !script_name!
+    type "artifacts\run_node.bat" >> !script_name!
 )
+
+
+
+ENDLOCAL
