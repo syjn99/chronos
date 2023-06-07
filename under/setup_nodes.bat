@@ -4,7 +4,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 set BASEDIR=%~dp0
 echo %BASEDIR%
 
-SET ENRPATH=%BASEDIR%..\bin\enr-calculator.exe
+SET ENRPATH=%BASEDIR%..\enr-calculator.exe
 echo %ENRPATH%
 rem Clear former data
 for /d %%i in (%BASEDIR%node-*) do (
@@ -47,8 +47,8 @@ for /L %%i in (0,1,1) do (
 
     (
         echo SET "BASEDIR=%BASEDIR%"
-        echo SET "CHRONOS_PATH=%BASEDIR%..\bin\beacon-chain.exe"
-        echo SET "KAIROS_PATH=%BASEDIR%..\bin\geth.exe"
+        echo SET "CHRONOS_PATH=%BASEDIR%..\beacon-chain.exe"
+        echo SET "KAIROS_PATH=%BASEDIR%..\..\kairos_window\geth.exe"
         echo SET "DATADIR=%BASEDIR%node-%%i"
         echo SET "authport=!authport%!"
         echo SET "rpcport=!rpcport%!"
