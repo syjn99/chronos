@@ -7,7 +7,7 @@ echo %BASEDIR%
 SET ENRPATH=%BASEDIR%..\enr-calculator.exe
 echo %ENRPATH%
 rem Clear former data
-for /d %%i in (%BASEDIR%node-*) do (
+for /d %%i in ("%BASEDIR%node-*") do (
     echo hi
     echo %%i | findstr /r /c:"[0-9]*$">nul && (
         echo Deleting: %%i
@@ -15,7 +15,7 @@ for /d %%i in (%BASEDIR%node-*) do (
     )
 )
 
-del /S /Q %BASEDIR%bootnode.yaml >nul 2>&1
+del /S /Q "%BASEDIR%bootnode.yaml" >nul 2>&1
 
 rem Run the command and capture the output
 "%ENRPATH%" ^
@@ -26,14 +26,13 @@ rem Run the command and capture the output
     --out "%BASEDIR%bootnode.yaml"
 
 
-echo hi
 for /L %%i in (0,1,1) do (
     mkdir "%BASEDIR%\node-%%i" >nul 2>&1
-    copy %BASEDIR%\artifacts\network_keys\network-keys%%i %BASEDIR%\node-%%i\network-keys
+    copy "%BASEDIR%\artifacts\network_keys\network-keys%%i" "%BASEDIR%\node-%%i\network-keys"
 
     rem Define the name of the new batch script
-    set "script_name=%BASEDIR%\node-%%i\run_node.cmd"
-
+    set "script_name=%BASEDIR%\node-%%i\run_node.bat"
+    set "node_dir=%BASEDIR%\node-%%i\"
     rem Calculate the port value based on the index
     set /a "authport=8551 + %%i"
     set /a "rpcport=4000 + %%i"
@@ -41,15 +40,17 @@ for /L %%i in (0,1,1) do (
     set /a "udpport=12000 + %%i"
     set /a "tcpport=13000 + %%i"
     set /a "rpcgatewayport=3500 + %%i"
+    set "kairos_jwt_path=%BASEDIR%..\..\kairos_window\under\node-%%i\geth\jwtsecret"
 
     rem Copy the necessary files to the validator directories
     mkdir "%BASEDIR%\node-%%i" >nul 2>&1
 
-    (
-        echo SET "BASEDIR=%BASEDIR%"
+    (   
+        echo @echo off 
+        @REM echo SET "BASEDIR2=%%~dp0"
+        echo SET "BASEDIR=!node_dir!"
         echo SET "CHRONOS_PATH=%BASEDIR%..\beacon-chain.exe"
-        echo SET "KAIROS_PATH=%BASEDIR%..\..\kairos_window\geth.exe"
-        echo SET "DATADIR=%BASEDIR%node-%%i"
+        echo SET "kairos_jwt_path=!kairos_jwt_path!"
         echo SET "authport=!authport%!"
         echo SET "rpcport=!rpcport%!"
         echo SET "monitorport=!monitorport!"
@@ -59,7 +60,5 @@ for /L %%i in (0,1,1) do (
     ) >> !script_name!
     type "artifacts\run_node.bat" >> !script_name!
 )
-
-
 
 ENDLOCAL
