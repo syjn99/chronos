@@ -31,4 +31,5 @@
     "go.buildOnSave": "off",
     "go.lintOnSave": "off",
     "go.vetOnSave": "off",
+    "go.buildFlags": ["-tags=minimal"],
 }

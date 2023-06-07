@@ -31,19 +31,17 @@ import (
 	"go.opencensus.io/trace"
 )
 
-var (
-	supportedEngineEndpoints = []string{
-		NewPayloadMethod,
-		NewPayloadMethodV2,
-		ForkchoiceUpdatedMethod,
-		ForkchoiceUpdatedMethodV2,
-		GetPayloadMethod,
-		GetPayloadMethodV2,
-		ExchangeTransitionConfigurationMethod,
-		GetPayloadBodiesByHashV1,
-		GetPayloadBodiesByRangeV1,
-	}
-)
+var supportedEngineEndpoints = []string{
+	NewPayloadMethod,
+	NewPayloadMethodV2,
+	ForkchoiceUpdatedMethod,
+	ForkchoiceUpdatedMethodV2,
+	GetPayloadMethod,
+	GetPayloadMethodV2,
+	ExchangeTransitionConfigurationMethod,
+	GetPayloadBodiesByHashV1,
+	GetPayloadBodiesByRangeV1,
+}
 
 const (
 	// NewPayloadMethod v1 request string for JSON-RPC.
