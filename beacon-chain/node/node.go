@@ -504,31 +504,26 @@ func (b *BeaconNode) startStateGen(ctx context.Context, bfs *backfill.Status, fc
 	if err != nil {
 		return err
 	}
-	fmt.Println("Finalized checkpoint: ", cp)
 
 	r := bytesutil.ToBytes32(cp.Root)
-	fmt.Println("root hash is: ", r)
 	// Consider edge case where finalized root are zeros instead of genesis root hash.
 	if r == params.BeaconConfig().ZeroHash {
 		genesisBlock, err := b.db.GenesisBlock(ctx)
-		fmt.Println("genesisBlock: ", genesisBlock)
 		if err != nil {
 			return err
 		}
 		if genesisBlock != nil && !genesisBlock.IsNil() {
 			r, err = genesisBlock.Block().HashTreeRoot()
-			fmt.Println("genesis block root : ", r)
 			if err != nil {
-				fmt.Println("I'm here ~~~~2")
 				return err
 			}
 		}
 	}
-	fmt.Println("I'm here ~~~~3")
-	// b.finalizedStateAtStartUp, err = sg.StateByRoot(ctx, r)
-	// if err != nil {
-	// 	return err
-	// }
+
+	b.finalizedStateAtStartUp, err = sg.StateByRoot(ctx, r)
+	if err != nil {
+		return err
+	}
 
 	b.stateGen = sg
 	return nil

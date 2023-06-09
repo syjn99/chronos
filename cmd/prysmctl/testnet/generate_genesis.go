@@ -119,7 +119,7 @@ var (
 				Name:        "execution-endpoint",
 				Destination: &generateGenesisStateFlags.ExecutionEndpoint,
 				Usage:       "Endpoint to preferred execution client. If unset, defaults to Geth",
-				Value:       "http://localhost:8545",
+				Value:       "http://localhost:8551",
 			},
 			flags.EnumValue{
 				Name:        "fork",
@@ -220,8 +220,8 @@ func setGlobalParams() error {
 func generateGenesis(ctx context.Context) (state.BeaconState, error) {
 	f := &generateGenesisStateFlags
 	if f.GenesisTime == 0 {
-		f.GenesisTime = uint64(time.Now().Unix())
-		log.Info("No genesis time specified, defaulting to now()")
+		f.GenesisTime = uint64(time.Now().Unix() + 40)
+		log.Info("No genesis time specified, defaulting to now() + 40 seconds")
 	}
 
 	v, err := version.FromString(f.ForkName)

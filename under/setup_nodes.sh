@@ -3,10 +3,17 @@ echo $BASEDIR
 
 # Clear former data
 rm -rf $BASEDIR/node-*
-rm -rf $BASEDIR/bootnode.yaml
+# rm -rf $BASEDIR/bootnode.yaml
 
 # Run the command and save bootnode.yaml
-bazel run //tools/enr-calculator:enr-calculator -- --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 --ipAddress 127.0.0.1 --udp-port 12000 --tcp-port 13000 --out $BASEDIR/bootnode.yaml
+# bazel run //tools/enr-calculator:enr-calculator -- --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 --ipAddress 127.0.0.1 --udp-port 12000 --tcp-port 13000 --out $BASEDIR/bootnode.yaml
+bazel run --config=minimal //cmd/prysmctl:prysmctl testnet generate-genesis -- \
+    --output-ssz=$BASEDIR/genesis.ssz \
+    --chain-config-file=$BASEDIR/config.yml \
+    --geth-genesis-json-in=$BASEDIR/../../kairos/under/artifacts/genesis.json \
+    --deposit-json-file=$BASEDIR/artifacts/deposits/depositDatas.json \
+    --num-validators=0
+    # --override-eth1data=true \
 
 # Create the shell scripts for each validator
 for i in $(seq 0 1); do
@@ -37,10 +44,11 @@ echo \$KAIROS_PATH
 
 bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
     -datadir=$BASEDIR/node-$i \\
-    -min-sync-peers=0 \\
+    -genesis-state=$BASEDIR/genesis.ssz \\
     -chain-config-file=$BASEDIR/config.yml \\
     -config-file=$BASEDIR/config.yml \\
     -chain-id=813 \\
+    -min-sync-peers=0 \\
     -execution-endpoint=http://localhost:${authport} \\
     -accept-terms-of-use \\
     -jwt-secret=\$KAIROS_PATH/jwtsecret \\

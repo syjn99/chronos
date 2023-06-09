@@ -44,5 +44,5 @@ tmp
 
 # Ignore generated files
 under/node-*
-under/bootnode.yaml
 under/wallet
+under/genesis.ssz
