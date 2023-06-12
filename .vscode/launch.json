@@ -37,13 +37,13 @@
             "program": "${workspaceFolder}/cmd/validator",
             "buildFlags": "-tags=minimal",
             "args": [
-                "--datadir","${workspaceFolder}/under/node-0/validatordata",
-                "--accept-terms-of-use",
-                "--force-clear-db",
+                "--wallet-dir","${workspaceFolder}/under/validator-0",
+                "--proposer-settings-file", "${workspaceFolder}/under/artifacts/recipients/recipient0.yaml",
                 "--chain-config-file","${workspaceFolder}/under/config.yml",
                 "--config-file","${workspaceFolder}/under/config.yml",
-                "--wallet-dir","${workspaceFolder}/under/wallet",
                 "--wallet-password-file", "${workspaceFolder}/under/artifacts/wallet/password.txt",
+                "--accept-terms-of-use",
+                "--force-clear-db",
             ]
         },
         {

@@ -22,6 +22,7 @@ BASEDIR=$(pwd)
 
 bazel run --config=minimal //cmd/validator:validator -- \\
     --wallet-dir=$BASEDIR/validator-$i \\
+    --proposer-settings-file=$BASEDIR/artifacts/recipients/recipient$i.yaml \\
     --chain-config-file=$BASEDIR/config.yml \\
     --config-file=$BASEDIR/config.yml \\
     --wallet-password-file=$BASEDIR/artifacts/wallet/password.txt \\
