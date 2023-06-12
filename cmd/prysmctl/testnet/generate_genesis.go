@@ -119,7 +119,7 @@ var (
 				Name:        "execution-endpoint",
 				Destination: &generateGenesisStateFlags.ExecutionEndpoint,
 				Usage:       "Endpoint to preferred execution client. If unset, defaults to Geth",
-				Value:       "http://localhost:8551",
+				Value:       "http://localhost:22000",
 			},
 			flags.EnumValue{
 				Name:        "fork",
