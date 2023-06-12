@@ -12,8 +12,9 @@ bazel run --config=minimal //cmd/prysmctl:prysmctl testnet generate-genesis -- \
     --chain-config-file=$BASEDIR/config.yml \
     --geth-genesis-json-in=$BASEDIR/../../kairos/under/artifacts/genesis.json \
     --deposit-json-file=$BASEDIR/artifacts/deposits/depositDatas.json \
-    --num-validators=0
-    # --override-eth1data=true \
+    --num-validators=0 \
+    --execution-endpoint=http://localhost:22000 \
+    --override-eth1data=true
 
 # Create the shell scripts for each validator
 for i in $(seq 0 1); do

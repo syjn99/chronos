@@ -44,5 +44,5 @@ tmp
 
 # Ignore generated files
 under/node-*
-under/wallet
+under/validator-*
 under/genesis.ssz
