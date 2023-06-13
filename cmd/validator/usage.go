@@ -89,6 +89,7 @@ var appHelpFlagGroups = []flagGroup{
 			flags.BeaconRESTApiProviderFlag,
 			flags.CertFlag,
 			flags.EnableWebFlag,
+			flags.EnablePverFlag,
 			flags.DisablePenaltyRewardLogFlag,
 			flags.GraffitiFlag,
 			flags.EnableRPCFlag,

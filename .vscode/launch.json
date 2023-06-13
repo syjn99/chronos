@@ -88,6 +88,26 @@
                 "--deposit-json-file", "${workspaceFolder}/under/artifacts/deposits/depositDatas.json",
                 "--geth-genesis-json-in", "${workspaceFolder}/../kairos/under/artifacts/genesis.json",   
             ]
-        }
+        },
+        {
+            "name": "Validator Client Pver",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/validator",
+            "buildFlags": "-tags=minimal",
+            "args": [
+                "--pver",
+                "--chain-config-file","${workspaceFolder}/under/config.yml",
+                "--config-file","${workspaceFolder}/under/config.yml",
+                "--beacon-rpc-provider", "127.0.0.1:4001",
+                "--beacon-rpc-gateway-provider", "127.0.0.1:3501",
+                "--beacon-rest-api-provider", "http://127.0.0.1:3501",
+                "--rpc-port", "7001",
+                // "--wallet-password-file", "${workspaceFolder}/under/artifacts/wallet/password.txt",
+                "--accept-terms-of-use",
+                "--force-clear-db",
+            ]
+        },
     ]
 }

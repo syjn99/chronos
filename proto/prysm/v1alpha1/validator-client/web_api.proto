@@ -4,6 +4,7 @@ package ethereum.validator.accounts.v2;
 import "proto/prysm/v1alpha1/health.proto";
 import "proto/prysm/v1alpha1/beacon_chain.proto";
 import "proto/prysm/v1alpha1/node.proto";
+import "proto/prysm/v1alpha1/beacon_block.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
@@ -45,6 +46,35 @@ service Wallet {
             body: "*"
         };
     }
+    rpc OpenOrCreateWallet(OpenOrCreateWalletRequest) returns (OpenOrCreateWalletResponse) {
+        option deprecated = true;
+        option (google.api.http) = {
+            post: "/v2/validator/wallet/open-or-create"
+            body: "*"
+        };
+    }
+    rpc RecoverAccountsFromWallet(RecoverAccountsFromWalletRequest) returns (google.protobuf.Empty) {
+        option deprecated = true;
+        option (google.api.http) = {
+            post: "/v2/validator/wallet/accounts/recover"
+            body: "*"
+        };
+    }
+}
+
+message OpenOrCreateWalletRequest {
+    string wallet_dir = 1;
+    string password = 2;
+    string mnemonicLaunguage = 3;
+}
+
+message OpenOrCreateWalletResponse {
+    string wallet_dir = 1;
+}
+
+message RecoverAccountsFromWalletRequest {
+    string password = 1;
+    uint64 num_accounts = 2;
 }
 
 // Account related commands will either need to be done through the Keymanager APIs https://ethereum.github.io/keymanager-APIs/
@@ -71,6 +101,36 @@ service Accounts {
             body: "*"
         };
     }
+
+    // PVER
+    rpc GetDepositData(GetDepositDataRequest) returns (GetDepositDataResponse) {
+        option deprecated = true;
+        option (google.api.http) = {
+            post: "/v2/validator/accounts/deposit-data",
+        body: "*"
+        };
+    }
+}
+
+message GetDepositDataRequest {
+    repeated DepositDataRequest deposit_messages = 1;
+}
+
+message DepositDataRequest {
+    bytes public_key = 1;
+    bytes withdraw_key = 2;
+    uint64 amount_gwei = 3;
+}
+
+message GetDepositDataResponse {
+    repeated DepositData deposit_datas = 1;
+}
+
+message DepositData {
+    bytes pubkey = 1;
+    bytes withdrawal_credentials = 2;
+    bytes signature = 3;
+    bytes deposit_data_root = 4;
 }
 
 
