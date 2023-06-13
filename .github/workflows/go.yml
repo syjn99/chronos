@@ -74,7 +74,7 @@ jobs:
 
       - name: Build
         # Use blst tag to allow go and bazel builds for blst.
-        run: go build -tags "minimal noMainnetGenesis" -v ./...
+        run: go build -tags=minimal,noMainnetGenesis -v ./...
         env: 
            CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
         # fuzz leverage go tag based stubs at compile time.
