@@ -51,9 +51,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '1.20'
-          id: go
-      - name: Build Protocol Buffers
-        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
+        id: go
+      
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
