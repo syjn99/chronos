@@ -17,6 +17,8 @@ jobs:
       - name: Go mod tidy checker
         id: gomodtidy
         uses: ./.github/actions/gomodtidy
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
 
   gosec:
     name: Gosec scan
@@ -30,6 +32,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '1.20'
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Run Gosec Security Scanner
         run: | # https://github.com/securego/gosec/issues/469
           export PATH=$PATH:$(go env GOPATH)/bin
@@ -48,7 +52,8 @@ jobs:
         with:
           go-version: '1.20'
           id: go
-
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
@@ -72,9 +77,7 @@ jobs:
         run: |
           go get -v -t -d ./...
       - name: Build Protocol Buffers
-        run: |
-          ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
-
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Build
         # Use blst tag to allow go and bazel builds for blst.
         run: go build -v ./...
