@@ -1,0 +1,29 @@
+{
+	"crypto": {
+		"checksum": {
+			"function": "sha256",
+			"message": "ec07aa76ff00a4129209a7ebbf1c953083607a622209cadc26914a08694311b3",
+			"params": {}
+		},
+		"cipher": {
+			"function": "aes-128-ctr",
+			"message": "6291a51b6a89a62d2680a3bbd09bc114feb5201c515704c15700e62b2d8a60ee42809eb9dc05cfaaf5f45ef98055818db13ddbeec5ea21cc6744b291bfe5e24ad4c1a09de4479a900633c9968203bdca9620fdd45714d650348814820af09f07dddc7c7876ec833083ea09eac3b98724d4905e1d8a6dc42cbf0e83a080121d7e377d6cb5a7f848969a200a7453eecdee204aea3f7a08a75be8b455739453c0135367c41052032fffb6c4f330f36458e77b4a35c2e51330362918fb6fe0e1bb8486",
+			"params": {
+				"iv": "9d4b9cbb83a37b8ecc4f4821ecf874ff"
+			}
+		},
+		"kdf": {
+			"function": "pbkdf2",
+			"message": "",
+			"params": {
+				"c": 262144,
+				"dklen": 32,
+				"prf": "hmac-sha256",
+				"salt": "3e48df03e9f83576a048b0de896e83675983d6b3df451ddb3309f0deb08da2f4"
+			}
+		}
+	},
+	"uuid": "46fbcffa-7a85-4a0a-b4de-c716033a49e8",
+	"version": 4,
+	"name": "keystore"
+}

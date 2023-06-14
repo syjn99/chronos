@@ -199,9 +199,9 @@ func SaveMnemonicStore(mnemonic string, password string, path string, lastIndex 
 }
 
 func LoadMnemonic(path string, password string) (*MnemonicStore, error) {
-	mnemonicFile := filepath.Join(filepath.Clean(path), mnemonicStoreFileName)
+	mnemonicFile := filepath.Join(path, mnemonicStoreFileName)
 	if file.FileExists(mnemonicFile) {
-		rawData, err := os.ReadFile(mnemonicFile)
+		rawData, err := os.ReadFile(filepath.Clean(mnemonicFile))
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read mnemonic store file")
 		}
