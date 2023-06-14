@@ -70,6 +70,7 @@ var appFlags = []cli.Flag{
 	flags.WalletPasswordFileFlag,
 	flags.WalletDirFlag,
 	flags.EnableWebFlag,
+	flags.EnablePverFlag,
 	flags.GraffitiFileFlag,
 	// Consensys' Web3Signer flags
 	flags.Web3SignerURLFlag,
