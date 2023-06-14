@@ -191,7 +191,7 @@ func SaveMnemonicStore(mnemonic string, password string, path string, lastIndex 
 	if err != nil {
 		return err
 	}
-	err = file.WriteFile(filepath.Join(path, mnemonicStoreFileName), encoded)
+	err = file.WriteFile(filepath.Join(filepath.Clean(path), mnemonicStoreFileName), encoded)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func SaveMnemonicStore(mnemonic string, password string, path string, lastIndex 
 }
 
 func LoadMnemonic(path string, password string) (*MnemonicStore, error) {
-	mnemonicFile := filepath.Join(path, mnemonicStoreFileName)
+	mnemonicFile := filepath.Join(filepath.Clean(path), mnemonicStoreFileName)
 	if file.FileExists(mnemonicFile) {
 		rawData, err := os.ReadFile(mnemonicFile)
 		if err != nil {

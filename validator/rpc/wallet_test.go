@@ -501,7 +501,7 @@ func Test_GetDepositData(t *testing.T) {
 	}
 
 	req4 := &pb.GetDepositDataRequest{
-		DepositDataKeys: keys,
+		DepositMessages: keys,
 	}
 
 	res4, err4 := s.GetDepositData(ctx, req4)
