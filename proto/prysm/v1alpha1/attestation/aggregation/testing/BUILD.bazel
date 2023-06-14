@@ -3,10 +3,7 @@ load("@prysm//tools/go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     testonly = True,
-    srcs = select({
-        "//proto:ssz_mainnet": ["bitlistutils_mainnet.go"],
-        "//proto:ssz_minimal": ["bitlistutils_minimal.go"]
-    }),
+    srcs = ["bitlistutils.go"],
     importpath = "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/attestation/aggregation/testing",
     visibility = ["//visibility:public"],
     deps = [

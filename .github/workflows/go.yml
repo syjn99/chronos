@@ -71,10 +71,13 @@ jobs:
       - name: Get dependencies
         run: |
           go get -v -t -d ./...
+      - name: Build Protocol Buffers
+        run: |
+          ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
 
       - name: Build
         # Use blst tag to allow go and bazel builds for blst.
-        run: go build -tags=minimal,noMainnetGenesis -v ./...
+        run: go build -v ./...
         env: 
            CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
         # fuzz leverage go tag based stubs at compile time.
@@ -84,6 +87,7 @@ jobs:
         env: 
            CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
 
-# Tests run via Bazel for now...
+
+# # Tests run via Bazel for now...
 #      - name: Test
 #        run: go test -v ./...
