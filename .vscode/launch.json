@@ -90,7 +90,7 @@
             ]
         },
         {
-            "name": "Validator Client Pver",
+            "name": "Validator Client 1 Pver",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -104,7 +104,6 @@
                 "--beacon-rpc-gateway-provider", "127.0.0.1:3501",
                 "--beacon-rest-api-provider", "http://127.0.0.1:3501",
                 "--rpc-port", "7001",
-                // "--wallet-password-file", "${workspaceFolder}/under/artifacts/wallet/password.txt",
                 "--accept-terms-of-use",
                 "--force-clear-db",
             ]
