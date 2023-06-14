@@ -4,8 +4,6 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 set BASEDIR=%~dp0
 echo %BASEDIR%
 
-@REM SET ENRPATH=%BASEDIR%..\enr-calculator.exe
-@REM echo %ENRPATH%
 SET PRYSMCTLPATH=%BASEDIR%..\prysmctl.exe
 echo %PRYSMCTLPATH%
 
@@ -21,17 +19,8 @@ for /d %%i in ("%BASEDIR%node-*") do (
 
 del /S /Q "%BASEDIR%bootnode.yaml" >nul 2>&1
 
-@REM rem Run the command and capture the output
-@REM "%ENRPATH%" ^
-@REM     --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 ^
-@REM     --ipAddress 127.0.0.1 ^
-@REM     --udp-port 12000 ^
-@REM     --tcp-port 13000 ^
-@REM     --out "%BASEDIR%bootnode.yaml"
-
-
 rem Run prysmctl to generate genesis
-"%PRYSMCTL%" ^
+"%PRYSMCTLPATH%" ^
     testnet generate-genesis ^
     --output-ssz="%BASEDIR%genesis.ssz" ^
     --chain-config-file="%BASEDIR%config.yml" ^
@@ -42,12 +31,12 @@ rem Run prysmctl to generate genesis
     --override-eth1data="true"
 
 for /L %%i in (0,1,1) do (
-    mkdir "%BASEDIR%\node-%%i" >nul 2>&1
-    copy "%BASEDIR%\artifacts\network_keys\network-keys%%i" "%BASEDIR%\node-%%i\network-keys"
+    mkdir "%BASEDIR%node-%%i" >nul 2>&1
+    copy "%BASEDIR%artifacts\network_keys\network-keys%%i" "%BASEDIR%node-%%i\network-keys"
 
     rem Define the name of the new batch script
-    set "script_name=%BASEDIR%\node-%%i\run_node.bat"
-    set "node_dir=%BASEDIR%\node-%%i\"
+    set "script_name=%BASEDIR%node-%%i\run_node.bat"
+    set "node_dir=%BASEDIR%node-%%i\"
     rem Calculate the port value based on the index
     set /a "authport=8551 + %%i"
     set /a "rpcport=4000 + %%i"
