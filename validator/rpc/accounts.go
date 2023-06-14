@@ -58,7 +58,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) 
 			TotalSize:     int32(len(keys)),
 			NextPageToken: "",
 		}, nil
-}
+	}
 	start, end, nextPageToken, err := pagination.StartAndEndPage(req.PageToken, int(req.PageSize), len(keys))
 	if err != nil {
 		return nil, status.Errorf(
