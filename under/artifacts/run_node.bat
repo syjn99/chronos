@@ -1,9 +1,10 @@
 "%CHRONOS_PATH%" ^
     --datadir "%BASEDIR%\" ^
-     --min-sync-peers 0 ^
+    --genesis-state "%BASEDIR%..\genesis.ssz" ^
     --chain-config-file "%BASEDIR%..\config.yml" ^
-    --chain-id 813 ^
     --config-file "%BASEDIR%..\config.yml" ^
+    --chain-id 813 ^
+    --min-sync-peers 0 ^
     --execution-endpoint "http://localhost:%authport%" ^
     --accept-terms-of-use ^
     --jwt-secret "%kairos_jwt_path%" ^
