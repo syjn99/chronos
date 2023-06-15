@@ -17,8 +17,6 @@ for /d %%i in ("%BASEDIR%node-*") do (
     )
 )
 
-del /S /Q "%BASEDIR%bootnode.yaml" >nul 2>&1
-
 rem Run prysmctl to generate genesis
 "%PRYSMCTLPATH%" ^
     testnet generate-genesis ^
