@@ -6,7 +6,6 @@ rm -rf $BASEDIR/node-*
 # rm -rf $BASEDIR/bootnode.yaml
 
 # Run the command and save bootnode.yaml
-# bazel run //tools/enr-calculator:enr-calculator -- --private 534a9f6de7c84cea0ef5d04e86c3ff7616843cb5f2a820a29ef175dada89f2c6 --ipAddress 127.0.0.1 --udp-port 12000 --tcp-port 13000 --out $BASEDIR/bootnode.yaml
 bazel run --config=minimal //cmd/prysmctl:prysmctl testnet generate-genesis -- \
     --output-ssz=$BASEDIR/genesis.ssz \
     --chain-config-file=$BASEDIR/config.yml \
