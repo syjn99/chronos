@@ -8,17 +8,12 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
-	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/signing"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
-	"github.com/prysmaticlabs/prysm/v4/config/params"
-	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v4/io/file"
 	"github.com/prysmaticlabs/prysm/v4/io/prompt"
-	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
 	"github.com/prysmaticlabs/prysm/v4/validator/accounts"
 	"github.com/prysmaticlabs/prysm/v4/validator/accounts/wallet"
-	iface "github.com/prysmaticlabs/prysm/v4/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/derived"
 	"github.com/tyler-smith/go-bip39"
@@ -317,33 +312,21 @@ func writeWalletPasswordToDisk(walletDir, password string) error {
 	return file.WriteFile(passwordFilePath, []byte(password))
 }
 
-//////////////////// PVER
+/**
+======================== PVER ========================
+*/
 
-func (s *Server) OpenOrCreateWallet(
-	ctx context.Context, req *pb.OpenOrCreateWalletRequest,
-) (*pb.OpenOrCreateWalletResponse, error) {
-	// Check Wallet is Already Opened
-	if s.wallet != nil {
-		// Wallet is Already Exist
-		return nil, status.Error(codes.AlreadyExists, "Wallet is Already Opened")
-	}
-
-	// Check Dir Wallet is Exist
-	walletDir := req.WalletDir
+// InitializeDerivedWallet initialize wallet with Derived type keymanager
+func (s *Server) InitializeDerivedWallet(
+	ctx context.Context, req *pb.InitializeDerivedWalletRequest,
+) (*pb.InitializeDerivedWalletResponse, error) {
+	walletDir := s.walletDir
 	exists, err := wallet.Exists(walletDir)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "Could not check if wallet exists")
+		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
 	}
-
-	valid := false
 	if exists {
-		valid, err = wallet.IsValid(walletDir)
-		if err != nil {
-			return nil, status.Error(codes.Internal, "Could not check if wallet is valid")
-		}
-	}
-
-	if exists && valid {
+		// Open wallet
 		w, err := wallet.OpenWallet(ctx, &wallet.Config{
 			WalletDir:      walletDir,
 			WalletPassword: req.Password,
@@ -355,71 +338,20 @@ func (s *Server) OpenOrCreateWallet(
 			return nil, status.Error(codes.Internal, "Wallet is not a derived keymanager wallet")
 		}
 		s.wallet = w
-		s.walletInitializedFeed.Send(w)
 	} else {
-		// Create Wallet And Open
-		w, err := createDerivedKeymanagerWallet(ctx, req.WalletDir, req.Password, req.MnemonicLaunguage)
+		// Create wallet and open it
+		w, err := createDerivedKeymanagerWallet(ctx, req.WalletDir, req.Password, req.MnemonicLang)
 		if err != nil {
 			return nil, err
 		}
 		s.wallet = w
-		s.walletInitializedFeed.Send(w)
 	}
 	s.walletInitialized = true
+	s.walletInitializedFeed.Send(s.wallet)
 	s.walletDir = req.WalletDir
 
-	return &pb.OpenOrCreateWalletResponse{
+	return &pb.InitializeDerivedWalletResponse{
 		WalletDir: s.walletDir,
-	}, nil
-}
-
-// Pver
-func (s *Server) RecoverAccountsFromWallet(
-	ctx context.Context, req *pb.RecoverAccountsFromWalletRequest,
-) (*emptypb.Empty, error) {
-	// Check Wallet is Opened
-	if s.wallet == nil {
-		return nil, status.Error(codes.NotFound, "Wallet is Not Opened")
-	}
-
-	err := recoverAccountsFromWallet(ctx, s.wallet, req.Password, req.NumAccounts)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "Could not recover accounts from wallet")
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-func (s *Server) GetDepositData(ctx context.Context, req *pb.GetDepositDataRequest) (*pb.GetDepositDataResponse, error) {
-	if s.validatorService == nil {
-		return nil, status.Error(codes.NotFound, "Validator Service is Not Opened")
-	}
-	if s.wallet == nil {
-		return nil, status.Error(codes.NotFound, "Wallet is Not Opened")
-	}
-	if len(req.DepositMessages) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "Deposit Data Keys is Empty")
-	}
-	km, err := s.validatorService.Keymanager()
-	if err != nil {
-		return nil, status.Error(codes.Internal, "Could not get keymanager")
-	}
-	datas := make([]*pb.DepositData, len(req.DepositMessages))
-
-	for i, key := range req.DepositMessages {
-		pubKey, err := bls.PublicKeyFromBytes(key.PublicKey)
-		if err != nil {
-			return nil, status.Error(codes.Internal, "Could not parse public key")
-		}
-		dd, err := createDepositData(ctx, pubKey, key.WithdrawKey, key.AmountGwei, km.Sign)
-		if err != nil {
-			return nil, status.Error(codes.Internal, "Could not create deposit data")
-		}
-		datas[i] = dd
-	}
-
-	return &pb.GetDepositDataResponse{
-		DepositDatas: datas,
 	}, nil
 }
 
@@ -453,104 +385,4 @@ func createDerivedKeymanagerWallet(
 	}
 
 	return w, nil
-}
-
-func recoverAccountsFromWallet(
-	ctx context.Context,
-	w *wallet.Wallet,
-	mnemonicPassphrase string,
-	numAccounts uint64,
-) error {
-	km, err := derived.NewKeymanager(ctx, &derived.SetupConfig{
-		Wallet:           w,
-		ListenForChanges: true,
-	})
-	if err != nil {
-		return errors.Wrap(err, "could not make keymanager for given phrase")
-	}
-	mnemonicStore, err := derived.LoadMnemonic(w.AccountsDir(), mnemonicPassphrase) // TODO : need to change
-	if err != nil {
-		return errors.Wrap(err, "could not load mnemonic")
-	}
-
-	mnemonicLanguage := "english" // TODO : FIXIT
-
-	index := int(mnemonicStore.LatestIndex + numAccounts)
-
-	err = km.RecoverAccountsFromMnemonic(ctx, mnemonicStore.Mnemonic, mnemonicLanguage, mnemonicPassphrase, index)
-	if err != nil {
-		return err
-	}
-
-	err = derived.SaveMnemonicStore(mnemonicStore.Mnemonic, mnemonicPassphrase, w.AccountsDir(), uint64(index))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createDepositData(
-	ctx context.Context,
-	depositPubkey bls.PublicKey,
-	eth1WithdrawlAddress []byte,
-	amountInGwei uint64,
-	signer iface.SigningFunc,
-) (*pb.DepositData, error) {
-	depositMessage := &ethpb.DepositMessage{
-		PublicKey:             depositPubkey.Marshal(),
-		WithdrawalCredentials: withdrawalCredentialsHash(eth1WithdrawlAddress),
-		Amount:                amountInGwei,
-	}
-
-	sr, err := depositMessage.HashTreeRoot()
-	if err != nil {
-		return nil, err
-	}
-	domain, err := signing.ComputeDomain(
-		params.BeaconConfig().DomainDeposit,
-		nil, /*forkVersion*/
-		nil, /*genesisValidatorsRoot*/
-	)
-	if err != nil {
-		return nil, err
-	}
-	root, err := (&ethpb.SigningData{ObjectRoot: sr[:], Domain: domain}).HashTreeRoot()
-	if err != nil {
-		return nil, err
-	}
-
-	sig, err := signer(ctx, &pb.SignRequest{
-		PublicKey:   depositPubkey.Marshal(),
-		SigningRoot: root[:],
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	di := &ethpb.Deposit_Data{
-		PublicKey:             depositMessage.PublicKey,
-		WithdrawalCredentials: depositMessage.WithdrawalCredentials,
-		Amount:                depositMessage.Amount,
-		Signature:             sig.Marshal(),
-	}
-
-	dr, err := di.HashTreeRoot()
-	if err != nil {
-		return nil, err
-	}
-	dd := &pb.DepositData{
-		Pubkey:                depositMessage.PublicKey,
-		WithdrawalCredentials: depositMessage.WithdrawalCredentials,
-		Signature:             sig.Marshal(),
-		DepositDataRoot:       dr[:],
-	}
-	return dd, nil
-}
-
-// withdrawal_credentials[:1] == ETH1_ADDRESS_WITHDRAWAL_PREFIX
-// withdrawal_credentials[1:12] == b`\x00' * 11`
-// withdrawal_credentials[12:] == eth1_withdrawal_address
-func withdrawalCredentialsHash(withdrawalAddress []byte) []byte {
-	return append(append([]byte{params.BeaconConfig().ETH1AddressWithdrawalPrefixByte}, params.BeaconConfig().ZeroHash[1:12]...), withdrawalAddress[:20]...)[:32]
 }

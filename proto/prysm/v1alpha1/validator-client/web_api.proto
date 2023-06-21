@@ -46,35 +46,24 @@ service Wallet {
             body: "*"
         };
     }
-    rpc OpenOrCreateWallet(OpenOrCreateWalletRequest) returns (OpenOrCreateWalletResponse) {
+    // PVER
+    rpc InitializeDerivedWallet(InitializeDerivedWalletRequest) returns (InitializeDerivedWalletResponse) {
         option deprecated = true;
         option (google.api.http) = {
-            post: "/v2/validator/wallet/open-or-create"
-            body: "*"
-        };
-    }
-    rpc RecoverAccountsFromWallet(RecoverAccountsFromWalletRequest) returns (google.protobuf.Empty) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/wallet/accounts/recover"
+            post: "/v2/validator/wallet/initialize-derived-wallet"
             body: "*"
         };
     }
 }
 
-message OpenOrCreateWalletRequest {
+message InitializeDerivedWalletRequest {
     string wallet_dir = 1;
     string password = 2;
-    string mnemonicLaunguage = 3;
+    string mnemonic_lang = 3;
 }
 
-message OpenOrCreateWalletResponse {
+message InitializeDerivedWalletResponse {
     string wallet_dir = 1;
-}
-
-message RecoverAccountsFromWalletRequest {
-    string password = 1;
-    uint64 num_accounts = 2;
 }
 
 // Account related commands will either need to be done through the Keymanager APIs https://ethereum.github.io/keymanager-APIs/
@@ -103,27 +92,24 @@ service Accounts {
     }
 
     // PVER
-    rpc GetDepositData(GetDepositDataRequest) returns (GetDepositDataResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/accounts/deposit-data",
-        body: "*"
-        };
-    }
+    rpc CreateAccountsAndDepositData(CreateAccountsAndDepositDataRequest) returns (CreateAccountsAndDepositDataResponse) {
+      option deprecated = true;
+      option (google.api.http) = {
+          post: "/v2/validator/accounts/create-accounts"
+          body: "*"
+      };
+  }
 }
 
-message GetDepositDataRequest {
-    repeated DepositDataRequest deposit_messages = 1;
+message CreateAccountsAndDepositDataRequest {
+  string password = 1;
+  uint64 num_accounts = 2;
+  bytes withdraw_key = 3;
+  uint64 amount_gwei = 4;
 }
 
-message DepositDataRequest {
-    bytes public_key = 1;
-    bytes withdraw_key = 2;
-    uint64 amount_gwei = 3;
-}
-
-message GetDepositDataResponse {
-    repeated DepositData deposit_datas = 1;
+message CreateAccountsAndDepositDataResponse {
+    repeated DepositData deposit_data_list = 1;
 }
 
 message DepositData {

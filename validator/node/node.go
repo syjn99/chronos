@@ -364,7 +364,7 @@ func (c *ValidatorClient) initializeForWeb(cliCtx *cli.Context) error {
 	return nil
 }
 
-// Not initialize Wallet Here, initialize Wallet by call OpenOrCreateWallet api
+// Not initialize Wallet Here, initialize Wallet by call InitializeDerivedWallet api
 func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
 	var err error
 	dataDir := cliCtx.String(flags.WalletDirFlag.Name)
