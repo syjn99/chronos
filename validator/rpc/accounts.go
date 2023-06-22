@@ -202,10 +202,14 @@ func (s *Server) VoluntaryExit(
 	}, nil
 }
 
-//
+/**
+* PVER
+ */
+
+// CreateAccountsAndDepositData initialize validator accounts with deposit data
 func (s *Server) CreateAccountsAndDepositData(
-	ctx context.Context, req *pb.CreateAccountsAndDepositDataRequest,
-) (*pb.CreateAccountsAndDepositDataResponse, error) {
+	ctx context.Context, req *pb.CreateAccountsRequest,
+) (*pb.ListDepositDataResponse, error) {
 	if s.validatorService == nil {
 		return nil, status.Error(codes.FailedPrecondition, "Validator service not yet initialized")
 	}
@@ -225,11 +229,11 @@ func (s *Server) CreateAccountsAndDepositData(
 	if err != nil {
 		return nil, err
 	}
-	depositDataList := make([]*pb.DepositData, int(req.NumAccounts))
+	depositDataList := make([]*pb.DepositDataResponse, int(req.NumAccounts))
 
 	numAccounts := int(req.NumAccounts)
 
-	for i := 1; i <= numAccounts; i++ {
+	for i := 0; i < numAccounts; i++ {
 		keyIndex := i + latestIndex - numAccounts
 		key, err := bls.PublicKeyFromBytes(keys[keyIndex][:])
 		if err != nil {
@@ -242,8 +246,44 @@ func (s *Server) CreateAccountsAndDepositData(
 		depositDataList[i] = dd
 	}
 
-	return &pb.CreateAccountsAndDepositDataResponse{
+	return &pb.ListDepositDataResponse{
 		DepositDataList: depositDataList,
+	}, nil
+}
+
+// CreateDepositDataList creates DepositData list with given request.
+// NOTE: Validator client does not store these values.
+func (s *Server) CreateDepositDataList(ctx context.Context, req *pb.ListDepositDataRequest) (*pb.ListDepositDataResponse, error) {
+	if s.validatorService == nil {
+		return nil, status.Error(codes.NotFound, "Validator Service is Not Opened")
+	}
+	if s.wallet == nil {
+		return nil, status.Error(codes.NotFound, "Wallet is Not Opened")
+	}
+	if len(req.DepositDataInputs) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "Deposit Data Keys is Empty")
+	}
+	km, err := s.validatorService.Keymanager()
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Could not get keymanager")
+	}
+
+	datas := make([]*pb.DepositDataResponse, len(req.DepositDataInputs))
+
+	for i, key := range req.DepositDataInputs {
+		pubKey, err := bls.PublicKeyFromBytes(key.Pubkey)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "Could not parse public key")
+		}
+		dd, err := createDepositData(ctx, pubKey, key.WithdrawKey, key.AmountGwei, km.Sign)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "Could not create deposit data")
+		}
+		datas[i] = dd
+	}
+
+	return &pb.ListDepositDataResponse{
+		DepositDataList: datas,
 	}, nil
 }
 
@@ -279,19 +319,19 @@ func createAccountsFromDerivedWallet(
 		return 0, err
 	}
 
-	return int(mnemonicStore.LatestIndex), nil
+	return newIndex, nil
 }
 
 func createDepositData(
 	ctx context.Context,
 	depositPubkey bls.PublicKey,
-	eth1WithdrawlAddress []byte,
+	eth1WithdrawalAddress []byte,
 	amountInGwei uint64,
 	signer iface.SigningFunc,
-) (*pb.DepositData, error) {
+) (*pb.DepositDataResponse, error) {
 	depositMessage := &ethpb.DepositMessage{
 		PublicKey:             depositPubkey.Marshal(),
-		WithdrawalCredentials: withdrawalCredentialsHash(eth1WithdrawlAddress),
+		WithdrawalCredentials: withdrawalCredentialsHash(eth1WithdrawalAddress),
 		Amount:                amountInGwei,
 	}
 
@@ -331,7 +371,7 @@ func createDepositData(
 	if err != nil {
 		return nil, err
 	}
-	dd := &pb.DepositData{
+	dd := &pb.DepositDataResponse{
 		Pubkey:                depositMessage.PublicKey,
 		WithdrawalCredentials: depositMessage.WithdrawalCredentials,
 		Signature:             sig.Marshal(),
