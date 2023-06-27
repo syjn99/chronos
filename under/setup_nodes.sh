@@ -9,7 +9,7 @@ rm -rf $BASEDIR/node-*
 bazel run --config=minimal //cmd/prysmctl:prysmctl testnet generate-genesis -- \
     --output-ssz=$BASEDIR/genesis.ssz \
     --chain-config-file=$BASEDIR/config.yml \
-    --geth-genesis-json-in=$BASEDIR/../../kairos/under/artifacts/genesis.json \
+    --geth-genesis-json-in=$BASEDIR/../../kairos/testnet/under/artifacts/genesis.json \
     --deposit-json-file=$BASEDIR/artifacts/deposits/depositDatas.json \
     --num-validators=0 \
     --execution-endpoint=http://localhost:22000 \

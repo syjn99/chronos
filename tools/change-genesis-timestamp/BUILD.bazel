@@ -7,8 +7,10 @@ go_library(
     importpath = "github.com/prysmaticlabs/prysm/v4/tools/change-genesis-timestamp",
     visibility = ["//visibility:private"],
     deps = [
+        "//encoding/ssz/detect:go_default_library",
         "//io/file:go_default_library",
         "//proto/prysm/v1alpha1:go_default_library",
+        "//runtime/version:go_default_library",
     ],
 )
 
