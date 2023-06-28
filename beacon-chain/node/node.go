@@ -15,6 +15,7 @@ import (
 	"syscall"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	apigateway "github.com/prysmaticlabs/prysm/v4/api/gateway"
@@ -58,12 +59,14 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/container/slice"
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
 	"github.com/prysmaticlabs/prysm/v4/monitoring/prometheus"
+	eth "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v4/runtime"
 	"github.com/prysmaticlabs/prysm/v4/runtime/debug"
 	"github.com/prysmaticlabs/prysm/v4/runtime/prereqs"
 	"github.com/prysmaticlabs/prysm/v4/runtime/version"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"go.opencensus.io/trace"
 )
 
 const testSkipPowFlag = "test-skip-pow"
@@ -357,6 +360,16 @@ func (b *BeaconNode) Close() {
 	b.collector.unregister()
 	b.cancel()
 	close(b.stop)
+}
+
+func (b *BeaconNode) CloseNode(ctx context.Context, _ *empty.Empty) (*eth.CloseNodeResponse, error) {
+	ctx, span := trace.StartSpan(ctx, "node.CloseNode")
+	defer span.End()
+
+	b.Close()
+	return &eth.CloseNodeResponse{
+		Ret: 1,
+	}, nil
 }
 
 func (b *BeaconNode) startDB(cliCtx *cli.Context, depositAddress string) error {
