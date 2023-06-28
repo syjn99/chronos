@@ -7,7 +7,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
 )
 
-// UnderSpecConfig retrieves the minimal undernet config used in spec tests.
+// UnderDevnetSpecConfig retrieves the mainnet undernet config used in spec tests.
 func UnderDevnetSpecConfig() *BeaconChainConfig {
 	underConfig := mainnetBeaconConfig.Copy()
 	// Misc
@@ -99,8 +99,8 @@ func UnderDevnetSpecConfig() *BeaconChainConfig {
 	underConfig.EpochsPerSyncCommitteePeriod = 8
 
 	// Ethereum PoW parameters.
-	underConfig.DepositChainID = 813   // Chain ID of eth1 under.
-	underConfig.DepositNetworkID = 813 // Network ID of eth1 under.
+	underConfig.DepositChainID = 820   // Chain ID of eth1 under.
+	underConfig.DepositNetworkID = 820 // Network ID of eth1 under.
 	underConfig.DepositContractAddress = "000000000000000000000000000000000000beef"
 	// 2**256-2**10 for fake minimal network
 	underConfig.TerminalTotalDifficulty = "500"

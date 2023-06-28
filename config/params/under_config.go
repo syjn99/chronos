@@ -86,13 +86,13 @@ func UnderSpecConfig() *BeaconChainConfig {
 	// New Altair params
 	// underConfig.AltairForkVersion = []byte{1, 0, 0, 4} // Highest byte set to 0x01 to avoid collisions with mainnet versioning
 	underConfig.AltairForkVersion = (hexutil.MustDecode("0x30000090"))
-	underConfig.AltairForkEpoch = math.MaxUint64 - 2
+	underConfig.AltairForkEpoch = math.MaxUint64 - 1
 	// underConfig.BellatrixForkVersion = []byte{2, 0, 0, 4}
 	underConfig.BellatrixForkVersion = (hexutil.MustDecode("0x30000091"))
-	underConfig.BellatrixForkEpoch = math.MaxUint64 - 2
+	underConfig.BellatrixForkEpoch = math.MaxUint64 - 1
 	// underConfig.CapellaForkVersion = []byte{3, 0, 0, 4}
 	underConfig.CapellaForkVersion = (hexutil.MustDecode("0x30000092"))
-	underConfig.CapellaForkEpoch = math.MaxUint64 - 2
+	underConfig.CapellaForkEpoch = math.MaxUint64 - 1
 
 	underConfig.SyncCommitteeSize = 32
 	underConfig.InactivityScoreBias = 4
