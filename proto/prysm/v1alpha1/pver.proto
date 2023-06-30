@@ -36,7 +36,7 @@ option php_namespace = "Ethereum\\Eth\\v1alpha1";
 service Pver {
     rpc CloseNode(google.protobuf.Empty) returns (CloseNodeResponse) {
         option (google.api.http) = {
-            post: "/v2/pver/node/close",
+            post: "/eth/v1alpha1/pver/close",
         };
     }
 }

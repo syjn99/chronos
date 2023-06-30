@@ -96,6 +96,10 @@ type Chain interface {
 	POWBlockFetcher
 }
 
+type NodeStop interface {
+	Stop()
+}
+
 // RPCClient defines the rpc methods required to interact with the eth1 node.
 type RPCClient interface {
 	Close()
