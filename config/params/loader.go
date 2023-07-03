@@ -57,12 +57,12 @@ func UnmarshalConfig(yamlFile []byte, conf *BeaconChainConfig) (*BeaconChainConf
 	if conf == nil {
 		if isMinimal(lines) {
 			conf = MinimalSpecConfig().Copy()
-		} else if isUnder(lines) {
-			conf = UnderSpecConfig().Copy()
-			fmt.Println("Under spec config applied")
 		} else if isUnderDevnet(lines) {
 			conf = UnderDevnetSpecConfig().Copy()
 			fmt.Println("Under devnet spec config applied")
+		} else if isUnder(lines) {
+			conf = UnderSpecConfig().Copy()
+			fmt.Println("Under spec config applied")
 		} else {
 			// Default to using mainnet.
 			conf = MainnetConfig().Copy()
