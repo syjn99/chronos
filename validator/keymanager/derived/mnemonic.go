@@ -1,23 +1,45 @@
 package derived
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/crypto/rand"
+	"github.com/prysmaticlabs/prysm/v4/io/file"
 	"github.com/prysmaticlabs/prysm/v4/io/prompt"
+	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/tyler-smith/go-bip39"
 	"github.com/tyler-smith/go-bip39/wordlists"
+	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 )
 
-const confirmationText = "Confirm you have written down the recovery words somewhere safe (offline) [y|Y]"
+const (
+	confirmationText      = "Confirm you have written down the recovery words somewhere safe (offline) [y|Y]"
+	mnemonicStoreFileName = "mnemonic-store.json"
+)
 
 // MnemonicGenerator implements methods for creating
 // mnemonic seed phrases in english using a given
 // source of entropy such as a private key.
 type MnemonicGenerator struct {
 	skipMnemonicConfirm bool
+}
+
+type MnemonicStore struct {
+	Mnemonic    string
+	LatestIndex uint64
+}
+
+type MnemonicStoreRepresentation struct {
+	Crypto  map[string]interface{} `json:"crypto"`
+	ID      string                 `json:"uuid"`
+	Version uint                   `json:"version"`
+	Name    string                 `json:"name"`
 }
 
 // ErrUnsupportedMnemonicLanguage is returned when trying to use an unsupported mnemonic language.
@@ -47,6 +69,26 @@ func GenerateAndConfirmMnemonic(mnemonicLanguage string, skipMnemonicConfirm boo
 		return "", errors.Wrap(err, "could not confirm mnemonic acknowledgement")
 	}
 	return phrase, nil
+}
+
+// GenerateAndSaveMnemonic generates a mnemonic and saves it to a file.
+func GenerateAndSaveMnemonic(mnemonicLanguage string, password string, path string) error {
+	mnemonicRandomness := make([]byte, 32)
+	if _, err := rand.NewGenerator().Read(mnemonicRandomness); err != nil {
+		return errors.Wrap(err, "could not initialize mnemonic source of randomness")
+	}
+	err := setBip39Lang(mnemonicLanguage)
+	if err != nil {
+		return err
+	}
+	m := &MnemonicGenerator{
+		skipMnemonicConfirm: true,
+	}
+	phrase, err := m.Generate(mnemonicRandomness)
+	if err != nil {
+		return errors.Wrap(err, "could not generate wallet seed")
+	}
+	return SaveMnemonicStore(phrase, password, path, 0)
 }
 
 // Generate a mnemonic seed phrase in english using a source of
@@ -115,4 +157,74 @@ func setBip39Lang(lang string) error {
 	}
 	bip39.SetWordList(wordlist)
 	return nil
+}
+
+func SaveMnemonicStore(mnemonic string, password string, path string, lastIndex uint64) error {
+	encryptor := keystorev4.New()
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+
+	mnemonicStore := &MnemonicStore{
+		Mnemonic:    mnemonic,
+		LatestIndex: lastIndex,
+	}
+
+	encodedStore, err := json.MarshalIndent(mnemonicStore, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	cryptoFields, err := encryptor.Encrypt([]byte(encodedStore), password)
+	if err != nil {
+		return err
+	}
+
+	mnemonicStoreRepresentation := &MnemonicStoreRepresentation{
+		ID:      id.String(),
+		Crypto:  cryptoFields,
+		Version: encryptor.Version(),
+		Name:    encryptor.Name(),
+	}
+	encoded, err := json.MarshalIndent(mnemonicStoreRepresentation, "", "\t")
+	if err != nil {
+		return err
+	}
+	err = file.WriteFile(filepath.Join(filepath.Clean(path), mnemonicStoreFileName), encoded)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func LoadMnemonic(path string, password string) (*MnemonicStore, error) {
+	mnemonicFile := filepath.Join(path, mnemonicStoreFileName)
+	if file.FileExists(mnemonicFile) {
+		rawData, err := os.ReadFile(filepath.Clean(mnemonicFile))
+		if err != nil {
+			return nil, errors.Wrap(err, "could not read mnemonic store file")
+		}
+		keystoreFile := &MnemonicStoreRepresentation{}
+		if err := json.Unmarshal(rawData, keystoreFile); err != nil {
+			return nil, errors.Wrap(err, "could not unmarshal mnemonic store file")
+		}
+
+		decryptor := keystorev4.New()
+		enc, err := decryptor.Decrypt(keystoreFile.Crypto, password)
+		if err != nil && strings.Contains(err.Error(), keymanager.IncorrectPasswordErrMsg) {
+			return nil, errors.Wrap(err, "wrong password for wallet entered")
+		} else if err != nil {
+			return nil, errors.Wrap(err, "could not decrypt keystore")
+		}
+
+		mnemonicStore := &MnemonicStore{}
+		if err := json.Unmarshal(enc, mnemonicStore); err != nil {
+			return nil, errors.Wrap(err, "could not unmarshal mnemonic store")
+		}
+
+		return mnemonicStore, nil
+	} else {
+		return nil, errors.New("mnemonic file does not exist")
+	}
 }

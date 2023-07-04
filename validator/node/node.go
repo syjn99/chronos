@@ -131,6 +131,15 @@ func NewValidatorClient(cliCtx *cli.Context) (*ValidatorClient, error) {
 
 	configureFastSSZHashingAlgorithm()
 
+	// If the --pver flag is enabled to administer the validator
+	// client via a pver, we start the validator client in a different way.
+	if cliCtx.IsSet(flags.EnablePverFlag.Name) {
+		if err := validatorClient.initializeForPver(cliCtx); err != nil {
+			return nil, err
+		}
+		return validatorClient, nil
+	}
+
 	// If the --web flag is enabled to administer the validator
 	// client via a web portal, we start the validator client in a different way.
 	// Change Web flag name to enable keymanager API, look at merging initializeFromCLI and initializeForWeb maybe after WebUI DEPRECATED.
@@ -366,6 +375,67 @@ func (c *ValidatorClient) initializeForWeb(cliCtx *cli.Context) error {
 	return nil
 }
 
+// Not initialize Wallet Here, initialize Wallet by call OpenOrCreateWallet api
+func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
+	var err error
+	dataDir := cliCtx.String(flags.WalletDirFlag.Name)
+	if cliCtx.String(cmd.DataDirFlag.Name) != cmd.DefaultDataDir() {
+		dataDir = cliCtx.String(cmd.DataDirFlag.Name)
+	}
+
+	clearFlag := cliCtx.Bool(cmd.ClearDB.Name)
+	forceClearFlag := cliCtx.Bool(cmd.ForceClearDB.Name)
+	if clearFlag || forceClearFlag {
+		if dataDir == "" {
+			dataDir = cmd.DefaultDataDir()
+			if dataDir == "" {
+				log.Fatal(
+					"Could not determine your system'c HOME path, please specify a --datadir you wish " +
+						"to use for your validator data",
+				)
+			}
+		}
+		if err := clearDB(cliCtx.Context, dataDir, forceClearFlag); err != nil {
+			return err
+		}
+	}
+	log.WithField("databasePath", dataDir).Info("Checking DB")
+
+	valDB, err := kv.NewKVStore(cliCtx.Context, dataDir, &kv.Config{
+		PubKeys: nil,
+	})
+	if err != nil {
+		return errors.Wrap(err, "could not initialize db")
+	}
+	c.db = valDB
+	if err := valDB.RunUpMigrations(cliCtx.Context); err != nil {
+		return errors.Wrap(err, "could not run database migration")
+	}
+
+	if !cliCtx.Bool(cmd.DisableMonitoringFlag.Name) {
+		if err := c.registerPrometheusService(cliCtx); err != nil {
+			return err
+		}
+	}
+	if err := c.registerValidatorService(cliCtx); err != nil {
+		return err
+	}
+	if err := c.registerRPCService(cliCtx); err != nil {
+		return err
+	}
+	if err := c.registerRPCGatewayService(cliCtx); err != nil {
+		return err
+	}
+	gatewayHost := cliCtx.String(flags.GRPCGatewayHost.Name)
+	gatewayPort := cliCtx.Int(flags.GRPCGatewayPort.Name)
+	webAddress := fmt.Sprintf("http://%s:%d", gatewayHost, gatewayPort) // TODO check and Remove Prysm web UI
+	log.WithField("address", webAddress).Info(
+		"Starting Prysm web UI on address, open in browser to access",
+	)
+
+	return nil
+}
+
 func (c *ValidatorClient) registerPrometheusService(cliCtx *cli.Context) error {
 	var additionalHandlers []prometheus.Handler
 	if cliCtx.IsSet(cmd.EnableBackupWebhookFlag.Name) {
@@ -436,7 +506,7 @@ func (c *ValidatorClient) registerValidatorService(cliCtx *cli.Context) error {
 		GrpcRetryDelay:             grpcRetryDelay,
 		GrpcHeadersFlag:            c.cliCtx.String(flags.GrpcHeadersFlag.Name),
 		ValDB:                      c.db,
-		UseWeb:                     c.cliCtx.Bool(flags.EnableWebFlag.Name),
+		UseWeb:                     c.cliCtx.Bool(flags.EnableWebFlag.Name) || c.cliCtx.Bool(flags.EnablePverFlag.Name),
 		InteropKeysConfig:          interopKeysConfig,
 		Wallet:                     c.wallet,
 		WalletInitializedFeed:      c.walletInitialized,

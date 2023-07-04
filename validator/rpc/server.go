@@ -153,7 +153,7 @@ func (s *Server) Start() {
 			),
 			grpcprometheus.UnaryServerInterceptor,
 			grpcopentracing.UnaryServerInterceptor(),
-			s.JWTInterceptor(),
+			// s.JWTInterceptor(), // TODO(JOHN): Re-enable
 		)),
 	}
 	grpcprometheus.EnableHandlingTimeHistogram()

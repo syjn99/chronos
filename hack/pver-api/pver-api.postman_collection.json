@@ -1,0 +1,160 @@
+{
+	"info": {
+		"_postman_id": "42dfe88e-6412-45ab-a8cf-77f0c08e568e",
+		"name": "Pver",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:7500/v2/validator/wallet/open-or-create",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.IEg3X1vV8AOydDNwykZxirvPhS6K0NUnErWnEc1UvhQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"walletDir\": \"\",\n    \"mnemonicLaunguage\": \"english\",\n    \"password\": \"123qwe!Q\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7500/v2/validator/wallet/open-or-create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7500",
+					"path": [
+						"v2",
+						"validator",
+						"wallet",
+						"open-or-create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:7500/v2/validator/accounts?all=true",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:7500/v2/validator/accounts?all=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7500",
+					"path": [
+						"v2",
+						"validator",
+						"accounts"
+					],
+					"query": [
+						{
+							"key": "all",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:7500/v2/validator/wallet/accounts/recover",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "IEg3X1vV8AOydDNwykZxirvPhS6K0NUnErWnEc1UvhQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"numAccounts\": 11,\n    \"password\": \"123qwe!Q\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7500/v2/validator/wallet/accounts/recover",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7500",
+					"path": [
+						"v2",
+						"validator",
+						"wallet",
+						"accounts",
+						"recover"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:7500/v2/validator/accounts/deposit-data",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.IEg3X1vV8AOydDNwykZxirvPhS6K0NUnErWnEc1UvhQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"depositMessages\" : [\n        {\n            \"publicKey\": \"\",\n            \"withdrawkey\": \"\",\n            \"amountGwei\": \"\",\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7500/v2/validator/accounts/deposit-data",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7500",
+					"path": [
+						"v2",
+						"validator",
+						"accounts",
+						"deposit-data"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

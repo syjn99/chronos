@@ -203,7 +203,6 @@ func TestServer_RecoverWallet_Derived(t *testing.T) {
 	// Attempting to write again should trigger an error.
 	err = writeWalletPasswordToDisk(localWalletDir, "somepassword")
 	require.ErrorContains(t, "cannot write wallet password file as it already exists", err)
-
 }
 
 func TestServer_ValidateKeystores_FailedPreconditions(t *testing.T) {
@@ -365,4 +364,155 @@ func Test_writeWalletPasswordToDisk(t *testing.T) {
 	// Attempting to write again should trigger an error.
 	err = writeWalletPasswordToDisk(walletDir, "somepassword")
 	require.NotNil(t, err)
+}
+
+func Test_OpenOrCreateWallet(t *testing.T) {
+	ctx := context.Background()
+	s := &Server{
+		walletInitializedFeed: new(event.Feed),
+	}
+
+	// Test case 1. Working case.
+	testPath := "./testpath"
+	// new path
+	req1 := &pb.OpenOrCreateWalletRequest{
+		WalletDir:         testPath,
+		Password:          "testpassword",
+		MnemonicLaunguage: "english",
+	}
+	res1, err1 := s.OpenOrCreateWallet(ctx, req1)
+	require.NoError(t, err1)
+	assert.Equal(t, testPath, res1.WalletDir)
+
+	s.wallet = nil
+	s.walletInitialized = false
+
+	// exist and normal path
+	req2 := &pb.OpenOrCreateWalletRequest{
+		WalletDir:         testPath,
+		Password:          "testpassword",
+		MnemonicLaunguage: "english",
+	}
+	res2, err2 := s.OpenOrCreateWallet(ctx, req2)
+	require.NoError(t, err2)
+	assert.Equal(t, testPath, res2.WalletDir)
+
+	// Test case 2. Wallet already opened
+	testPath = "./testpath2"
+	req3 := &pb.OpenOrCreateWalletRequest{
+		WalletDir:         testPath,
+		Password:          "testpassword",
+		MnemonicLaunguage: "english",
+	}
+	_, err3 := s.OpenOrCreateWallet(ctx, req3)
+	require.ErrorContains(t, "Wallet is Already Opened", err3)
+}
+
+func Test_RecoverAccountsFromWallet(t *testing.T) {
+	ctx := context.Background()
+	s := &Server{
+		walletInitializedFeed: new(event.Feed),
+	}
+	// 1. Check Wallet is Opened
+
+	req1 := &pb.RecoverAccountsFromWalletRequest{
+		Password:    "testpassword",
+		NumAccounts: 10,
+	}
+
+	_, err1 := s.RecoverAccountsFromWallet(ctx, req1)
+	require.ErrorContains(t, "Wallet is Not Opened", err1)
+	// 2. Normal Case
+	testPath := "./testpath"
+	req2 := &pb.OpenOrCreateWalletRequest{
+		WalletDir:         testPath,
+		Password:          "testpassword",
+		MnemonicLaunguage: "english",
+	}
+	_, err2 := s.OpenOrCreateWallet(ctx, req2)
+	require.NoError(t, err2)
+
+	req3 := &pb.RecoverAccountsFromWalletRequest{
+		Password:    "testpassword",
+		NumAccounts: 10,
+	}
+	_, err3 := s.RecoverAccountsFromWallet(ctx, req3)
+	require.NoError(t, err3)
+
+	// 3. Wrong Password
+
+	req5 := &pb.RecoverAccountsFromWalletRequest{
+		Password:    "wrongpassword",
+		NumAccounts: 10,
+	}
+
+	_, err5 := s.RecoverAccountsFromWallet(ctx, req5)
+	require.ErrorContains(t, "Could not recover accounts from wallet", err5)
+}
+
+func Test_GetDepositData(t *testing.T) {
+	ctx := context.Background()
+	s := &Server{
+		walletInitializedFeed: new(event.Feed),
+	}
+
+	// 1. Test Normal
+
+	// create wallet
+	testPath := "./testpath"
+	// new path
+	req1 := &pb.OpenOrCreateWalletRequest{
+		WalletDir:         testPath,
+		Password:          "testpassword",
+		MnemonicLaunguage: "english",
+	}
+	res1, err1 := s.OpenOrCreateWallet(ctx, req1)
+	require.NoError(t, err1)
+	assert.Equal(t, testPath, res1.WalletDir)
+	km, err := s.wallet.InitializeKeymanager(ctx, iface.InitKeymanagerConfig{ListenForChanges: false})
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Wallet: s.wallet,
+		Validator: &mock.MockValidator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+	s.validatorService = vs
+	req2 := &pb.RecoverAccountsFromWalletRequest{
+		Password:    "testpassword",
+		NumAccounts: 10,
+	}
+	_, err2 := s.RecoverAccountsFromWallet(ctx, req2)
+	require.NoError(t, err2)
+
+	req3 := &pb.ListAccountsRequest{
+		All: true,
+	}
+	res3, err3 := s.ListAccounts(ctx, req3)
+	require.NoError(t, err3)
+	fmt.Println(len(res3.Accounts))
+
+	keys := make([]*pb.DepositDataRequest, 1)
+	keys[0] = &pb.DepositDataRequest{
+		PublicKey:   res3.Accounts[0].ValidatingPublicKey,
+		WithdrawKey: []byte("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B"),
+		AmountGwei:  32000000000,
+	}
+
+	req4 := &pb.GetDepositDataRequest{
+		DepositMessages: keys,
+	}
+
+	res4, err4 := s.GetDepositData(ctx, req4)
+	require.NoError(t, err4)
+	fmt.Println(res4.DepositDatas[0])
+
+	// 2. Test When validator service is not initialized
+
+	// 3. Test When wallet not initialized
+
+	// 4. Test When pubkey and withdraw key length is not same
+
+	// 5. Test When pubkey is not in our keymanager
 }
