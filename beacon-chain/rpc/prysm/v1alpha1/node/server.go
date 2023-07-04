@@ -274,9 +274,7 @@ func (ns *Server) StreamBeaconLogs(_ *empty.Empty, stream ethpb.Health_StreamBea
 }
 
 func (ns *Server) CloseClient(ctx context.Context, in *empty.Empty) (*ethpb.CloseClientResponse, error) {
-
 	ns.NodeStop.Stop()
-
 	return &ethpb.CloseClientResponse{
 		Ret: 0,
 	}, nil
