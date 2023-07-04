@@ -796,7 +796,7 @@ func (p *Status) isfromBadIP(pid peer.ID) bool {
 	}
 	if val, ok := p.ipTracker[ip.String()]; ok {
 		if val > ColocationLimit {
-			return true
+			return false // TODO(john) TEMP code
 		}
 	}
 	return false

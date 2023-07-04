@@ -23,7 +23,7 @@ rem Run prysmctl to generate genesis
     --output-ssz="%BASEDIR%genesis.ssz" ^
     --chain-config-file="%BASEDIR%config.yml" ^
     --geth-genesis-json-in="%BASEDIR%..\..\kairos_window\under\artifacts\genesis.json" ^
-    --deposit-json-file="%BASEDIR%artifacts\deposits\depositDatas.json" ^
+    --deposit-json-file="%BASEDIR%artifacts\deposits\deposit_data_under.json" ^
     --num-validators=0 ^
     --execution-endpoint="http://localhost:22000" ^
     --override-eth1data="true"

@@ -20,6 +20,7 @@ go_library(
         "testutils.go",
         "testutils_develop.go",  # keep
         "under_config.go",
+        "under_devnet_config.go",
         "values.go",
     ],
     importpath = "github.com/prysmaticlabs/prysm/v4/config/params",
