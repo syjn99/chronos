@@ -94,7 +94,7 @@ func UnderDevnetSpecConfig() *BeaconChainConfig {
 	underConfig.CapellaForkVersion = (hexutil.MustDecode("0x20000092"))
 	underConfig.CapellaForkEpoch = math.MaxUint64 - 1
 
-	underConfig.SyncCommitteeSize = 32
+	// underConfig.SyncCommitteeSize = 32
 	underConfig.InactivityScoreBias = 4
 	underConfig.EpochsPerSyncCommitteePeriod = 8
 
