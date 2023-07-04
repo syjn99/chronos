@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcopentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
@@ -49,6 +50,7 @@ type Config struct {
 	ValidatorService         *client.ValidatorService
 	SyncChecker              client.SyncChecker
 	GenesisFetcher           client.GenesisFetcher
+	ClientStop               client.ClientStop
 	WalletInitializedFeed    *event.Feed
 	NodeGatewayEndpoint      string
 	Wallet                   *wallet.Wallet
@@ -82,6 +84,7 @@ type Server struct {
 	validatorService          *client.ValidatorService
 	syncChecker               client.SyncChecker
 	genesisFetcher            client.GenesisFetcher
+	clientStop                client.ClientStop
 	walletDir                 string
 	wallet                    *wallet.Wallet
 	walletInitializedFeed     *event.Feed
@@ -117,6 +120,7 @@ func NewServer(ctx context.Context, cfg *Config) *Server {
 		validatorService:         cfg.ValidatorService,
 		syncChecker:              cfg.SyncChecker,
 		genesisFetcher:           cfg.GenesisFetcher,
+		clientStop:               cfg.ClientStop,
 		walletDir:                cfg.WalletDir,
 		walletInitializedFeed:    cfg.WalletInitializedFeed,
 		walletInitialized:        cfg.Wallet != nil,
@@ -181,6 +185,7 @@ func (s *Server) Start() {
 	validatorpb.RegisterAccountsServer(s.grpcServer, s)
 	ethpbservice.RegisterKeyManagementServer(s.grpcServer, s)
 	validatorpb.RegisterSlashingProtectionServer(s.grpcServer, s)
+	ethpb.RegisterPverServer(s.grpcServer, s)
 
 	go func() {
 		if s.listener != nil {
@@ -216,4 +221,11 @@ func (s *Server) Stop() error {
 // Status returns nil or credentialError.
 func (s *Server) Status() error {
 	return s.credentialError
+}
+
+func (s *Server) CloseClient(ctx context.Context, in *empty.Empty) (*ethpb.CloseClientResponse, error) {
+	s.clientStop.Stop()
+	return &ethpb.CloseClientResponse{
+		Ret: 0,
+	}, nil
 }

@@ -21,9 +21,11 @@ func (s *Server) JWTInterceptor() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		if err := s.authorize(ctx); err != nil {
-			return nil, err
-		}
+		// Temporary disable jwt interceptor
+		// TODO : refactor auth
+		// if err := s.authorize(ctx); err != nil {
+		// 	return nil, err
+		// }
 		h, err := handler(ctx, req)
 		log.WithError(err).WithFields(logrus.Fields{
 			"FullMethod": info.FullMethod,

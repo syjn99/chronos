@@ -36,20 +36,20 @@ var _ = github_com_prysmaticlabs_prysm_v4_consensus_types_primitives.Epoch(0)
 var _ = emptypb.Empty{}
 var _ = empty.Empty{}
 
-func request_Pver_CloseNode_0(ctx context.Context, marshaler runtime.Marshaler, client PverClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Pver_CloseClient_0(ctx context.Context, marshaler runtime.Marshaler, client PverClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq emptypb.Empty
 	var metadata runtime.ServerMetadata
 
-	msg, err := client.CloseNode(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.CloseClient(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Pver_CloseNode_0(ctx context.Context, marshaler runtime.Marshaler, server PverServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Pver_CloseClient_0(ctx context.Context, marshaler runtime.Marshaler, server PverServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq emptypb.Empty
 	var metadata runtime.ServerMetadata
 
-	msg, err := server.CloseNode(ctx, &protoReq)
+	msg, err := server.CloseClient(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -60,18 +60,18 @@ func local_request_Pver_CloseNode_0(ctx context.Context, marshaler runtime.Marsh
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterPverHandlerFromEndpoint instead.
 func RegisterPverHandlerServer(ctx context.Context, mux *runtime.ServeMux, server PverServer) error {
 
-	mux.Handle("POST", pattern_Pver_CloseNode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Pver_CloseClient_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ethereum.eth.v1alpha1.Pver/CloseNode")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ethereum.eth.v1alpha1.Pver/CloseClient")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Pver_CloseNode_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Pver_CloseClient_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -79,7 +79,7 @@ func RegisterPverHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 			return
 		}
 
-		forward_Pver_CloseNode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Pver_CloseClient_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -124,23 +124,23 @@ func RegisterPverHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.
 // "PverClient" to call the correct interceptors.
 func RegisterPverHandlerClient(ctx context.Context, mux *runtime.ServeMux, client PverClient) error {
 
-	mux.Handle("POST", pattern_Pver_CloseNode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Pver_CloseClient_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/ethereum.eth.v1alpha1.Pver/CloseNode")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/ethereum.eth.v1alpha1.Pver/CloseClient")
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Pver_CloseNode_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Pver_CloseClient_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Pver_CloseNode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Pver_CloseClient_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -148,9 +148,9 @@ func RegisterPverHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 }
 
 var (
-	pattern_Pver_CloseNode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"eth", "v1alpha1", "pver", "close"}, ""))
+	pattern_Pver_CloseClient_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"eth", "v1alpha1", "pver", "close"}, ""))
 )
 
 var (
-	forward_Pver_CloseNode_0 = runtime.ForwardResponseMessage
+	forward_Pver_CloseClient_0 = runtime.ForwardResponseMessage
 )

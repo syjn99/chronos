@@ -34,7 +34,7 @@ option php_namespace = "Ethereum\\Eth\\v1alpha1";
 //
 // Pver service provides requirement for Pver App service
 service Pver {
-    rpc CloseNode(google.protobuf.Empty) returns (CloseNodeResponse) {
+    rpc CloseClient(google.protobuf.Empty) returns (CloseClientResponse) {
         option (google.api.http) = {
             post: "/eth/v1alpha1/pver/close",
         };
@@ -42,6 +42,6 @@ service Pver {
 }
 
 
-message CloseNodeResponse {
+message CloseClientResponse {
     int32 ret = 1;
 }
