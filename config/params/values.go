@@ -12,4 +12,5 @@ const (
 	GoerliName          = "goerli"
 	SepoliaName         = "sepolia"
 	UnderName           = "under"
+	UnderDevnetName     = "under-devnet"
 )

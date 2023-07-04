@@ -1,0 +1,13 @@
+FROM chronos-validator-client:1.0 as chronos-validator-client-image
+
+FROM alpine:latest
+
+# Copy the binary
+COPY --from=chronos-beacon-chain-image /usr/local/bin /usr/local/bin
+RUN mkdir /chronos-validator-client
+
+COPY artifacts/run_validator_client_docker.sh /run_validator_client.sh
+
+COPY artifacts/network_keys/network_keys0 /chronos-validator-client/network_keys
+
+EXPOSE 8551 4000 8080 12000 13000 3500 

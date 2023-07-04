@@ -77,7 +77,7 @@ func UnderSpecConfig() *BeaconChainConfig {
 	underConfig.DomainDeposit = bytesutil.ToBytes4(hexutil.MustDecode("0x03000000"))
 	underConfig.DomainVoluntaryExit = bytesutil.ToBytes4(bytesutil.Bytes4(4))
 	// underConfig.GenesisForkVersion = []byte{0, 0, 0, 4}
-	underConfig.GenesisForkVersion = (hexutil.MustDecode("0x20000089"))
+	underConfig.GenesisForkVersion = (hexutil.MustDecode("0x30000089"))
 
 	underConfig.DepositContractTreeDepth = 32
 	underConfig.FarFutureEpoch = math.MaxUint64
@@ -85,13 +85,13 @@ func UnderSpecConfig() *BeaconChainConfig {
 
 	// New Altair params
 	// underConfig.AltairForkVersion = []byte{1, 0, 0, 4} // Highest byte set to 0x01 to avoid collisions with mainnet versioning
-	underConfig.AltairForkVersion = (hexutil.MustDecode("0x20000090"))
+	underConfig.AltairForkVersion = (hexutil.MustDecode("0x30000090"))
 	underConfig.AltairForkEpoch = math.MaxUint64 - 1
 	// underConfig.BellatrixForkVersion = []byte{2, 0, 0, 4}
-	underConfig.BellatrixForkVersion = (hexutil.MustDecode("0x20000091"))
+	underConfig.BellatrixForkVersion = (hexutil.MustDecode("0x30000091"))
 	underConfig.BellatrixForkEpoch = math.MaxUint64 - 1
 	// underConfig.CapellaForkVersion = []byte{3, 0, 0, 4}
-	underConfig.CapellaForkVersion = (hexutil.MustDecode("0x20000092"))
+	underConfig.CapellaForkVersion = (hexutil.MustDecode("0x30000092"))
 	underConfig.CapellaForkEpoch = math.MaxUint64 - 1
 
 	underConfig.SyncCommitteeSize = 32
