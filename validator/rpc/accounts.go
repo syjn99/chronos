@@ -300,12 +300,13 @@ func createAccountsFromDerivedWallet(
 	if err != nil {
 		return 0, errors.Wrap(err, "could not make keymanager for given phrase")
 	}
-	mnemonicStore, err := derived.LoadMnemonic(w.AccountsDir(), mnemonicPassphrase) // TODO : need to change
+	// TODO: Use encrypted mnemonic passphrase [@gazzua]
+	mnemonicStore, err := derived.LoadMnemonic(w.AccountsDir(), mnemonicPassphrase)
 	if err != nil {
 		return 0, errors.Wrap(err, "could not load mnemonic")
 	}
 
-	mnemonicLanguage := "english" // TODO : FIXIT
+	mnemonicLanguage := "english"
 	latestIndex := mnemonicStore.LatestIndex
 	newIndex := int(latestIndex + numAccounts)
 
