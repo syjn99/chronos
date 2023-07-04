@@ -41,6 +41,7 @@ type Server struct {
 	GenesisTimeFetcher   blockchain.TimeFetcher
 	GenesisFetcher       blockchain.GenesisFetcher
 	POWChainInfoFetcher  execution.ChainInfoFetcher
+	NodeStop             execution.NodeStop
 	BeaconMonitoringHost string
 	BeaconMonitoringPort int
 }
@@ -270,4 +271,11 @@ func (ns *Server) StreamBeaconLogs(_ *empty.Empty, stream ethpb.Health_StreamBea
 			return status.Error(codes.Canceled, "Context canceled")
 		}
 	}
+}
+
+func (ns *Server) CloseClient(ctx context.Context, in *empty.Empty) (*ethpb.CloseClientResponse, error) {
+	ns.NodeStop.Stop()
+	return &ethpb.CloseClientResponse{
+		Ret: 0,
+	}, nil
 }

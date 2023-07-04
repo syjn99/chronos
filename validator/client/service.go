@@ -49,6 +49,9 @@ type SyncChecker interface {
 type GenesisFetcher interface {
 	GenesisInfo(ctx context.Context) (*ethpb.Genesis, error)
 }
+type ClientStop interface {
+	Stop()
+}
 
 // ValidatorService represents a service to manage the validator client
 // routine.

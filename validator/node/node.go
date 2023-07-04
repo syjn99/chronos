@@ -76,7 +76,8 @@ type ValidatorClient struct {
 	lock              sync.RWMutex
 	wallet            *wallet.Wallet
 	walletInitialized *event.Feed
-	stop              chan struct{} // Channel to wait for termination notifications.
+	closeCh           chan struct{} // Channel to wait for termination notifications.
+	stopCh            chan struct{}
 }
 
 // NewValidatorClient creates a new instance of the Prysm validator client.
@@ -110,7 +111,8 @@ func NewValidatorClient(cliCtx *cli.Context) (*ValidatorClient, error) {
 		cancel:            cancel,
 		services:          registry,
 		walletInitialized: new(event.Feed),
-		stop:              make(chan struct{}),
+		closeCh:           make(chan struct{}),
+		stopCh:            make(chan struct{}),
 	}
 
 	if err := features.ConfigureValidator(cliCtx); err != nil {
@@ -169,14 +171,17 @@ func (c *ValidatorClient) Start() {
 
 	c.services.StartAll()
 
-	stop := c.stop
+	closeCh := c.closeCh
 	c.lock.Unlock()
 
 	go func() {
 		sigc := make(chan os.Signal, 1)
 		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
 		defer signal.Stop(sigc)
-		<-sigc
+		select {
+		case <-sigc:
+		case <-c.stopCh:
+		}
 		log.Info("Got interrupt, shutting down...")
 		debug.Exit(c.cliCtx) // Ensure trace and CPU profile data are flushed.
 		go c.Close()
@@ -190,7 +195,13 @@ func (c *ValidatorClient) Start() {
 	}()
 
 	// Wait for stop channel to be closed.
-	<-stop
+	<-closeCh
+}
+
+func (c *ValidatorClient) Stop() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	close(c.stopCh)
 }
 
 // Close handles graceful shutdown of the system.
@@ -201,7 +212,7 @@ func (c *ValidatorClient) Close() {
 	c.services.StopAll()
 	log.Info("Stopping Prysm validator")
 	c.cancel()
-	close(c.stop)
+	close(c.closeCh)
 }
 
 func (c *ValidatorClient) initializeFromCLI(cliCtx *cli.Context) error {
@@ -768,6 +779,7 @@ func (c *ValidatorClient) registerRPCService(cliCtx *cli.Context) error {
 		ValidatorService:         vs,
 		SyncChecker:              vs,
 		GenesisFetcher:           vs,
+		ClientStop:               c,
 		NodeGatewayEndpoint:      nodeGatewayEndpoint,
 		WalletDir:                walletDir,
 		Wallet:                   c.wallet,
@@ -816,6 +828,7 @@ func (c *ValidatorClient) registerRPCGatewayService(cliCtx *cli.Context) error {
 		validatorpb.RegisterBeaconHandler,
 		validatorpb.RegisterSlashingProtectionHandler,
 		ethpbservice.RegisterKeyManagementHandler,
+		pb.RegisterPverHandler,
 	}
 	gwmux := gwruntime.NewServeMux(
 		gwruntime.WithMarshalerOption(gwruntime.MIMEWildcard, &gwruntime.HTTPBodyMarshaler{
@@ -856,7 +869,7 @@ func (c *ValidatorClient) registerRPCGatewayService(cliCtx *cli.Context) error {
 	// remove "/accounts/", "/v2/" after WebUI DEPRECATED
 	pbHandler := &gateway.PbMux{
 		Registrations: registrations,
-		Patterns:      []string{"/accounts/", "/v2/", "/internal/eth/v1/"},
+		Patterns:      []string{"/accounts/", "/v2/", "/internal/eth/v1/", "/eth/v1alpha1"},
 		Mux:           gwmux,
 	}
 	opts := []gateway.Option{

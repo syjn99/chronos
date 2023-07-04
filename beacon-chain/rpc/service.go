@@ -97,6 +97,7 @@ type Config struct {
 	GenesisTimeFetcher            blockchain.TimeFetcher
 	GenesisFetcher                blockchain.GenesisFetcher
 	EnableDebugRPCEndpoints       bool
+	EnablePverRPCEndpoints        bool
 	MockEth1Votes                 bool
 	AttestationsPool              attestations.Pool
 	ExitPool                      voluntaryexits.PoolManager
@@ -120,6 +121,7 @@ type Config struct {
 	ProposerIdsCache              *cache.ProposerPayloadIDsCache
 	OptimisticModeFetcher         blockchain.OptimisticModeFetcher
 	BlockBuilder                  builder.BlockBuilder
+	NodeStop                      execution.NodeStop
 	Router                        *mux.Router
 	ClockWaiter                   startup.ClockWaiter
 }
@@ -278,9 +280,11 @@ func (s *Service) Start() {
 		PeerManager:          s.cfg.PeerManager,
 		GenesisFetcher:       s.cfg.GenesisFetcher,
 		POWChainInfoFetcher:  s.cfg.ExecutionChainInfoFetcher,
+		NodeStop:             s.cfg.NodeStop,
 		BeaconMonitoringHost: s.cfg.BeaconMonitoringHost,
 		BeaconMonitoringPort: s.cfg.BeaconMonitoringPort,
 	}
+
 	nodeServerV1 := &node.Server{
 		BeaconDB:                  s.cfg.BeaconDB,
 		Server:                    s.grpcServer,
@@ -380,6 +384,10 @@ func (s *Service) Start() {
 	}
 	ethpbv1alpha1.RegisterBeaconNodeValidatorServer(s.grpcServer, validatorServer)
 	ethpbservice.RegisterBeaconValidatorServer(s.grpcServer, validatorServerV1)
+
+	if s.cfg.EnablePverRPCEndpoints {
+		ethpbv1alpha1.RegisterPverServer(s.grpcServer, nodeServer)
+	}
 	// Register reflection service on gRPC server.
 	reflection.Register(s.grpcServer)
 

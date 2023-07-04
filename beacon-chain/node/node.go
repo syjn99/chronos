@@ -86,7 +86,8 @@ type BeaconNode struct {
 	cancel                  context.CancelFunc
 	services                *runtime.ServiceRegistry
 	lock                    sync.RWMutex
-	stop                    chan struct{} // Channel to wait for termination notifications.
+	stopCh                  chan struct{}
+	closeCh                 chan struct{} // Channel to wait for termination notifications.
 	db                      db.Database
 	slasherDB               db.SlasherDatabase
 	attestationPool         attestations.Pool
@@ -165,7 +166,8 @@ func New(cliCtx *cli.Context, opts ...Option) (*BeaconNode, error) {
 		ctx:                     ctx,
 		cancel:                  cancel,
 		services:                registry,
-		stop:                    make(chan struct{}),
+		stopCh:                  make(chan struct{}),
+		closeCh:                 make(chan struct{}),
 		stateFeed:               new(event.Feed),
 		blockFeed:               new(event.Feed),
 		opFeed:                  new(event.Feed),
@@ -320,14 +322,17 @@ func (b *BeaconNode) Start() {
 
 	b.services.StartAll()
 
-	stop := b.stop
+	closeCh := b.closeCh
 	b.lock.Unlock()
 
 	go func() {
 		sigc := make(chan os.Signal, 1)
 		signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
 		defer signal.Stop(sigc)
-		<-sigc
+		select {
+		case <-sigc:
+		case <-b.stopCh:
+		}
 		log.Info("Got interrupt, shutting down...")
 		debug.Exit(b.cliCtx) // Ensure trace and CPU profile data are flushed.
 		go b.Close()
@@ -341,7 +346,14 @@ func (b *BeaconNode) Start() {
 	}()
 
 	// Wait for stop channel to be closed.
-	<-stop
+	<-closeCh
+}
+
+func (b *BeaconNode) Stop() {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	close(b.stopCh)
 }
 
 // Close handles graceful shutdown of the system.
@@ -356,7 +368,7 @@ func (b *BeaconNode) Close() {
 	}
 	b.collector.unregister()
 	b.cancel()
-	close(b.stop)
+	close(b.closeCh)
 }
 
 func (b *BeaconNode) startDB(cliCtx *cli.Context, depositAddress string) error {
@@ -799,6 +811,7 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 
 	maxMsgSize := b.cliCtx.Int(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
 	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
+	enablePverRPCEndpoints := b.cliCtx.Bool(flags.EnablePverRPCEndpoints.Name)
 
 	p2pService := b.fetchP2P()
 	rpcService := rpc.NewService(b.ctx, &rpc.Config{
@@ -844,9 +857,11 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 		OperationNotifier:             b,
 		StateGen:                      b.stateGen,
 		EnableDebugRPCEndpoints:       enableDebugRPCEndpoints,
+		EnablePverRPCEndpoints:        enablePverRPCEndpoints,
 		MaxMsgSize:                    maxMsgSize,
 		ProposerIdsCache:              b.proposerIdsCache,
 		BlockBuilder:                  b.fetchBuilderService(),
+		NodeStop:                      b,
 		Router:                        router,
 		ClockWaiter:                   b.clockWaiter,
 	})
@@ -888,12 +903,13 @@ func (b *BeaconNode) registerGRPCGateway(router *mux.Router) error {
 	gatewayAddress := fmt.Sprintf("%s:%d", gatewayHost, gatewayPort)
 	allowedOrigins := strings.Split(b.cliCtx.String(flags.GPRCGatewayCorsDomain.Name), ",")
 	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
+	enablePverRPCEndpoints := b.cliCtx.Bool(flags.EnablePverRPCEndpoints.Name)
 	selfCert := b.cliCtx.String(flags.CertFlag.Name)
 	maxCallSize := b.cliCtx.Uint64(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
 	httpModules := b.cliCtx.String(flags.HTTPModules.Name)
 	timeout := b.cliCtx.Int(cmd.ApiTimeoutFlag.Name)
 
-	gatewayConfig := gateway.DefaultConfig(enableDebugRPCEndpoints, httpModules)
+	gatewayConfig := gateway.DefaultConfig(enableDebugRPCEndpoints, enablePverRPCEndpoints, httpModules)
 	muxs := make([]*apigateway.PbMux, 0)
 	if gatewayConfig.V1AlphaPbMux != nil {
 		muxs = append(muxs, gatewayConfig.V1AlphaPbMux)
