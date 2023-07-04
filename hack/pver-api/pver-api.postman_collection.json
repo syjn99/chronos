@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "http://localhost:7500/v2/validator/wallet/open-or-create",
+			"name": "http://localhost:7500/v2/validator/wallet/initialize-derived-wallet",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -22,7 +22,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"walletDir\": \"\",\n    \"mnemonicLaunguage\": \"english\",\n    \"password\": \"123qwe!Q\"\n}",
+					"raw": "{\n    \"walletDir\": \"\",\n    \"mnemonicLang\": \"english\",\n    \"password\": \"123qwe!Q\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -30,7 +30,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:7500/v2/validator/wallet/open-or-create",
+					"raw": "http://localhost:7500/v2/validator/wallet/initialize-derived-wallet",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -74,7 +74,7 @@
 			"response": []
 		},
 		{
-			"name": "http://localhost:7500/v2/validator/wallet/accounts/recover",
+			"name": "http://localhost:7500/v2/validator/wallet/accounts/create-accounts",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -90,7 +90,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"numAccounts\": 11,\n    \"password\": \"123qwe!Q\"\n}",
+					"raw": "{\n    \"numAccounts\": 11,\n    \"password\": \"123qwe!Q\",\n  \"withdrawKey\": \"\",\n            \"amountGwei\": \"\"}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -98,7 +98,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:7500/v2/validator/wallet/accounts/recover",
+					"raw": "http://localhost:7500/v2/validator/wallet/accounts/create-accounts",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -110,47 +110,6 @@
 						"wallet",
 						"accounts",
 						"recover"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "http://localhost:7500/v2/validator/accounts/deposit-data",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.IEg3X1vV8AOydDNwykZxirvPhS6K0NUnErWnEc1UvhQ",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"depositMessages\" : [\n        {\n            \"publicKey\": \"\",\n            \"withdrawkey\": \"\",\n            \"amountGwei\": \"\",\n        }\n    ]\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:7500/v2/validator/accounts/deposit-data",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "7500",
-					"path": [
-						"v2",
-						"validator",
-						"accounts",
-						"deposit-data"
 					]
 				}
 			},
