@@ -12,11 +12,13 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Go mod tidy checker
         id: gomodtidy
         uses: ./.github/actions/gomodtidy
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
 
   gosec:
     name: Gosec scan
@@ -25,11 +27,14 @@ jobs:
       GO111MODULE: on
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Go 1.20
-        uses: actions/setup-go@v3
+        uses: actions/checkout@v3
+      - name: Set up Go 1.20.3
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.20.3'
+        id: go
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Run Gosec Security Scanner
         run: | # https://github.com/securego/gosec/issues/469
           export PATH=$PATH:$(go env GOPATH)/bin
@@ -41,37 +46,39 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set up Go 1.20
-        uses: actions/setup-go@v3
+      - name: Set up Go 1.20.3
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
-          id: go
-
+          go-version: '1.20.3'
+          cache: false
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.52.2
+          version: v1.53
           args: --config=.golangci.yml --out-${NO_FUTURE}format colored-line-number
 
   build:
     name: Build
     runs-on: [self-hosted, linux, x64]
     steps:
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+      - name: Set up Go 1.20.3
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.20.3'
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get dependencies
         run: |
           go get -v -t -d ./...
-
+      - name: Build Protocol Buffers
+        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Build
         # Use blst tag to allow go and bazel builds for blst.
         run: go build -v ./...
@@ -84,6 +91,7 @@ jobs:
         env: 
            CGO_CFLAGS: "-O -D__BLST_PORTABLE__"
 
-# Tests run via Bazel for now...
+
+# # Tests run via Bazel for now...
 #      - name: Test
 #        run: go test -v ./...

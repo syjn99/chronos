@@ -22,10 +22,10 @@ profile.grind
 # Nodejs
 node_modules
 yarn-error.log
-.vscode/
+# .vscode/
 
 # Ignore password file
-password.txt
+# password.txt
 
 # Dist files
 dist
@@ -41,3 +41,8 @@ jwt.hex
 
 # manual testing
 tmp
+
+# Ignore generated files
+under/node-*
+under/validator-*
+under/genesis.ssz

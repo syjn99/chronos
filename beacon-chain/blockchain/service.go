@@ -209,12 +209,16 @@ func (s *Service) StartFromSavedState(saved state.BeaconState) error {
 	fRoot := s.ensureRootNotZeros(bytesutil.ToBytes32(finalized.Root))
 	s.cfg.ForkChoiceStore.Lock()
 	defer s.cfg.ForkChoiceStore.Unlock()
-	if err := s.cfg.ForkChoiceStore.UpdateJustifiedCheckpoint(s.ctx, &forkchoicetypes.Checkpoint{Epoch: justified.Epoch,
-		Root: bytesutil.ToBytes32(justified.Root)}); err != nil {
+	if err := s.cfg.ForkChoiceStore.UpdateJustifiedCheckpoint(s.ctx, &forkchoicetypes.Checkpoint{
+		Epoch: justified.Epoch,
+		Root:  bytesutil.ToBytes32(justified.Root),
+	}); err != nil {
 		return errors.Wrap(err, "could not update forkchoice's justified checkpoint")
 	}
-	if err := s.cfg.ForkChoiceStore.UpdateFinalizedCheckpoint(&forkchoicetypes.Checkpoint{Epoch: finalized.Epoch,
-		Root: bytesutil.ToBytes32(finalized.Root)}); err != nil {
+	if err := s.cfg.ForkChoiceStore.UpdateFinalizedCheckpoint(&forkchoicetypes.Checkpoint{
+		Epoch: finalized.Epoch,
+		Root:  bytesutil.ToBytes32(finalized.Root),
+	}); err != nil {
 		return errors.Wrap(err, "could not update forkchoice's finalized checkpoint")
 	}
 	s.cfg.ForkChoiceStore.SetGenesisTime(uint64(s.genesisTime.Unix()))
@@ -377,7 +381,8 @@ func (s *Service) initializeBeaconChain(
 	ctx context.Context,
 	genesisTime time.Time,
 	preGenesisState state.BeaconState,
-	eth1data *ethpb.Eth1Data) (state.BeaconState, error) {
+	eth1data *ethpb.Eth1Data,
+) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "beacon-chain.Service.initializeBeaconChain")
 	defer span.End()
 	s.genesisTime = genesisTime

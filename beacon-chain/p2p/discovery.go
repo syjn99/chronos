@@ -204,6 +204,7 @@ func (s *Service) createListener(
 		}
 		dv5Cfg.Bootnodes = append(dv5Cfg.Bootnodes, bootNode)
 	}
+	log.WithField("Bootnodes", dv5Cfg.Bootnodes).Info("Started with Bootnodes")
 
 	listener, err := discover.ListenV5(conn, localNode, dv5Cfg)
 	if err != nil {
