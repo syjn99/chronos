@@ -46,4 +46,4 @@ tmp
 testnet/*/node-*
 testnet/*/validator-*
 testnet/*/genesis.ssz
-testnet/*/log
+testnet/*/logs
