@@ -17,7 +17,7 @@
                 "--chain-id","813",
                 "--execution-endpoint","http://localhost:8551",
                 "--accept-terms-of-use",
-                "--jwt-secret", "${workspaceFolder}/../kairos/under/node-0/geth/jwtsecret",
+                "--jwt-secret", "${workspaceFolder}/../kairos/testnet/under/node-0/geth/jwtsecret",
                 "--contract-deployment-block", "0",
                 "--p2p-udp-port", "12000",
                 "--p2p-tcp-port", "13000",
@@ -61,7 +61,7 @@
                 "--chain-id","813",
                 "--execution-endpoint","http://localhost:8552",
                 "--accept-terms-of-use",
-                "--jwt-secret", "${workspaceFolder}/../kairos/under/node-1/geth/jwtsecret",
+                "--jwt-secret", "${workspaceFolder}/../kairos/testnet/under/node-1/geth/jwtsecret",
                 "--contract-deployment-block", "0",
                 "--p2p-udp-port", "12001",
                 "--p2p-tcp-port", "13001",
@@ -86,7 +86,7 @@
                 "--output-ssz", "${workspaceFolder}/under/genesis.ssz",
                 "--chain-config-file", "${workspaceFolder}/under/config.yml",
                 "--deposit-json-file", "${workspaceFolder}/under/artifacts/deposits/depositDatas.json",
-                "--geth-genesis-json-in", "${workspaceFolder}/../kairos/under/artifacts/genesis.json",   
+                "--geth-genesis-json-in", "${workspaceFolder}/../kairos/testnet/under/artifacts/genesis.json",   
             ]
         },
         {
