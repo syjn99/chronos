@@ -39,7 +39,7 @@ for i in $(seq 0 1); do
 
     # Add the provided code to the new shell script
     cat << EOF >> "$script_name"
-KAIROS_PATH=$BASEDIR/../../../kairos/under/node-$i/geth
+KAIROS_PATH=$BASEDIR/../../../kairos/testnet/under/node-$i/geth
 echo \$KAIROS_PATH
 
 bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
