@@ -22,7 +22,7 @@ rem Run prysmctl to generate genesis
     testnet generate-genesis ^
     --output-ssz="%BASEDIR%genesis.ssz" ^
     --chain-config-file="%BASEDIR%config.yml" ^
-    --geth-genesis-json-in="%BASEDIR%..\..\kairos_window\under\artifacts\genesis.json" ^
+    --geth-genesis-json-in="%BASEDIR%..\..\..\kairos_window\under\artifacts\genesis.json" ^
     --deposit-json-file="%BASEDIR%artifacts\deposits\deposit_data_under.json" ^
     --num-validators=0 ^
     --execution-endpoint="http://localhost:22000" ^
@@ -42,13 +42,13 @@ for /L %%i in (0,1,1) do (
     set /a "udpport=12000 + %%i"
     set /a "tcpport=13000 + %%i"
     set /a "rpcgatewayport=3500 + %%i"
-    set "kairos_jwt_path=%BASEDIR%..\..\kairos_window\under\node-%%i\geth\jwtsecret"
+    set "kairos_jwt_path=%BASEDIR%..\..\..\kairos_window\under\node-%%i\geth\jwtsecret"
 
 
     (   
         echo @echo off 
         echo SET "BASEDIR=!node_dir!"
-        echo SET "CHRONOS_PATH=%BASEDIR%..\beacon-chain.exe"
+        echo SET "CHRONOS_PATH=%BASEDIR%..\..\beacon-chain.exe"
         echo SET "kairos_jwt_path=!kairos_jwt_path!"
         echo SET "authport=!authport!"
         echo SET "rpcport=!rpcport!"

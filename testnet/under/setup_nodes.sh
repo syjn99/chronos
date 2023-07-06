@@ -9,7 +9,7 @@ rm -rf $BASEDIR/node-*
 bazel run --config=minimal //cmd/prysmctl:prysmctl testnet generate-genesis -- \
     --output-ssz=$BASEDIR/genesis.ssz \
     --chain-config-file=$BASEDIR/config.yml \
-    --geth-genesis-json-in=$BASEDIR/../../kairos/testnet/under/artifacts/genesis.json \
+    --geth-genesis-json-in=$BASEDIR/../../../kairos/testnet/under/artifacts/genesis.json \
     --deposit-json-file=$BASEDIR/artifacts/deposits/deposit_data_under.json \
     --num-validators=0 \
     --execution-endpoint=http://localhost:22000 \
@@ -39,7 +39,7 @@ for i in $(seq 0 1); do
 
     # Add the provided code to the new shell script
     cat << EOF >> "$script_name"
-KAIROS_PATH=$BASEDIR/../../kairos/under/node-$i/geth
+KAIROS_PATH=$BASEDIR/../../../kairos/under/node-$i/geth
 echo \$KAIROS_PATH
 
 bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
