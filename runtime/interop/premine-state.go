@@ -432,20 +432,21 @@ func (s *PremineGenesisConfig) setExecutionPayload(g state.BeaconState) error {
 	switch s.Version {
 	case version.Bellatrix:
 		payload := &enginev1.ExecutionPayload{
-			ParentHash:    gb.ParentHash().Bytes(),
-			FeeRecipient:  gb.Coinbase().Bytes(),
-			StateRoot:     gb.Root().Bytes(),
-			ReceiptsRoot:  gb.ReceiptHash().Bytes(),
-			LogsBloom:     gb.Bloom().Bytes(),
-			PrevRandao:    params.BeaconConfig().ZeroHash[:],
-			BlockNumber:   gb.NumberU64(),
-			GasLimit:      gb.GasLimit(),
-			GasUsed:       gb.GasUsed(),
-			Timestamp:     gb.Time(),
-			ExtraData:     gb.Extra()[:32],
-			BaseFeePerGas: bytesutil.PadTo(bytesutil.ReverseByteOrder(gb.BaseFee().Bytes()), fieldparams.RootLength),
-			BlockHash:     gb.Hash().Bytes(),
-			Transactions:  make([][]byte, 0),
+			ParentHash:     gb.ParentHash().Bytes(),
+			FeeRecipient:   gb.Coinbase().Bytes(),
+			StateRoot:      gb.Root().Bytes(),
+			CheckpointRoot: gb.CheckpointRoot().Bytes(),
+			ReceiptsRoot:   gb.ReceiptHash().Bytes(),
+			LogsBloom:      gb.Bloom().Bytes(),
+			PrevRandao:     params.BeaconConfig().ZeroHash[:],
+			BlockNumber:    gb.NumberU64(),
+			GasLimit:       gb.GasLimit(),
+			GasUsed:        gb.GasUsed(),
+			Timestamp:      gb.Time(),
+			ExtraData:      gb.Extra()[:32],
+			BaseFeePerGas:  bytesutil.PadTo(bytesutil.ReverseByteOrder(gb.BaseFee().Bytes()), fieldparams.RootLength),
+			BlockHash:      gb.Hash().Bytes(),
+			Transactions:   make([][]byte, 0),
 		}
 		wep, err := blocks.WrappedExecutionPayload(payload)
 		if err != nil {
@@ -461,21 +462,22 @@ func (s *PremineGenesisConfig) setExecutionPayload(g state.BeaconState) error {
 		}
 	case version.Capella:
 		payload := &enginev1.ExecutionPayloadCapella{
-			ParentHash:    gb.ParentHash().Bytes(),
-			FeeRecipient:  gb.Coinbase().Bytes(),
-			StateRoot:     gb.Root().Bytes(),
-			ReceiptsRoot:  gb.ReceiptHash().Bytes(),
-			LogsBloom:     gb.Bloom().Bytes(),
-			PrevRandao:    params.BeaconConfig().ZeroHash[:],
-			BlockNumber:   gb.NumberU64(),
-			GasLimit:      gb.GasLimit(),
-			GasUsed:       gb.GasUsed(),
-			Timestamp:     gb.Time(),
-			ExtraData:     gb.Extra()[:32],
-			BaseFeePerGas: bytesutil.PadTo(bytesutil.ReverseByteOrder(gb.BaseFee().Bytes()), fieldparams.RootLength),
-			BlockHash:     gb.Hash().Bytes(),
-			Transactions:  make([][]byte, 0),
-			Withdrawals:   make([]*enginev1.Withdrawal, 0),
+			ParentHash:     gb.ParentHash().Bytes(),
+			FeeRecipient:   gb.Coinbase().Bytes(),
+			StateRoot:      gb.Root().Bytes(),
+			CheckpointRoot: gb.Root().Bytes(),
+			ReceiptsRoot:   gb.ReceiptHash().Bytes(),
+			LogsBloom:      gb.Bloom().Bytes(),
+			PrevRandao:     params.BeaconConfig().ZeroHash[:],
+			BlockNumber:    gb.NumberU64(),
+			GasLimit:       gb.GasLimit(),
+			GasUsed:        gb.GasUsed(),
+			Timestamp:      gb.Time(),
+			ExtraData:      gb.Extra()[:32],
+			BaseFeePerGas:  bytesutil.PadTo(bytesutil.ReverseByteOrder(gb.BaseFee().Bytes()), fieldparams.RootLength),
+			BlockHash:      gb.Hash().Bytes(),
+			Transactions:   make([][]byte, 0),
+			Withdrawals:    make([]*enginev1.Withdrawal, 0),
 		}
 		wep, err := blocks.WrappedExecutionPayloadCapella(payload, 0)
 		if err != nil {

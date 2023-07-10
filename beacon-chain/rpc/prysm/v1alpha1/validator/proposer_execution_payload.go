@@ -173,6 +173,7 @@ func (vs *Server) getExecutionPayload(ctx context.Context, slot primitives.Slot,
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("!!!!!!!!!!!!!!!!!!!! checkpoint root : ", payload.CheckpointRoot(), "!!!!!!!!!!!!!!!!!!!!!!")
 	warnIfFeeRecipientDiffers(payload, feeRecipient)
 	return payload, nil
 }
