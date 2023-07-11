@@ -105,15 +105,12 @@ func ProcessSlot(ctx context.Context, state state.BeaconState) (state.BeaconStat
 
 	prevStateRoot, err := state.HashTreeRoot(ctx)
 	if err != nil {
-		fmt.Println("!!!!!!! 111 !!!!!!!")
-		fmt.Println(err)
 		return nil, err
 	}
 	if err := state.UpdateStateRootAtIndex(
 		uint64(state.Slot()%params.BeaconConfig().SlotsPerHistoricalRoot),
 		prevStateRoot,
 	); err != nil {
-		fmt.Println("!!!!!!! 222 !!!!!!!")
 		return nil, err
 	}
 
@@ -123,14 +120,12 @@ func ProcessSlot(ctx context.Context, state state.BeaconState) (state.BeaconStat
 	if header.StateRoot == nil || bytes.Equal(header.StateRoot, zeroHash[:]) {
 		header.StateRoot = prevStateRoot[:]
 		if err := state.SetLatestBlockHeader(header); err != nil {
-			fmt.Println("!!!!!!! 333 !!!!!!!")
 			return nil, err
 		}
 	}
 	prevBlockRoot, err := state.LatestBlockHeader().HashTreeRoot()
 	if err != nil {
 		tracing.AnnotateError(span, err)
-		fmt.Println("!!!!!!! 444 !!!!!!!")
 		return nil, errors.Wrap(err, "could not determine prev block root")
 	}
 	// Cache the block root.
@@ -138,7 +133,6 @@ func ProcessSlot(ctx context.Context, state state.BeaconState) (state.BeaconStat
 		uint64(state.Slot()%params.BeaconConfig().SlotsPerHistoricalRoot),
 		prevBlockRoot,
 	); err != nil {
-		fmt.Println("!!!!!!! 555 !!!!!!!")
 		return nil, err
 	}
 	return state, nil
