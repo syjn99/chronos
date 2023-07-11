@@ -1022,8 +1022,8 @@ def prysm_deps():
             "//third_party:com_github_ethereum_go_ethereum_secp256k1.patch",
         ],
         replace = "github.com/superblock-dev/kairos",
-        sum = "h1:kXVUI5F07kZkTQgT6fVAGMzyMPzODA52JSIC1q6M374=",
-        version = "v0.0.0-20230710093553-87e0a3bc0f1f",
+        sum = "h1:c6WZ2DQXL5FUFhc1vkHk3A9LCJrFnmKf+zu5gbxBI7c=",
+        version = "v0.0.0-20230711074154-2118368d80a5",
     )
 
     go_repository(
@@ -1061,8 +1061,8 @@ def prysm_deps():
     go_repository(
         name = "com_github_fjl_gencodec",
         importpath = "github.com/fjl/gencodec",
-        sum = "h1:CndMRAH4JIwxbW8KYq6Q+cGWcGHz0FjGR3QqcInWcW0=",
-        version = "v0.0.0-20220412091415-8bb9e558978c",
+        sum = "h1:bBLctRc7kr01YGvaDfgLbTwjFNW5jdp5y5rj8XXBHfY=",
+        version = "v0.0.0-20230517082657-f9840df7b83e",
     )
 
     go_repository(
