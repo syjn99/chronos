@@ -198,20 +198,21 @@ func (w *Withdrawal) UnmarshalJSON(enc []byte) error {
 }
 
 type executionPayloadJSON struct {
-	ParentHash    *common.Hash    `json:"parentHash"`
-	FeeRecipient  *common.Address `json:"feeRecipient"`
-	StateRoot     *common.Hash    `json:"stateRoot"`
-	ReceiptsRoot  *common.Hash    `json:"receiptsRoot"`
-	LogsBloom     *hexutil.Bytes  `json:"logsBloom"`
-	PrevRandao    *common.Hash    `json:"prevRandao"`
-	BlockNumber   *hexutil.Uint64 `json:"blockNumber"`
-	GasLimit      *hexutil.Uint64 `json:"gasLimit"`
-	GasUsed       *hexutil.Uint64 `json:"gasUsed"`
-	Timestamp     *hexutil.Uint64 `json:"timestamp"`
-	ExtraData     hexutil.Bytes   `json:"extraData"`
-	BaseFeePerGas string          `json:"baseFeePerGas"`
-	BlockHash     *common.Hash    `json:"blockHash"`
-	Transactions  []hexutil.Bytes `json:"transactions"`
+	ParentHash     *common.Hash    `json:"parentHash"`
+	FeeRecipient   *common.Address `json:"feeRecipient"`
+	StateRoot      *common.Hash    `json:"stateRoot"`
+	CheckpointRoot *common.Hash    `json:"checkpointRoot"`
+	ReceiptsRoot   *common.Hash    `json:"receiptsRoot"`
+	LogsBloom      *hexutil.Bytes  `json:"logsBloom"`
+	PrevRandao     *common.Hash    `json:"prevRandao"`
+	BlockNumber    *hexutil.Uint64 `json:"blockNumber"`
+	GasLimit       *hexutil.Uint64 `json:"gasLimit"`
+	GasUsed        *hexutil.Uint64 `json:"gasUsed"`
+	Timestamp      *hexutil.Uint64 `json:"timestamp"`
+	ExtraData      hexutil.Bytes   `json:"extraData"`
+	BaseFeePerGas  string          `json:"baseFeePerGas"`
+	BlockHash      *common.Hash    `json:"blockHash"`
+	Transactions   []hexutil.Bytes `json:"transactions"`
 }
 
 type GetPayloadV2ResponseJson struct {
@@ -220,21 +221,22 @@ type GetPayloadV2ResponseJson struct {
 }
 
 type ExecutionPayloadCapellaJSON struct {
-	ParentHash    *common.Hash    `json:"parentHash"`
-	FeeRecipient  *common.Address `json:"feeRecipient"`
-	StateRoot     *common.Hash    `json:"stateRoot"`
-	ReceiptsRoot  *common.Hash    `json:"receiptsRoot"`
-	LogsBloom     *hexutil.Bytes  `json:"logsBloom"`
-	PrevRandao    *common.Hash    `json:"prevRandao"`
-	BlockNumber   *hexutil.Uint64 `json:"blockNumber"`
-	GasLimit      *hexutil.Uint64 `json:"gasLimit"`
-	GasUsed       *hexutil.Uint64 `json:"gasUsed"`
-	Timestamp     *hexutil.Uint64 `json:"timestamp"`
-	ExtraData     hexutil.Bytes   `json:"extraData"`
-	BaseFeePerGas string          `json:"baseFeePerGas"`
-	BlockHash     *common.Hash    `json:"blockHash"`
-	Transactions  []hexutil.Bytes `json:"transactions"`
-	Withdrawals   []*Withdrawal   `json:"withdrawals"`
+	ParentHash     *common.Hash    `json:"parentHash"`
+	FeeRecipient   *common.Address `json:"feeRecipient"`
+	StateRoot      *common.Hash    `json:"stateRoot"`
+	CheckpointRoot *common.Hash    `json:"checkpointRoot"`
+	ReceiptsRoot   *common.Hash    `json:"receiptsRoot"`
+	LogsBloom      *hexutil.Bytes  `json:"logsBloom"`
+	PrevRandao     *common.Hash    `json:"prevRandao"`
+	BlockNumber    *hexutil.Uint64 `json:"blockNumber"`
+	GasLimit       *hexutil.Uint64 `json:"gasLimit"`
+	GasUsed        *hexutil.Uint64 `json:"gasUsed"`
+	Timestamp      *hexutil.Uint64 `json:"timestamp"`
+	ExtraData      hexutil.Bytes   `json:"extraData"`
+	BaseFeePerGas  string          `json:"baseFeePerGas"`
+	BlockHash      *common.Hash    `json:"blockHash"`
+	Transactions   []hexutil.Bytes `json:"transactions"`
+	Withdrawals    []*Withdrawal   `json:"withdrawals"`
 }
 
 // MarshalJSON --
@@ -247,6 +249,7 @@ func (e *ExecutionPayload) MarshalJSON() ([]byte, error) {
 	baseFeeHex := hexutil.EncodeBig(baseFee)
 	pHash := common.BytesToHash(e.ParentHash)
 	sRoot := common.BytesToHash(e.StateRoot)
+	cRoot := common.BytesToHash(e.CheckpointRoot)
 	recRoot := common.BytesToHash(e.ReceiptsRoot)
 	prevRan := common.BytesToHash(e.PrevRandao)
 	bHash := common.BytesToHash(e.BlockHash)
@@ -257,20 +260,21 @@ func (e *ExecutionPayload) MarshalJSON() ([]byte, error) {
 	recipient := common.BytesToAddress(e.FeeRecipient)
 	logsBloom := hexutil.Bytes(e.LogsBloom)
 	return json.Marshal(executionPayloadJSON{
-		ParentHash:    &pHash,
-		FeeRecipient:  &recipient,
-		StateRoot:     &sRoot,
-		ReceiptsRoot:  &recRoot,
-		LogsBloom:     &logsBloom,
-		PrevRandao:    &prevRan,
-		BlockNumber:   &blockNum,
-		GasLimit:      &gasLimit,
-		GasUsed:       &gasUsed,
-		Timestamp:     &timeStamp,
-		ExtraData:     e.ExtraData,
-		BaseFeePerGas: baseFeeHex,
-		BlockHash:     &bHash,
-		Transactions:  transactions,
+		ParentHash:     &pHash,
+		FeeRecipient:   &recipient,
+		StateRoot:      &sRoot,
+		CheckpointRoot: &cRoot,
+		ReceiptsRoot:   &recRoot,
+		LogsBloom:      &logsBloom,
+		PrevRandao:     &prevRan,
+		BlockNumber:    &blockNum,
+		GasLimit:       &gasLimit,
+		GasUsed:        &gasUsed,
+		Timestamp:      &timeStamp,
+		ExtraData:      e.ExtraData,
+		BaseFeePerGas:  baseFeeHex,
+		BlockHash:      &bHash,
+		Transactions:   transactions,
 	})
 }
 
@@ -284,6 +288,7 @@ func (e *ExecutionPayloadCapella) MarshalJSON() ([]byte, error) {
 	baseFeeHex := hexutil.EncodeBig(baseFee)
 	pHash := common.BytesToHash(e.ParentHash)
 	sRoot := common.BytesToHash(e.StateRoot)
+	cRoot := common.BytesToHash(e.CheckpointRoot)
 	recRoot := common.BytesToHash(e.ReceiptsRoot)
 	prevRan := common.BytesToHash(e.PrevRandao)
 	bHash := common.BytesToHash(e.BlockHash)
@@ -297,21 +302,22 @@ func (e *ExecutionPayloadCapella) MarshalJSON() ([]byte, error) {
 		e.Withdrawals = make([]*Withdrawal, 0)
 	}
 	return json.Marshal(ExecutionPayloadCapellaJSON{
-		ParentHash:    &pHash,
-		FeeRecipient:  &recipient,
-		StateRoot:     &sRoot,
-		ReceiptsRoot:  &recRoot,
-		LogsBloom:     &logsBloom,
-		PrevRandao:    &prevRan,
-		BlockNumber:   &blockNum,
-		GasLimit:      &gasLimit,
-		GasUsed:       &gasUsed,
-		Timestamp:     &timeStamp,
-		ExtraData:     e.ExtraData,
-		BaseFeePerGas: baseFeeHex,
-		BlockHash:     &bHash,
-		Transactions:  transactions,
-		Withdrawals:   e.Withdrawals,
+		ParentHash:     &pHash,
+		FeeRecipient:   &recipient,
+		StateRoot:      &sRoot,
+		CheckpointRoot: &cRoot,
+		ReceiptsRoot:   &recRoot,
+		LogsBloom:      &logsBloom,
+		PrevRandao:     &prevRan,
+		BlockNumber:    &blockNum,
+		GasLimit:       &gasLimit,
+		GasUsed:        &gasUsed,
+		Timestamp:      &timeStamp,
+		ExtraData:      e.ExtraData,
+		BaseFeePerGas:  baseFeeHex,
+		BlockHash:      &bHash,
+		Transactions:   transactions,
+		Withdrawals:    e.Withdrawals,
 	})
 }
 
@@ -330,6 +336,9 @@ func (e *ExecutionPayload) UnmarshalJSON(enc []byte) error {
 	}
 	if dec.StateRoot == nil {
 		return errors.New("missing required field 'stateRoot' for ExecutionPayload")
+	}
+	if dec.CheckpointRoot == nil {
+		return errors.New("missing required field 'checkpointRoot' for ExecutionPayload")
 	}
 	if dec.ReceiptsRoot == nil {
 		return errors.New("missing required field 'receiptsRoot' for ExecutableDataV1")
@@ -366,6 +375,7 @@ func (e *ExecutionPayload) UnmarshalJSON(enc []byte) error {
 	e.ParentHash = dec.ParentHash.Bytes()
 	e.FeeRecipient = dec.FeeRecipient.Bytes()
 	e.StateRoot = dec.StateRoot.Bytes()
+	e.CheckpointRoot = dec.CheckpointRoot.Bytes()
 	e.ReceiptsRoot = dec.ReceiptsRoot.Bytes()
 	e.LogsBloom = *dec.LogsBloom
 	e.PrevRandao = dec.PrevRandao.Bytes()
@@ -404,6 +414,9 @@ func (e *ExecutionPayloadCapellaWithValue) UnmarshalJSON(enc []byte) error {
 	if dec.ExecutionPayload.StateRoot == nil {
 		return errors.New("missing required field 'stateRoot' for ExecutionPayload")
 	}
+	if dec.ExecutionPayload.CheckpointRoot == nil {
+		return errors.New("missing required field 'checkpointRoot' for ExecutionPayload")
+	}
 	if dec.ExecutionPayload.ReceiptsRoot == nil {
 		return errors.New("missing required field 'receiptsRoot' for ExecutableDataV1")
 	}
@@ -439,6 +452,7 @@ func (e *ExecutionPayloadCapellaWithValue) UnmarshalJSON(enc []byte) error {
 	e.Payload.ParentHash = dec.ExecutionPayload.ParentHash.Bytes()
 	e.Payload.FeeRecipient = dec.ExecutionPayload.FeeRecipient.Bytes()
 	e.Payload.StateRoot = dec.ExecutionPayload.StateRoot.Bytes()
+	e.Payload.CheckpointRoot = dec.ExecutionPayload.CheckpointRoot.Bytes()
 	e.Payload.ReceiptsRoot = dec.ExecutionPayload.ReceiptsRoot.Bytes()
 	e.Payload.LogsBloom = *dec.ExecutionPayload.LogsBloom
 	e.Payload.PrevRandao = dec.ExecutionPayload.PrevRandao.Bytes()

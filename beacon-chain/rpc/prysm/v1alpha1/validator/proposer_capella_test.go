@@ -92,6 +92,7 @@ func TestServer_unblindBuilderCapellaBlock(t *testing.T) {
 					ParentHash:       make([]byte, fieldparams.RootLength),
 					FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 					StateRoot:        make([]byte, fieldparams.RootLength),
+					CheckpointRoot:   make([]byte, fieldparams.RootLength),
 					ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 					LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 					PrevRandao:       make([]byte, fieldparams.RootLength),

@@ -629,6 +629,7 @@ func executableDataToBlock(params engine.ExecutableData) (*gethTypes.Block, erro
 		UncleHash:       gethTypes.EmptyUncleHash,
 		Coinbase:        params.FeeRecipient,
 		Root:            params.StateRoot,
+		CheckpointRoot:  params.CheckpointRoot,
 		TxHash:          gethTypes.DeriveSha(gethTypes.Transactions(txs), trie.NewStackTrie(nil)),
 		ReceiptHash:     params.ReceiptsRoot,
 		Bloom:           gethTypes.BytesToBloom(params.LogsBloom),
@@ -647,7 +648,7 @@ func executableDataToBlock(params engine.ExecutableData) (*gethTypes.Block, erro
 }
 
 func decodeTransactions(enc [][]byte) ([]*gethTypes.Transaction, error) {
-	var txs = make([]*gethTypes.Transaction, len(enc))
+	txs := make([]*gethTypes.Transaction, len(enc))
 	for i, encTx := range enc {
 		var tx gethTypes.Transaction
 		if err := tx.UnmarshalBinary(encTx); err != nil {

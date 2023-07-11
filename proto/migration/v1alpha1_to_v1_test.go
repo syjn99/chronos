@@ -39,6 +39,7 @@ var (
 	selectionProof   = bytesutil.PadTo([]byte("selectionproof"), 96)
 	parentHash       = bytesutil.PadTo([]byte("parenthash"), 32)
 	feeRecipient     = bytesutil.PadTo([]byte("feerecipient"), 20)
+	checkpointRoot   = bytesutil.PadTo([]byte("checkpointroot"), 32)
 	receiptsRoot     = bytesutil.PadTo([]byte("receiptsroot"), 32)
 	logsBloom        = bytesutil.PadTo([]byte("logsbloom"), 256)
 	prevRandao       = bytesutil.PadTo([]byte("prevrandao"), 32)
@@ -452,6 +453,7 @@ func Test_V1AttestationToV1Alpha1(t *testing.T) {
 	require.NoError(t, err)
 	assert.DeepEqual(t, v1Root, v1Alpha1Root)
 }
+
 func TestBeaconStateToProto(t *testing.T) {
 	source, err := util.NewBeaconState(util.FillRootsNaturalOpt, func(state *ethpbalpha.BeaconState) error {
 		state.GenesisTime = 1

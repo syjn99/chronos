@@ -196,8 +196,10 @@ func TestServer_GetBeaconBlock_Bellatrix(t *testing.T) {
 	ctx := context.Background()
 	hook := logTest.NewGlobal()
 
-	terminalBlockHash := bytesutil.PadTo([]byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, 32)
+	terminalBlockHash := bytesutil.PadTo([]byte{
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+	}, 32)
 	params.SetupTestConfigCleanup(t)
 	cfg := params.BeaconConfig().Copy()
 	cfg.BellatrixForkEpoch = 2
@@ -233,14 +235,15 @@ func TestServer_GetBeaconBlock_Bellatrix(t *testing.T) {
 				Eth1Data:      genesis.Block.Body.Eth1Data,
 				SyncAggregate: &ethpb.SyncAggregate{SyncCommitteeBits: scBits[:], SyncCommitteeSignature: make([]byte, 96)},
 				ExecutionPayload: &enginev1.ExecutionPayload{
-					ParentHash:    make([]byte, fieldparams.RootLength),
-					FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-					StateRoot:     make([]byte, fieldparams.RootLength),
-					ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-					LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-					PrevRandao:    make([]byte, fieldparams.RootLength),
-					BaseFeePerGas: make([]byte, fieldparams.RootLength),
-					BlockHash:     make([]byte, fieldparams.RootLength),
+					ParentHash:     make([]byte, fieldparams.RootLength),
+					FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+					StateRoot:      make([]byte, fieldparams.RootLength),
+					CheckpointRoot: make([]byte, fieldparams.RootLength),
+					ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+					LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+					PrevRandao:     make([]byte, fieldparams.RootLength),
+					BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+					BlockHash:      make([]byte, fieldparams.RootLength),
 				},
 			},
 		},
@@ -261,20 +264,21 @@ func TestServer_GetBeaconBlock_Bellatrix(t *testing.T) {
 	require.NoError(t, err)
 
 	payload := &enginev1.ExecutionPayload{
-		ParentHash:    make([]byte, fieldparams.RootLength),
-		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:     make([]byte, fieldparams.RootLength),
-		ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-		LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-		PrevRandao:    random,
-		BaseFeePerGas: make([]byte, fieldparams.RootLength),
-		BlockHash:     make([]byte, fieldparams.RootLength),
-		Transactions:  make([][]byte, 0),
-		ExtraData:     make([]byte, 0),
-		BlockNumber:   1,
-		GasLimit:      2,
-		GasUsed:       3,
-		Timestamp:     uint64(timeStamp.Unix()),
+		ParentHash:     make([]byte, fieldparams.RootLength),
+		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:      make([]byte, fieldparams.RootLength),
+		CheckpointRoot: make([]byte, fieldparams.RootLength),
+		ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+		LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+		PrevRandao:     random,
+		BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+		BlockHash:      make([]byte, fieldparams.RootLength),
+		Transactions:   make([][]byte, 0),
+		ExtraData:      make([]byte, 0),
+		BlockNumber:    1,
+		GasLimit:       2,
+		GasUsed:        3,
+		Timestamp:      uint64(timeStamp.Unix()),
 	}
 
 	proposerServer := getProposerServer(db, beaconState, parentRoot[:])
@@ -358,14 +362,15 @@ func TestServer_GetBeaconBlock_Capella(t *testing.T) {
 				Eth1Data:      genesis.Block.Body.Eth1Data,
 				SyncAggregate: &ethpb.SyncAggregate{SyncCommitteeBits: scBits[:], SyncCommitteeSignature: make([]byte, 96)},
 				ExecutionPayload: &enginev1.ExecutionPayloadCapella{
-					ParentHash:    make([]byte, fieldparams.RootLength),
-					FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-					StateRoot:     make([]byte, fieldparams.RootLength),
-					ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-					LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-					PrevRandao:    make([]byte, fieldparams.RootLength),
-					BaseFeePerGas: make([]byte, fieldparams.RootLength),
-					BlockHash:     make([]byte, fieldparams.RootLength),
+					ParentHash:     make([]byte, fieldparams.RootLength),
+					FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+					StateRoot:      make([]byte, fieldparams.RootLength),
+					CheckpointRoot: make([]byte, fieldparams.RootLength),
+					ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+					LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+					PrevRandao:     make([]byte, fieldparams.RootLength),
+					BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+					BlockHash:      make([]byte, fieldparams.RootLength),
 				},
 			},
 		},
@@ -383,20 +388,21 @@ func TestServer_GetBeaconBlock_Capella(t *testing.T) {
 	timeStamp, err := slots.ToTime(beaconState.GenesisTime(), capellaSlot+1)
 	require.NoError(t, err)
 	payload := &enginev1.ExecutionPayloadCapella{
-		ParentHash:    make([]byte, fieldparams.RootLength),
-		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:     make([]byte, fieldparams.RootLength),
-		ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-		LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-		PrevRandao:    random,
-		BaseFeePerGas: make([]byte, fieldparams.RootLength),
-		BlockHash:     make([]byte, fieldparams.RootLength),
-		Transactions:  make([][]byte, 0),
-		ExtraData:     make([]byte, 0),
-		BlockNumber:   1,
-		GasLimit:      2,
-		GasUsed:       3,
-		Timestamp:     uint64(timeStamp.Unix()),
+		ParentHash:     make([]byte, fieldparams.RootLength),
+		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:      make([]byte, fieldparams.RootLength),
+		CheckpointRoot: make([]byte, fieldparams.RootLength),
+		ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+		LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+		PrevRandao:     random,
+		BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+		BlockHash:      make([]byte, fieldparams.RootLength),
+		Transactions:   make([][]byte, 0),
+		ExtraData:      make([]byte, 0),
+		BlockNumber:    1,
+		GasLimit:       2,
+		GasUsed:        3,
+		Timestamp:      uint64(timeStamp.Unix()),
 	}
 
 	proposerServer := getProposerServer(db, beaconState, parentRoot[:])
@@ -445,7 +451,8 @@ func TestServer_GetBeaconBlock_Optimistic(t *testing.T) {
 		SyncChecker:           &mockSync.Sync{},
 		ForkFetcher:           mockChainService,
 		ForkchoiceFetcher:     mockChainService,
-		TimeFetcher:           &mock.ChainService{}}
+		TimeFetcher:           &mock.ChainService{},
+	}
 	req := &ethpb.BlockRequest{
 		Slot: bellatrixSlot + 1,
 	}
@@ -736,7 +743,8 @@ func TestProposer_PendingDeposits_OutsideEth1FollowWindow(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           1,
@@ -746,7 +754,8 @@ func TestProposer_PendingDeposits_OutsideEth1FollowWindow(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -759,7 +768,8 @@ func TestProposer_PendingDeposits_OutsideEth1FollowWindow(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("c"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           3,
@@ -769,7 +779,8 @@ func TestProposer_PendingDeposits_OutsideEth1FollowWindow(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("d"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -875,7 +886,8 @@ func TestProposer_PendingDeposits_FollowsCorrectEth1Block(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           1,
@@ -885,7 +897,8 @@ func TestProposer_PendingDeposits_FollowsCorrectEth1Block(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -898,7 +911,8 @@ func TestProposer_PendingDeposits_FollowsCorrectEth1Block(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("c"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           3,
@@ -908,7 +922,8 @@ func TestProposer_PendingDeposits_FollowsCorrectEth1Block(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("d"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -989,7 +1004,8 @@ func TestProposer_PendingDeposits_CantReturnBelowStateEth1DepositIndex(t *testin
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index: 1,
@@ -998,7 +1014,8 @@ func TestProposer_PendingDeposits_CantReturnBelowStateEth1DepositIndex(t *testin
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1011,7 +1028,8 @@ func TestProposer_PendingDeposits_CantReturnBelowStateEth1DepositIndex(t *testin
 					PublicKey:             bytesutil.PadTo([]byte{byte(i)}, 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		})
 	}
 	depositTrie, err := trie.NewTrie(params.BeaconConfig().DepositContractTreeDepth)
@@ -1089,7 +1107,8 @@ func TestProposer_PendingDeposits_CantReturnMoreThanMax(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index: 1,
@@ -1098,7 +1117,8 @@ func TestProposer_PendingDeposits_CantReturnMoreThanMax(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1111,7 +1131,8 @@ func TestProposer_PendingDeposits_CantReturnMoreThanMax(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte{byte(i)}, 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		})
 	}
 	depositTrie, err := trie.NewTrie(params.BeaconConfig().DepositContractTreeDepth)
@@ -1187,7 +1208,8 @@ func TestProposer_PendingDeposits_CantReturnMoreThanDepositCount(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index: 1,
@@ -1196,7 +1218,8 @@ func TestProposer_PendingDeposits_CantReturnMoreThanDepositCount(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1209,7 +1232,8 @@ func TestProposer_PendingDeposits_CantReturnMoreThanDepositCount(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte{byte(i)}, 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		})
 	}
 	depositTrie, err := trie.NewTrie(params.BeaconConfig().DepositContractTreeDepth)
@@ -1289,7 +1313,8 @@ func TestProposer_DepositTrie_UtilizesCachedFinalizedDeposits(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           1,
@@ -1299,7 +1324,8 @@ func TestProposer_DepositTrie_UtilizesCachedFinalizedDeposits(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1312,7 +1338,8 @@ func TestProposer_DepositTrie_UtilizesCachedFinalizedDeposits(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("c"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           3,
@@ -1322,7 +1349,8 @@ func TestProposer_DepositTrie_UtilizesCachedFinalizedDeposits(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("d"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1405,7 +1433,8 @@ func TestProposer_DepositTrie_RebuildTrie(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           1,
@@ -1415,7 +1444,8 @@ func TestProposer_DepositTrie_RebuildTrie(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1428,7 +1458,8 @@ func TestProposer_DepositTrie_RebuildTrie(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("c"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index:           3,
@@ -1438,7 +1469,8 @@ func TestProposer_DepositTrie_RebuildTrie(t *testing.T) {
 					PublicKey:             bytesutil.PadTo([]byte("d"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -1493,7 +1525,6 @@ func TestProposer_DepositTrie_RebuildTrie(t *testing.T) {
 	actualRoot, err := dt.HashTreeRoot()
 	require.NoError(t, err)
 	assert.Equal(t, expectedRoot, actualRoot, "Incorrect deposit trie root")
-
 }
 
 func TestProposer_ValidateDepositTrie(t *testing.T) {
@@ -1620,7 +1651,8 @@ func TestProposer_Eth1Data_MajorityVote(t *testing.T) {
 				PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 				Signature:             make([]byte, 96),
 				WithdrawalCredentials: make([]byte, 32),
-			}},
+			},
+		},
 	}
 	depositTrie, err := trie.NewTrie(params.BeaconConfig().DepositContractTreeDepth)
 	require.NoError(t, err)
@@ -1923,7 +1955,8 @@ func TestProposer_Eth1Data_MajorityVote(t *testing.T) {
 
 		beaconState, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
 			Slot:          slot,
-			Eth1DataVotes: []*ethpb.Eth1Data{}})
+			Eth1DataVotes: []*ethpb.Eth1Data{},
+		})
 		require.NoError(t, err)
 
 		ps := &Server{
@@ -2292,7 +2325,8 @@ func TestProposer_Deposits_ReturnsEmptyList_IfLatestEth1DataEqGenesisEth1Block(t
 					PublicKey:             bytesutil.PadTo([]byte("a"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 		{
 			Index: 1,
@@ -2301,7 +2335,8 @@ func TestProposer_Deposits_ReturnsEmptyList_IfLatestEth1DataEqGenesisEth1Block(t
 					PublicKey:             bytesutil.PadTo([]byte("b"), 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		},
 	}
 
@@ -2314,7 +2349,8 @@ func TestProposer_Deposits_ReturnsEmptyList_IfLatestEth1DataEqGenesisEth1Block(t
 					PublicKey:             bytesutil.PadTo([]byte{byte(i)}, 48),
 					Signature:             mockSig[:],
 					WithdrawalCredentials: mockCreds[:],
-				}},
+				},
+			},
 		})
 	}
 	depositTrie, err := trie.NewTrie(params.BeaconConfig().DepositContractTreeDepth)
@@ -2364,10 +2400,12 @@ func TestProposer_DeleteAttsInPool_Aggregated(t *testing.T) {
 	sig := priv.Sign([]byte("foo")).Marshal()
 	aggregatedAtts := []*ethpb.Attestation{
 		util.HydrateAttestation(&ethpb.Attestation{Data: &ethpb.AttestationData{Slot: 1}, AggregationBits: bitfield.Bitlist{0b10101}, Signature: sig}),
-		util.HydrateAttestation(&ethpb.Attestation{Data: &ethpb.AttestationData{Slot: 1}, AggregationBits: bitfield.Bitlist{0b11010}, Signature: sig})}
+		util.HydrateAttestation(&ethpb.Attestation{Data: &ethpb.AttestationData{Slot: 1}, AggregationBits: bitfield.Bitlist{0b11010}, Signature: sig}),
+	}
 	unaggregatedAtts := []*ethpb.Attestation{
 		util.HydrateAttestation(&ethpb.Attestation{Data: &ethpb.AttestationData{Slot: 1}, AggregationBits: bitfield.Bitlist{0b10010}, Signature: sig}),
-		util.HydrateAttestation(&ethpb.Attestation{Data: &ethpb.AttestationData{Slot: 1}, AggregationBits: bitfield.Bitlist{0b10100}, Signature: sig})}
+		util.HydrateAttestation(&ethpb.Attestation{Data: &ethpb.AttestationData{Slot: 1}, AggregationBits: bitfield.Bitlist{0b10100}, Signature: sig}),
+	}
 
 	require.NoError(t, s.AttPool.SaveAggregatedAttestations(aggregatedAtts))
 	require.NoError(t, s.AttPool.SaveUnaggregatedAttestations(unaggregatedAtts))
@@ -2476,7 +2514,6 @@ func TestProposer_PrepareBeaconProposer(t *testing.T) {
 			address, err := proposerServer.BeaconDB.FeeRecipientByValidatorID(ctx, 1)
 			require.NoError(t, err)
 			require.Equal(t, common.BytesToAddress(tt.args.request.Recipients[0].FeeRecipient), address)
-
 		})
 	}
 }

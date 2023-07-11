@@ -414,6 +414,7 @@ func executionPayloadHeader() *enginev1.ExecutionPayloadHeader {
 	ph := bytesutil.ToBytes32([]byte("parent"))
 	fr := bytesutil.PadTo([]byte("fee"), 20)
 	sr := bytesutil.ToBytes32([]byte("state"))
+	cr := bytesutil.ToBytes32([]byte("checkpoint"))
 	rr := bytesutil.ToBytes32([]byte("receipts"))
 	lb := bytesutil.PadTo([]byte("logs"), 256)
 	pr := bytesutil.ToBytes32([]byte("prev"))
@@ -425,6 +426,7 @@ func executionPayloadHeader() *enginev1.ExecutionPayloadHeader {
 		ParentHash:       ph[:],
 		FeeRecipient:     fr,
 		StateRoot:        sr[:],
+		CheckpointRoot:   cr[:],
 		ReceiptsRoot:     rr[:],
 		LogsBloom:        lb,
 		PrevRandao:       pr[:],
@@ -443,6 +445,7 @@ func executionPayloadHeaderCapella() *enginev1.ExecutionPayloadHeaderCapella {
 	ph := bytesutil.ToBytes32([]byte("parent"))
 	fr := bytesutil.PadTo([]byte("fee"), 20)
 	sr := bytesutil.ToBytes32([]byte("state"))
+	cr := bytesutil.ToBytes32([]byte("checkpoint"))
 	rr := bytesutil.ToBytes32([]byte("receipts"))
 	lb := bytesutil.PadTo([]byte("logs"), 256)
 	pr := bytesutil.ToBytes32([]byte("prev"))
@@ -455,6 +458,7 @@ func executionPayloadHeaderCapella() *enginev1.ExecutionPayloadHeaderCapella {
 		ParentHash:       ph[:],
 		FeeRecipient:     fr,
 		StateRoot:        sr[:],
+		CheckpointRoot:   cr[:],
 		ReceiptsRoot:     rr[:],
 		LogsBloom:        lb,
 		PrevRandao:       pr[:],
