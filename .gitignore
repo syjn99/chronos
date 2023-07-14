@@ -43,6 +43,7 @@ jwt.hex
 tmp
 
 # Ignore generated files
-under/node-*
-under/validator-*
-under/genesis.ssz
+testnet/*/node-*
+testnet/*/validator-*
+testnet/*/genesis.ssz
+testnet/*/logs
