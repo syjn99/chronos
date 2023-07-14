@@ -38,7 +38,7 @@ var mainnetNetworkConfig = &NetworkConfig{
 	MaximumGossipClockDisparity:     500 * time.Millisecond,
 	MessageDomainInvalidSnappy:      [4]byte{00, 00, 00, 00},
 	MessageDomainValidSnappy:        [4]byte{01, 00, 00, 00},
-	ETH2Key:                         "eth2",
+	ETH2Key:                         "over",
 	AttSubnetKey:                    "attnets",
 	SyncCommsSubnetKey:              "syncnets",
 	MinimumPeersInSubnetSearch:      20,
@@ -64,7 +64,7 @@ var mainnetNetworkConfig = &NetworkConfig{
 		// "enr:-LK4QKWrXTpV9T78hNG6s8AM6IO4XH9kFT91uZtFg1GcsJ6dKovDOr1jtAAFPnS2lvNltkOGA9k29BUN7lFh_sjuc9QBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhANAdd-Jc2VjcDI1NmsxoQLQa6ai7y9PMN5hpLe5HmiJSlYzMuzP7ZhwRiwHvqNXdoN0Y3CCI4yDdWRwgiOM",
 
 		// Under Devnet Bootnode
-		"enr:-JG4QOKGHuMxSRC2p7Br4cy-2TtPgsixQRoHeuO28K1wqbf7UCBwcjbReZQ3SrXqcwYhezJRUOF2_rdPX2_8p8v8j3aGAYkFzUuogmlkgnY0gmlwhAMk-caJc2VjcDI1NmsxoQO9Ml07M1f1OIotRTv6PsCMA6IkjStrY0Q6cX5odCWZBYN0Y3CCMsiDdWRwgi7g",
+		"enr:-MK4QAyA5sVdEIquksykdH07kUGAAw40mqe7tIoGUVVxx0kCd2TOmoa_dWKUucfpBrYfDKCbfS6UXOwQ2XHb0lMMvjqGAYkkvmrch2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEAyT5xoRvdmVykIDJGRQgAACS_v________-Jc2VjcDI1NmsxoQO9Ml07M1f1OIotRTv6PsCMA6IkjStrY0Q6cX5odCWZBYhzeW5jbmV0cwCDdGNwgjLIg3VkcIIu4A", // AWS ConDevNet Step2 Bootnode 1
 	},
 }
 

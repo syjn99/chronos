@@ -29,23 +29,23 @@ func UnderDevnetSpecConfig() *BeaconChainConfig {
 	underConfig.EffectiveBalanceIncrement = 1e9
 
 	// Initial values
-	underConfig.BLSWithdrawalPrefixByte = byte(0)
-	underConfig.ETH1AddressWithdrawalPrefixByte = byte(1)
+	// underConfig.BLSWithdrawalPrefixByte = byte(0)
+	// underConfig.ETH1AddressWithdrawalPrefixByte = byte(1)
 
 	// Time parameters
-	underConfig.SecondsPerSlot = 5
-	underConfig.MinAttestationInclusionDelay = 1
-	underConfig.SlotsPerEpoch = 8
-	underConfig.SqrRootSlotsPerEpoch = 2
-	underConfig.MinSeedLookahead = 1
-	underConfig.MaxSeedLookahead = 4
-	underConfig.EpochsPerEth1VotingPeriod = 4
-	underConfig.SlotsPerHistoricalRoot = 64
-	underConfig.MinValidatorWithdrawabilityDelay = 256
-	underConfig.ShardCommitteePeriod = 64
-	underConfig.MinEpochsToInactivityPenalty = 4
-	underConfig.Eth1FollowDistance = 16
-	underConfig.SecondsPerETH1Block = 5
+	// underConfig.SecondsPerSlot = 5
+	// underConfig.MinAttestationInclusionDelay = 1
+	// underConfig.SlotsPerEpoch = 8
+	// underConfig.SqrRootSlotsPerEpoch = 2
+	// underConfig.MinSeedLookahead = 1
+	// underConfig.MaxSeedLookahead = 4
+	// underConfig.EpochsPerEth1VotingPeriod = 4
+	// underConfig.SlotsPerHistoricalRoot = 64
+	// underConfig.MinValidatorWithdrawabilityDelay = 256
+	// underConfig.ShardCommitteePeriod = 64
+	// underConfig.MinEpochsToInactivityPenalty = 4
+	// underConfig.Eth1FollowDistance = 16
+	// underConfig.SecondsPerETH1Block = 5
 
 	// State vector lengths
 	// underConfig.EpochsPerHistoricalVector = 64
@@ -94,9 +94,9 @@ func UnderDevnetSpecConfig() *BeaconChainConfig {
 	underConfig.CapellaForkVersion = (hexutil.MustDecode("0x20000092"))
 	underConfig.CapellaForkEpoch = math.MaxUint64 - 1
 
-	underConfig.SyncCommitteeSize = 32
-	underConfig.InactivityScoreBias = 4
-	underConfig.EpochsPerSyncCommitteePeriod = 8
+	// underConfig.SyncCommitteeSize = 32
+	// underConfig.InactivityScoreBias = 4
+	// underConfig.EpochsPerSyncCommitteePeriod = 8
 
 	// Ethereum PoW parameters.
 	underConfig.DepositChainID = 820   // Chain ID of eth1 under.
