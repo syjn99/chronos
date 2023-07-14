@@ -25,8 +25,17 @@ elif [ "$1" = "init" ]; then
     fi
     for i in $(seq $start $end); do
         rm -rf $BASEDIR/validator-$i
-        bazel run --config=minimal //cmd/validator:validator wallet create -- --wallet-dir=$BASEDIR/validator-$i --keymanager-kind=imported --wallet-password-file=$BASEDIR/artifacts/wallet/password.txt
-        bazel run --config=minimal //cmd/validator:validator accounts import -- --wallet-dir=$BASEDIR/validator-$i --keys-dir=$BASEDIR/artifacts/keyfiles/validator$i --wallet-password-file=$BASEDIR/artifacts/wallet/password.txt
+        mnemonic=$(yq e ".[$i].mnemonic" "$BASEDIR/artifacts/mnemonics.yaml")
+        count=$(yq e ".[$i].count" "$BASEDIR/artifacts/mnemonics.yaml")
+
+        echo count is $count
+
+        mkdir -p $BASEDIR/validator-$i
+
+        printf "%s" "$mnemonic" >> $BASEDIR/validator-$i/mnemonic.txt
+
+        # Recover wallet from mnemonic
+        bazel run --config=minimal //cmd/validator:validator wallet recover -- --wallet-dir=$BASEDIR/validator-$i --mnemonic-file=$BASEDIR/validator-$i/mnemonic.txt --mnemonic-25th-word-file=$BASEDIR/artifacts/wallet/password.txt --num-accounts=$count --wallet-password-file=$BASEDIR/artifacts/wallet/password.txt --accept-terms-of-use
 
         rpcport=$((7000 + i))
         beaconrpcport=$((4000 + i))
@@ -46,8 +55,8 @@ BASEDIR=$(pwd)
 bazel run --config=minimal //cmd/validator:validator -- \\
     --wallet-dir=$BASEDIR/validator-$i \\
     --proposer-settings-file=$BASEDIR/artifacts/recipients/recipient$i.yaml \\
-    --chain-config-file=$BASEDIR/config.yml \\
-    --config-file=$BASEDIR/config.yml \\
+    --chain-config-file=$BASEDIR/artifacts/config.yml \\
+    --config-file=$BASEDIR/artifacts/config.yml \\
     --wallet-password-file=$BASEDIR/artifacts/wallet/password.txt \\
     --beacon-rpc-provider=127.0.0.1:${beaconrpcport} \\
     --beacon-rpc-gateway-provider=127.0.0.1:${rpcgatewayport} \\
@@ -107,8 +116,8 @@ elif [ "$1" = "run" ]; then
     done
 else
     echo "Invalid argument. should be one of below
-    clean - clear validator data
-    init n1 (n2) - Make initialized validator data from 0 to n1 (or n1 to n2)
-    stop - stop running validator
-    run n1 (n2) - run validator from 0 to n1 (or n1 to n2)"
+    clean - clear validator datas
+    init n1 (n2) - Make initialized validator data from 0 to n1 (or n1 to n2). Max value 1 => 2 validators.
+    stop - stop running all validators
+    run n1 (n2) - run validators from 0 to n1 (or n1 to n2). Max value 1 => 2 validators."
 fi
