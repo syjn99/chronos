@@ -1,6 +1,9 @@
 BASEDIR=$(pwd)
 KAIROS_PATH=$BASEDIR/../../../kairos
 
+# Get the OS name
+os_name=$(uname)
+
 if [ "$1" = "clean" ]; then
     # Clear former data
     rm -rf $BASEDIR/node-*
@@ -24,15 +27,26 @@ elif [ "$1" = "init" ]; then
         end=$3
     fi
 
-    # Run the command and save bootnode.yaml
-    bazel run --config=minimal //cmd/prysmctl:prysmctl testnet generate-genesis -- \
-        --output-ssz=$BASEDIR/genesis.ssz \
-        --chain-config-file=$BASEDIR/config.yml \
-        --geth-genesis-json-in=$KAIROS_PATH/testnet/under/artifacts/genesis.json \
-        --deposit-json-file=$BASEDIR/artifacts/deposits/deposit_data_under.json \
-        --num-validators=0 \
-        --execution-endpoint=http://localhost:22000 \
-        --override-eth1data=true
+    # Clear former data
+    rm -rf $BASEDIR/node-*
+
+    # Replace Genesis timestamp for new beacon chain
+    current_date=$(date +%s)
+    target_date=$((current_date + 60))
+
+    if [ "$os_name" = "Linux" ]; then
+        echo "The running machine is Linux."
+        echo "Target genesis time updated to : $(date -d @$target_date)"
+    elif [ "$os_name" = "Darwin" ]; then
+        echo "The running machine is macOS."
+        echo "Target genesis time updated to : $(date -r $target_date)"
+    else
+        echo "The running machine is neither Linux nor macOS. So there can be some problems."
+    fi
+
+    bazel run //tools/change-genesis-timestamp -- \
+        -genesis-state=$BASEDIR/artifacts/genesis.ssz \
+        -timestamp=$target_date
 
     # Create the shell scripts for each validator
     for i in $(seq $start $end); do
@@ -60,11 +74,11 @@ elif [ "$1" = "init" ]; then
         cat << EOF >> "$script_name"
 KAIROS_PATH=$KAIROS_PATH/testnet/under/node-$i/geth
 
-bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
+bazel run //cmd/beacon-chain:beacon-chain -- \\
     -datadir=$BASEDIR/node-$i \\
-    -genesis-state=$BASEDIR/genesis.ssz \\
-    -chain-config-file=$BASEDIR/config.yml \\
-    -config-file=$BASEDIR/config.yml \\
+    -genesis-state=$BASEDIR/artifacts/genesis.ssz \\
+    -chain-config-file=$BASEDIR/artifacts/config.yml \\
+    -config-file=$BASEDIR/artifacts/config.yml \\
     -chain-id=813 \\
     -min-sync-peers=0 \\
     -execution-endpoint=http://localhost:${authport} \\
@@ -77,7 +91,8 @@ bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
     -monitoring-port"=${monitorport}" \\
     -grpc-gateway-port"=${rpcgatewayport}" \\
     -p2p-local-ip 127.0.0.1 \\
-    -bootstrap-node=$BASEDIR/bootnode.yaml \\
+    -bootstrap-node=$BASEDIR/artifacts/bootnode.yaml \\
+    -subscribe-all-subnets \\
     -verbosity=debug
 EOF
 
@@ -132,7 +147,7 @@ elif [ "$1" = "run" ]; then
 else
     echo "Invalid argument. should be one of below
     clean - clear node data
-    init n1 (n2) - Make initialized node data from 0 to n1 (or n1 to n2)
-    stop - stop running nodes
-    run n1 (n2) - run nodes from 0 to n1 (or n1 to n2)"
+    init n1 (n2) - Make initialized node data from 0 to n1 (or n1 to n2). Max value 1 => 2 nodes.
+    stop - stop running all nodes
+    run n1 (n2) - run nodes from 0 to n1 (or n1 to n2). Max value 1 => 2 nodes"
 fi
