@@ -256,6 +256,7 @@ def prysm_deps():
         sum = "h1:D6CSsM3gdxaGaqXnPgOBCeL6Mophqzu7KJOu7zW78sU=",
         version = "v1.1.0",
     )
+
     go_repository(
         name = "com_github_aymerick_douceur",
         importpath = "github.com/aymerick/douceur",
@@ -268,7 +269,6 @@ def prysm_deps():
         sum = "h1:Ppm0npCCsmuR9oQaBtRuZcmILVE74aXE+AmrJj8L2ns=",
         version = "v2.0.3-0.20180322193309-b565731e1464+incompatible",
     )
-
     go_repository(
         name = "com_github_azure_azure_sdk_for_go_sdk_azcore",
         importpath = "github.com/Azure/azure-sdk-for-go/sdk/azcore",
@@ -287,6 +287,7 @@ def prysm_deps():
         sum = "h1:Px2UA+2RvSSvv+RvJNuUB6n7rs5Wsel4dXLe90Um2n4=",
         version = "v0.3.0",
     )
+
     go_repository(
         name = "com_github_azure_go_autorest",
         importpath = "github.com/Azure/go-autorest",
@@ -536,6 +537,7 @@ def prysm_deps():
         sum = "h1:gFqGlGl/5f9UGXAaKapCGUfaTCgRKKnzu2VvzMZlOFA=",
         version = "v0.14.0",
     )
+
     go_repository(
         name = "com_github_cloudykit_fastprinter",
         importpath = "github.com/CloudyKit/fastprinter",
@@ -625,7 +627,6 @@ def prysm_deps():
         sum = "h1:sDMmm+q/3+BukdIpxwO365v/Rbspp2Nt5XntgQRXq8Q=",
         version = "v0.0.0-20150114235600-33e0aa1cb7c0",
     )
-
     go_repository(
         name = "com_github_consensys_bavard",
         importpath = "github.com/consensys/bavard",
@@ -1022,8 +1023,8 @@ def prysm_deps():
             "//third_party:com_github_ethereum_go_ethereum_secp256k1.patch",
         ],
         replace = "github.com/superblock-dev/kairos",
-        sum = "h1:c6WZ2DQXL5FUFhc1vkHk3A9LCJrFnmKf+zu5gbxBI7c=",
-        version = "v0.0.0-20230711074154-2118368d80a5",
+        sum = "h1:rqw8syAWIvbkJBj0I+5oNG68aQHalj2zgaOZbq2nAL8=",
+        version = "v0.0.0-20230714074913-0ebf07654cfb",
     )
 
     go_repository(
@@ -2215,6 +2216,7 @@ def prysm_deps():
         sum = "h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=",
         version = "v1.5.1",
     )
+
     go_repository(
         name = "com_github_joker_hpp",
         importpath = "github.com/Joker/hpp",
@@ -3066,13 +3068,13 @@ def prysm_deps():
         sum = "h1:rCUeRUHjBjGTSHl0VC00jUPLz8/F9dDzYI70Hzifhks=",
         version = "v0.1.0",
     )
-
     go_repository(
         name = "com_github_naoina_toml",
         importpath = "github.com/naoina/toml",
         sum = "h1:shk/vn9oCoOTmwcouEdwIeOtOGA/ELRUw/GwvxwfT+0=",
         version = "v0.1.2-0.20170918210437-9fafd6967416",
     )
+
     go_repository(
         name = "com_github_nats_io_jwt",
         importpath = "github.com/nats-io/jwt",
