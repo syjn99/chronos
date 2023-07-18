@@ -1,6 +1,9 @@
 BASEDIR=$(pwd)
 KAIROS_PATH=$BASEDIR/../../../kairos
 
+# Get the OS name
+os_name=$(uname)
+
 if [ "$1" = "clean" ]; then
     # Clear former data
     rm -rf $BASEDIR/validator-*
@@ -25,9 +28,9 @@ elif [ "$1" = "init" ]; then
     fi
     for i in $(seq $start $end); do
         rm -rf $BASEDIR/validator-$i
+
         mnemonic=$(yq e ".[$i].mnemonic" "$BASEDIR/artifacts/mnemonics.yaml")
         count=$(yq e ".[$i].count" "$BASEDIR/artifacts/mnemonics.yaml")
-
         echo count is $count
 
         mkdir -p $BASEDIR/validator-$i
@@ -37,10 +40,10 @@ elif [ "$1" = "init" ]; then
         # Recover wallet from mnemonic
         bazel run --config=minimal //cmd/validator:validator wallet recover -- --wallet-dir=$BASEDIR/validator-$i --mnemonic-file=$BASEDIR/validator-$i/mnemonic.txt --mnemonic-25th-word-file=$BASEDIR/artifacts/wallet/password.txt --num-accounts=$count --wallet-password-file=$BASEDIR/artifacts/wallet/password.txt --accept-terms-of-use
 
-        rpcport=$((7000 + i))
-        beaconrpcport=$((4000 + i))
-        rpcgatewayport=$((3500 + i))
-        slasherrpc=$((4002 + i))
+        rpcport=$((8000 + i))
+        beaconrpcport=$((4100 + i))
+        rpcgatewayport=$((4500 + i))
+        slasherrpc=$((5002 + i))
 
         # Define the name of the new shell script
         script_name="$BASEDIR/validator-$i/run_validator.sh"

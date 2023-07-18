@@ -35,21 +35,22 @@ elif [ "$1" = "init" ]; then
     target_date=$((current_date + 60))
 
     if [ "$os_name" = "Linux" ]; then
-        echo "The running machine is Linux."
+        echo "This machine is Linux machine."
         echo "Target genesis time updated to : $(date -d @$target_date)"
+        ip_address=$(hostname -I | awk '{print $1}')
+        # ip_address=$(curl ifconfig.me)
     elif [ "$os_name" = "Darwin" ]; then
-        echo "The running machine is macOS."
+        echo "This machine is macOS machine."
         echo "Target genesis time updated to : $(date -r $target_date)"
+        ip_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
     else
-        echo "The running machine is neither Linux nor macOS. So there can be some problems."
+        echo "This machine is neither Linux nor macOS. So there can be some problems."
     fi
+    echo "IP of this machine is $ip_address"
 
     bazel run --config=minimal //tools/change-genesis-timestamp -- \
         -genesis-state=$BASEDIR/artifacts/genesis.ssz \
         -timestamp=$target_date
-
-    # Get the IP address of local machine
-    ip_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
 
     # Create the shell scripts for each validator
     for i in $(seq $start $end); do
@@ -60,12 +61,12 @@ elif [ "$1" = "init" ]; then
         script_name="$BASEDIR/node-$i/run_node.sh"
 
         # Calculate the port value based on the index
-        authport=$((8551 + i))
-        rpcport=$((4000 + i))
-        monitorport=$((8080 + i))
-        udpport=$((12000 + i))
-        tcpport=$((13000 + i))
-        rpcgatewayport=$((3500 + i))
+        authport=$((8651 + i))
+        rpcport=$((4100 + i))
+        monitorport=$((9080 + i))
+        udpport=$((14000 + i))
+        tcpport=$((15000 + i))
+        rpcgatewayport=$((4500 + i))
 
         # Copy the necessary files to the validator directories
         mkdir -p $BASEDIR/node-$i
