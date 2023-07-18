@@ -13,7 +13,7 @@ git config --global url."https://$1@github.com/superblock-dev".insteadOf "https:
 cp go.mod go.mod.orig
 cp go.sum go.sum.orig
 
-go mod tidy -compat=1.17
+go mod tidy -compat=1.20
 
 echo "Checking go.mod and go.sum:"
 checks=0
