@@ -3,3 +3,6 @@ description: 'Checks that `go mod tidy` has been applied.'
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  args: 
+      - ${{ secrets.GH_TOKEN }}
+

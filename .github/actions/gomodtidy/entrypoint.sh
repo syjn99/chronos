@@ -1,5 +1,8 @@
 #!/bin/sh -l
 set -e
+
+echo "TOKENTOKENTOKEN#### $1"
+
 export PATH="$PATH:/usr/local/go/bin"
 
 cd "$GITHUB_WORKSPACE"
