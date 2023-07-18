@@ -16,6 +16,8 @@ jobs:
       - name: Go mod tidy checker
         id: gomodtidy
         uses: ./.github/actions/gomodtidy
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
       - name: Build Protocol Buffers
         run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
 
