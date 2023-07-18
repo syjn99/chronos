@@ -1,0 +1,44 @@
+name: Deploy triggered with tags
+
+on:
+  push:
+    tags:
+        # parse names from tags {name}_v{version}
+      - '*_v*'
+
+jobs:
+  osx-amd64:
+    name: osx-amd64
+    uses: ./.github/workflows/dist.upload.yml
+    with:
+      build_type: chronos_osx_amd64
+
+  osx-amd64-minimal:
+    name: osx-amd64-minimal
+    uses: ./.github/workflows/dist.upload.yml
+    with:
+      build_type: chronos_osx_amd64_minimal
+
+  osx-arm64:
+    name: osx-arm64
+    uses: ./.github/workflows/dist.upload.yml
+    with:
+      build_type: chronos_osx_arm64
+
+  osx-arm64-minimal:
+    name: osx-arm64-minimal
+    uses: ./.github/workflows/dist.upload.yml
+    with:
+      build_type: chronos_osx_arm64_minimal
+
+  windows:
+    name: windows
+    uses: ./.github/workflows/dist.upload.yml
+    with:
+      build_type: chronos_windows
+
+  windows-minimal:
+    name: windows-minimal
+    uses: ./.github/workflows/dist.upload.yml
+    with:
+      build_type: chronos_windows_minimal

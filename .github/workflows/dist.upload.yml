@@ -1,0 +1,40 @@
+name: Build & Deploy dist to S3
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        required: true
+        type: string
+
+env:
+  S3_BUCKET_NAME: over-protocol-dist
+
+permissions:
+  contents: read
+
+jobs:
+  build-ubuntu:
+    runs-on: [self-hosted, linux, x64]
+    name: Build bazel & upload
+    steps:
+      - uses: actions/checkout@v3
+      - name: Extract tag name, version
+        id: extract
+        run: |
+          tag_name="${{ github.ref_name }}"
+          tag_name="${tag_name%%_v*}"
+          version_name="${{ github.ref_name }}"
+          version_name="v${version_name#*_v}"
+          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
+          echo "version_name=$version_name" >> $GITHUB_OUTPUT
+          
+      - name: Run build
+        run: |
+          sh dist/build_${{ inputs.build_type }}.sh
+          
+      - name: Upload to AWS S3
+        run: |
+          aws s3 cp ./dist/${{ inputs.build_type }}.zip \
+          ${{ format('s3://{0}/{1}/{2}/{3}.zip',  env.S3_BUCKET_NAME, steps.extract.outputs.tag_name, steps.extract.outputs.version_name, inputs.build_type ) }} \
+          --acl public-read --profile over-dist
