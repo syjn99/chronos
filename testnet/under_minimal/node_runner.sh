@@ -4,6 +4,14 @@ KAIROS_PATH=$BASEDIR/../../../kairos
 # Get the OS name
 os_name=$(uname)
 
+# Port base setting
+authport_base=8551
+rpcport_base=4000
+monitorport_base=8080
+udpport_base=12000
+tcpport_base=13000
+rpcgatewayport_base=3500
+
 if [ "$1" = "clean" ]; then
     # Clear former data
     rm -rf $BASEDIR/node-*
@@ -57,12 +65,12 @@ elif [ "$1" = "init" ]; then
         script_name="$BASEDIR/node-$i/run_node.sh"
 
         # Calculate the port value based on the index
-        authport=$((8551 + i))
-        rpcport=$((4000 + i))
-        monitorport=$((8080 + i))
-        udpport=$((12000 + i))
-        tcpport=$((13000 + i))
-        rpcgatewayport=$((3500 + i))
+        authport=$(($authport_base + i))
+        rpcport=$(($rpcport_base + i))
+        monitorport=$(($monitorport_base + i))
+        udpport=$(($udpport_base + i))
+        tcpport=$(($tcpport_base + i))
+        rpcgatewayport=$(($rpcgatewayport_base + i))
 
         # Copy the necessary files to the validator directories
         mkdir -p $BASEDIR/node-$i
@@ -102,21 +110,23 @@ EOF
 
 
 elif [ "$1" = "stop" ]; then
-    # change these to the unique parts of your command
-    unique_part="chain-id=813"
+    for i in $(seq 0 1); do
+        # change these to the unique parts of your command
+        unique_part="-p2p-tcp-port=$(($tcpport_base + i))"
 
-    pids=$(ps aux | grep "${unique_part}" | grep -v grep | awk '{print $2}')
+        pids=$(ps aux | grep "${unique_part}" | grep -v grep | awk '{print $2}')
 
-    if [ -z "$pids" ]
-    then
-        echo "No processes found with command parts $unique_part"
-    else
-        echo "Killing Chronos processes with PIDs: $pids"
-        for pid in $pids
-        do
-            kill -9 $pid
-        done
-    fi
+        if [ -z "$pids" ]
+        then
+            echo "No processes found with command parts $unique_part"
+        else
+            echo "Killing Chronos processes with PIDs: $pids"
+            for pid in $pids
+            do
+                kill -9 $pid
+            done
+        fi
+    done
 elif [ "$1" = "run" ]; then
     if [ $# -eq 2 ]; then
         if ! [[ $2 =~ [0-9]+$ ]]; then
