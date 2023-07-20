@@ -1,21 +1,38 @@
 BASEDIR=$(pwd)
 KAIROS_PATH=$BASEDIR/../../../kairos
 
-# Kill chronos nodes if exists.
-chronos_part="chain-id=813"
+# Get the OS name
+os_name=$(uname)
 
-pids=$(ps aux | grep "${chronos_part}" | grep -v grep | awk '{print $2}')
+minimal=""
+minimal_suffix=""
 
-if [ -z "$pids" ]
-then
-    echo "No Chronos processes found"
-else
-    echo "Killing Chronos processes with PIDs: $pids"
-    for pid in $pids
-    do
-        kill -9 $pid
-    done
+tcpport_base=13000
+
+if [ "$1" = "minimal" ]; then
+    echo "minimal build"
+    minimal="--config=minimal "
+    minimal_suffix="_minimal"
 fi
+
+# Kill chronos nodes if exists.
+for i in $(seq 0 1); do
+    # change these to the unique parts of your command
+    unique_part="p2p-tcp-port=$(($tcpport_base + i))"
+
+    pids=$(ps aux | grep "${unique_part}" | grep -v grep | awk '{print $2}')
+
+    if [ -z "$pids" ]
+    then
+        echo "No processes found with command parts $unique_part"
+    else
+        echo "Killing Chronos processes with PIDs: $pids"
+        for pid in $pids
+        do
+            kill -9 $pid
+        done
+    fi
+done
 
 # Kill validator clients if exists.
 validator_part="wallet-dir=$BASEDIR/validator-"
@@ -34,7 +51,7 @@ else
 fi
 
 if [ "$1" = "stop" ]; then
-    exit
+    exit 0
 fi
 
 # Replace Genesis timestamp for new beacon chain
@@ -51,8 +68,8 @@ else
     echo "The running machine is neither Linux nor macOS. So there can be some problems."
 fi
 
-bazel run //tools/change-genesis-timestamp -- \
-    -genesis-state=$BASEDIR/artifacts/genesis.ssz \
+bazel run $minimal//tools/change-genesis-timestamp -- \
+    -genesis-state=$BASEDIR/artifacts/genesis$minimal_suffix.ssz \
     -timestamp=$target_date
 
 # Reset and run chronos nodes and validator clients.
