@@ -9,7 +9,7 @@ on:
 jobs:
   formatting:
     name: Formatting
-    runs-on: [arc-runner-set-test]
+    runs-on: [arc-runner]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -18,12 +18,10 @@ jobs:
         uses: ./.github/actions/gomodtidy
         with:
           github_token: ${{ secrets.GH_TOKEN }}
-      - name: Build Protocol Buffers
-        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
 
   gosec:
     name: Gosec scan
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [arc-runner]
     env:
       GO111MODULE: on
     steps:
@@ -44,7 +42,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [arc-runner]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -66,7 +64,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [arc-runner]
     env:
         GOPRIVATE: github.com/superblock-dev
         GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
