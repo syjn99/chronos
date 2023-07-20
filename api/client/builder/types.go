@@ -89,8 +89,10 @@ func (r *ValidatorRegistration) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-var errInvalidUint256 = errors.New("invalid Uint256")
-var errDecodeUint256 = errors.New("unable to decode into Uint256")
+var (
+	errInvalidUint256 = errors.New("invalid Uint256")
+	errDecodeUint256  = errors.New("unable to decode into Uint256")
+)
 
 type Uint256 struct {
 	*big.Int
@@ -222,6 +224,7 @@ func (h *ExecutionPayloadHeader) ToProto() (*v1.ExecutionPayloadHeader, error) {
 		ParentHash:       h.ParentHash,
 		FeeRecipient:     h.FeeRecipient,
 		StateRoot:        h.StateRoot,
+		CheckpointRoot:   h.CheckpointRoot,
 		ReceiptsRoot:     h.ReceiptsRoot,
 		LogsBloom:        h.LogsBloom,
 		PrevRandao:       h.PrevRandao,
@@ -246,6 +249,7 @@ type ExecutionPayloadHeader struct {
 	ParentHash       hexutil.Bytes `json:"parent_hash"`
 	FeeRecipient     hexutil.Bytes `json:"fee_recipient"`
 	StateRoot        hexutil.Bytes `json:"state_root"`
+	CheckpointRoot   hexutil.Bytes `json:"checkpoint_root"`
 	ReceiptsRoot     hexutil.Bytes `json:"receipts_root"`
 	LogsBloom        hexutil.Bytes `json:"logs_bloom"`
 	PrevRandao       hexutil.Bytes `json:"prev_randao"`
@@ -270,6 +274,7 @@ func (h *ExecutionPayloadHeader) MarshalJSON() ([]byte, error) {
 		ParentHash:       h.ExecutionPayloadHeader.ParentHash,
 		FeeRecipient:     h.ExecutionPayloadHeader.FeeRecipient,
 		StateRoot:        h.ExecutionPayloadHeader.StateRoot,
+		CheckpointRoot:   h.ExecutionPayloadHeader.CheckpointRoot,
 		ReceiptsRoot:     h.ExecutionPayloadHeader.ReceiptsRoot,
 		LogsBloom:        h.ExecutionPayloadHeader.LogsBloom,
 		PrevRandao:       h.ExecutionPayloadHeader.PrevRandao,
@@ -303,20 +308,21 @@ type ExecPayloadResponse struct {
 }
 
 type ExecutionPayload struct {
-	ParentHash    hexutil.Bytes   `json:"parent_hash"`
-	FeeRecipient  hexutil.Bytes   `json:"fee_recipient"`
-	StateRoot     hexutil.Bytes   `json:"state_root"`
-	ReceiptsRoot  hexutil.Bytes   `json:"receipts_root"`
-	LogsBloom     hexutil.Bytes   `json:"logs_bloom"`
-	PrevRandao    hexutil.Bytes   `json:"prev_randao"`
-	BlockNumber   Uint64String    `json:"block_number"`
-	GasLimit      Uint64String    `json:"gas_limit"`
-	GasUsed       Uint64String    `json:"gas_used"`
-	Timestamp     Uint64String    `json:"timestamp"`
-	ExtraData     hexutil.Bytes   `json:"extra_data"`
-	BaseFeePerGas Uint256         `json:"base_fee_per_gas"`
-	BlockHash     hexutil.Bytes   `json:"block_hash"`
-	Transactions  []hexutil.Bytes `json:"transactions"`
+	ParentHash     hexutil.Bytes   `json:"parent_hash"`
+	FeeRecipient   hexutil.Bytes   `json:"fee_recipient"`
+	StateRoot      hexutil.Bytes   `json:"state_root"`
+	CheckpointRoot hexutil.Bytes   `json:"checkpoint_root"`
+	ReceiptsRoot   hexutil.Bytes   `json:"receipts_root"`
+	LogsBloom      hexutil.Bytes   `json:"logs_bloom"`
+	PrevRandao     hexutil.Bytes   `json:"prev_randao"`
+	BlockNumber    Uint64String    `json:"block_number"`
+	GasLimit       Uint64String    `json:"gas_limit"`
+	GasUsed        Uint64String    `json:"gas_used"`
+	Timestamp      Uint64String    `json:"timestamp"`
+	ExtraData      hexutil.Bytes   `json:"extra_data"`
+	BaseFeePerGas  Uint256         `json:"base_fee_per_gas"`
+	BlockHash      hexutil.Bytes   `json:"block_hash"`
+	Transactions   []hexutil.Bytes `json:"transactions"`
 }
 
 func (r *ExecPayloadResponse) ToProto() (*v1.ExecutionPayload, error) {
@@ -329,20 +335,21 @@ func (p *ExecutionPayload) ToProto() (*v1.ExecutionPayload, error) {
 		txs[i] = p.Transactions[i]
 	}
 	return &v1.ExecutionPayload{
-		ParentHash:    p.ParentHash,
-		FeeRecipient:  p.FeeRecipient,
-		StateRoot:     p.StateRoot,
-		ReceiptsRoot:  p.ReceiptsRoot,
-		LogsBloom:     p.LogsBloom,
-		PrevRandao:    p.PrevRandao,
-		BlockNumber:   uint64(p.BlockNumber),
-		GasLimit:      uint64(p.GasLimit),
-		GasUsed:       uint64(p.GasUsed),
-		Timestamp:     uint64(p.Timestamp),
-		ExtraData:     p.ExtraData,
-		BaseFeePerGas: p.BaseFeePerGas.SSZBytes(),
-		BlockHash:     p.BlockHash,
-		Transactions:  txs,
+		ParentHash:     p.ParentHash,
+		FeeRecipient:   p.FeeRecipient,
+		StateRoot:      p.StateRoot,
+		CheckpointRoot: p.CheckpointRoot,
+		ReceiptsRoot:   p.ReceiptsRoot,
+		LogsBloom:      p.LogsBloom,
+		PrevRandao:     p.PrevRandao,
+		BlockNumber:    uint64(p.BlockNumber),
+		GasLimit:       uint64(p.GasLimit),
+		GasUsed:        uint64(p.GasUsed),
+		Timestamp:      uint64(p.Timestamp),
+		ExtraData:      p.ExtraData,
+		BaseFeePerGas:  p.BaseFeePerGas.SSZBytes(),
+		BlockHash:      p.BlockHash,
+		Transactions:   txs,
 	}, nil
 }
 
@@ -358,20 +365,21 @@ func FromProto(payload *v1.ExecutionPayload) (ExecutionPayload, error) {
 		txs[i] = payload.Transactions[i]
 	}
 	return ExecutionPayload{
-		ParentHash:    payload.ParentHash,
-		FeeRecipient:  payload.FeeRecipient,
-		StateRoot:     payload.StateRoot,
-		ReceiptsRoot:  payload.ReceiptsRoot,
-		LogsBloom:     payload.LogsBloom,
-		PrevRandao:    payload.PrevRandao,
-		BlockNumber:   Uint64String(payload.BlockNumber),
-		GasLimit:      Uint64String(payload.GasLimit),
-		GasUsed:       Uint64String(payload.GasUsed),
-		Timestamp:     Uint64String(payload.Timestamp),
-		ExtraData:     payload.ExtraData,
-		BaseFeePerGas: bFee,
-		BlockHash:     payload.BlockHash,
-		Transactions:  txs,
+		ParentHash:     payload.ParentHash,
+		FeeRecipient:   payload.FeeRecipient,
+		StateRoot:      payload.StateRoot,
+		CheckpointRoot: payload.CheckpointRoot,
+		ReceiptsRoot:   payload.ReceiptsRoot,
+		LogsBloom:      payload.LogsBloom,
+		PrevRandao:     payload.PrevRandao,
+		BlockNumber:    Uint64String(payload.BlockNumber),
+		GasLimit:       Uint64String(payload.GasLimit),
+		GasUsed:        Uint64String(payload.GasUsed),
+		Timestamp:      Uint64String(payload.Timestamp),
+		ExtraData:      payload.ExtraData,
+		BaseFeePerGas:  bFee,
+		BlockHash:      payload.BlockHash,
+		Transactions:   txs,
 	}, nil
 }
 
@@ -396,21 +404,22 @@ func FromProtoCapella(payload *v1.ExecutionPayloadCapella) (ExecutionPayloadCape
 		}
 	}
 	return ExecutionPayloadCapella{
-		ParentHash:    payload.ParentHash,
-		FeeRecipient:  payload.FeeRecipient,
-		StateRoot:     payload.StateRoot,
-		ReceiptsRoot:  payload.ReceiptsRoot,
-		LogsBloom:     payload.LogsBloom,
-		PrevRandao:    payload.PrevRandao,
-		BlockNumber:   Uint64String(payload.BlockNumber),
-		GasLimit:      Uint64String(payload.GasLimit),
-		GasUsed:       Uint64String(payload.GasUsed),
-		Timestamp:     Uint64String(payload.Timestamp),
-		ExtraData:     payload.ExtraData,
-		BaseFeePerGas: bFee,
-		BlockHash:     payload.BlockHash,
-		Transactions:  txs,
-		Withdrawals:   withdrawals,
+		ParentHash:     payload.ParentHash,
+		FeeRecipient:   payload.FeeRecipient,
+		StateRoot:      payload.StateRoot,
+		CheckpointRoot: payload.CheckpointRoot,
+		ReceiptsRoot:   payload.ReceiptsRoot,
+		LogsBloom:      payload.LogsBloom,
+		PrevRandao:     payload.PrevRandao,
+		BlockNumber:    Uint64String(payload.BlockNumber),
+		GasLimit:       Uint64String(payload.GasLimit),
+		GasUsed:        Uint64String(payload.GasUsed),
+		Timestamp:      Uint64String(payload.Timestamp),
+		ExtraData:      payload.ExtraData,
+		BaseFeePerGas:  bFee,
+		BlockHash:      payload.BlockHash,
+		Transactions:   txs,
+		Withdrawals:    withdrawals,
 	}, nil
 }
 
@@ -449,6 +458,7 @@ func (h *ExecutionPayloadHeaderCapella) ToProto() (*v1.ExecutionPayloadHeaderCap
 		ParentHash:       h.ParentHash,
 		FeeRecipient:     h.FeeRecipient,
 		StateRoot:        h.StateRoot,
+		CheckpointRoot:   h.CheckpointRoot,
 		ReceiptsRoot:     h.ReceiptsRoot,
 		LogsBloom:        h.LogsBloom,
 		PrevRandao:       h.PrevRandao,
@@ -474,6 +484,7 @@ type ExecutionPayloadHeaderCapella struct {
 	ParentHash       hexutil.Bytes `json:"parent_hash"`
 	FeeRecipient     hexutil.Bytes `json:"fee_recipient"`
 	StateRoot        hexutil.Bytes `json:"state_root"`
+	CheckpointRoot   hexutil.Bytes `json:"checkpoint_root"`
 	ReceiptsRoot     hexutil.Bytes `json:"receipts_root"`
 	LogsBloom        hexutil.Bytes `json:"logs_bloom"`
 	PrevRandao       hexutil.Bytes `json:"prev_randao"`
@@ -499,6 +510,7 @@ func (h *ExecutionPayloadHeaderCapella) MarshalJSON() ([]byte, error) {
 		ParentHash:       h.ExecutionPayloadHeaderCapella.ParentHash,
 		FeeRecipient:     h.ExecutionPayloadHeaderCapella.FeeRecipient,
 		StateRoot:        h.ExecutionPayloadHeaderCapella.StateRoot,
+		CheckpointRoot:   h.ExecutionPayloadHeaderCapella.CheckpointRoot,
 		ReceiptsRoot:     h.ExecutionPayloadHeaderCapella.ReceiptsRoot,
 		LogsBloom:        h.ExecutionPayloadHeaderCapella.LogsBloom,
 		PrevRandao:       h.ExecutionPayloadHeaderCapella.PrevRandao,
@@ -533,21 +545,22 @@ type ExecPayloadResponseCapella struct {
 }
 
 type ExecutionPayloadCapella struct {
-	ParentHash    hexutil.Bytes   `json:"parent_hash"`
-	FeeRecipient  hexutil.Bytes   `json:"fee_recipient"`
-	StateRoot     hexutil.Bytes   `json:"state_root"`
-	ReceiptsRoot  hexutil.Bytes   `json:"receipts_root"`
-	LogsBloom     hexutil.Bytes   `json:"logs_bloom"`
-	PrevRandao    hexutil.Bytes   `json:"prev_randao"`
-	BlockNumber   Uint64String    `json:"block_number"`
-	GasLimit      Uint64String    `json:"gas_limit"`
-	GasUsed       Uint64String    `json:"gas_used"`
-	Timestamp     Uint64String    `json:"timestamp"`
-	ExtraData     hexutil.Bytes   `json:"extra_data"`
-	BaseFeePerGas Uint256         `json:"base_fee_per_gas"`
-	BlockHash     hexutil.Bytes   `json:"block_hash"`
-	Transactions  []hexutil.Bytes `json:"transactions"`
-	Withdrawals   []Withdrawal    `json:"withdrawals"`
+	ParentHash     hexutil.Bytes   `json:"parent_hash"`
+	FeeRecipient   hexutil.Bytes   `json:"fee_recipient"`
+	StateRoot      hexutil.Bytes   `json:"state_root"`
+	CheckpointRoot hexutil.Bytes   `json:"checkpoint_root"`
+	ReceiptsRoot   hexutil.Bytes   `json:"receipts_root"`
+	LogsBloom      hexutil.Bytes   `json:"logs_bloom"`
+	PrevRandao     hexutil.Bytes   `json:"prev_randao"`
+	BlockNumber    Uint64String    `json:"block_number"`
+	GasLimit       Uint64String    `json:"gas_limit"`
+	GasUsed        Uint64String    `json:"gas_used"`
+	Timestamp      Uint64String    `json:"timestamp"`
+	ExtraData      hexutil.Bytes   `json:"extra_data"`
+	BaseFeePerGas  Uint256         `json:"base_fee_per_gas"`
+	BlockHash      hexutil.Bytes   `json:"block_hash"`
+	Transactions   []hexutil.Bytes `json:"transactions"`
+	Withdrawals    []Withdrawal    `json:"withdrawals"`
 }
 
 func (r *ExecPayloadResponseCapella) ToProto() (*v1.ExecutionPayloadCapella, error) {
@@ -569,21 +582,22 @@ func (p *ExecutionPayloadCapella) ToProto() (*v1.ExecutionPayloadCapella, error)
 		}
 	}
 	return &v1.ExecutionPayloadCapella{
-		ParentHash:    p.ParentHash,
-		FeeRecipient:  p.FeeRecipient,
-		StateRoot:     p.StateRoot,
-		ReceiptsRoot:  p.ReceiptsRoot,
-		LogsBloom:     p.LogsBloom,
-		PrevRandao:    p.PrevRandao,
-		BlockNumber:   uint64(p.BlockNumber),
-		GasLimit:      uint64(p.GasLimit),
-		GasUsed:       uint64(p.GasUsed),
-		Timestamp:     uint64(p.Timestamp),
-		ExtraData:     p.ExtraData,
-		BaseFeePerGas: p.BaseFeePerGas.SSZBytes(),
-		BlockHash:     p.BlockHash,
-		Transactions:  txs,
-		Withdrawals:   withdrawals,
+		ParentHash:     p.ParentHash,
+		FeeRecipient:   p.FeeRecipient,
+		StateRoot:      p.StateRoot,
+		CheckpointRoot: p.CheckpointRoot,
+		ReceiptsRoot:   p.ReceiptsRoot,
+		LogsBloom:      p.LogsBloom,
+		PrevRandao:     p.PrevRandao,
+		BlockNumber:    uint64(p.BlockNumber),
+		GasLimit:       uint64(p.GasLimit),
+		GasUsed:        uint64(p.GasUsed),
+		Timestamp:      uint64(p.Timestamp),
+		ExtraData:      p.ExtraData,
+		BaseFeePerGas:  p.BaseFeePerGas.SSZBytes(),
+		BlockHash:      p.BlockHash,
+		Transactions:   txs,
+		Withdrawals:    withdrawals,
 	}, nil
 }
 

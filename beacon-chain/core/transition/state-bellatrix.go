@@ -266,6 +266,7 @@ func EmptyGenesisStateBellatrix() (state.BeaconState, error) {
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, 32),
+			CheckpointRoot:   make([]byte, 32),
 			ReceiptsRoot:     make([]byte, 32),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),

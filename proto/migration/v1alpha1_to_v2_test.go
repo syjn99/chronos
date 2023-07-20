@@ -122,20 +122,21 @@ func Test_BellatrixToV1Alpha1SignedBlock(t *testing.T) {
 		SyncCommitteeSignature: signature,
 	}
 	v2Block.Message.Body.ExecutionPayload = &enginev1.ExecutionPayload{
-		ParentHash:    parentHash,
-		FeeRecipient:  feeRecipient,
-		StateRoot:     stateRoot,
-		ReceiptsRoot:  receiptsRoot,
-		LogsBloom:     logsBloom,
-		PrevRandao:    prevRandao,
-		BlockNumber:   blockNumber,
-		GasLimit:      gasLimit,
-		GasUsed:       gasUsed,
-		Timestamp:     timestamp,
-		ExtraData:     extraData,
-		BaseFeePerGas: baseFeePerGas,
-		BlockHash:     blockHash,
-		Transactions:  [][]byte{[]byte("transaction1"), []byte("transaction2")},
+		ParentHash:     parentHash,
+		FeeRecipient:   feeRecipient,
+		StateRoot:      stateRoot,
+		CheckpointRoot: checkpointRoot,
+		ReceiptsRoot:   receiptsRoot,
+		LogsBloom:      logsBloom,
+		PrevRandao:     prevRandao,
+		BlockNumber:    blockNumber,
+		GasLimit:       gasLimit,
+		GasUsed:        gasUsed,
+		Timestamp:      timestamp,
+		ExtraData:      extraData,
+		BaseFeePerGas:  baseFeePerGas,
+		BlockHash:      blockHash,
+		Transactions:   [][]byte{[]byte("transaction1"), []byte("transaction2")},
 	}
 	v2Block.Signature = signature
 
@@ -170,6 +171,7 @@ func Test_BlindedBellatrixToV1Alpha1SignedBlock(t *testing.T) {
 		ParentHash:       parentHash,
 		FeeRecipient:     feeRecipient,
 		StateRoot:        stateRoot,
+		CheckpointRoot:   checkpointRoot,
 		ReceiptsRoot:     receiptsRoot,
 		LogsBloom:        logsBloom,
 		PrevRandao:       prevRandao,
@@ -498,6 +500,7 @@ func TestBeaconStateBellatrixToProto(t *testing.T) {
 			ParentHash:       bytesutil.PadTo([]byte("parenthash"), 32),
 			FeeRecipient:     bytesutil.PadTo([]byte("feerecipient"), 20),
 			StateRoot:        bytesutil.PadTo([]byte("stateroot"), 32),
+			CheckpointRoot:   bytesutil.PadTo([]byte("checkpointroot"), 32),
 			ReceiptsRoot:     bytesutil.PadTo([]byte("receiptroot"), 32),
 			LogsBloom:        bytesutil.PadTo([]byte("logsbloom"), 256),
 			PrevRandao:       bytesutil.PadTo([]byte("prevrandao"), 32),
@@ -592,6 +595,7 @@ func TestBeaconStateBellatrixToProto(t *testing.T) {
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("parenthash"), 32), resultLatestExecutionPayloadHeader.ParentHash)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("feerecipient"), 20), resultLatestExecutionPayloadHeader.FeeRecipient)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("stateroot"), 32), resultLatestExecutionPayloadHeader.StateRoot)
+	assert.DeepEqual(t, bytesutil.PadTo([]byte("checkpointroot"), 32), resultLatestExecutionPayloadHeader.CheckpointRoot)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("receiptroot"), 32), resultLatestExecutionPayloadHeader.ReceiptsRoot)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("logsbloom"), 256), resultLatestExecutionPayloadHeader.LogsBloom)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("prevrandao"), 32), resultLatestExecutionPayloadHeader.PrevRandao)
@@ -677,6 +681,7 @@ func TestBeaconStateCapellaToProto(t *testing.T) {
 			ParentHash:       bytesutil.PadTo([]byte("parenthash"), 32),
 			FeeRecipient:     bytesutil.PadTo([]byte("feerecipient"), 20),
 			StateRoot:        bytesutil.PadTo([]byte("stateroot"), 32),
+			CheckpointRoot:   bytesutil.PadTo([]byte("checkpointroot"), 32),
 			ReceiptsRoot:     bytesutil.PadTo([]byte("receiptroot"), 32),
 			LogsBloom:        bytesutil.PadTo([]byte("logsbloom"), 256),
 			PrevRandao:       bytesutil.PadTo([]byte("prevrandao"), 32),
@@ -700,7 +705,8 @@ func TestBeaconStateCapellaToProto(t *testing.T) {
 			{
 				BlockSummaryRoot: bytesutil.PadTo([]byte("blocksummaryroot2"), 32),
 				StateSummaryRoot: bytesutil.PadTo([]byte("statesummaryroot2"), 32),
-			}}
+			},
+		}
 		return nil
 	})
 	require.NoError(t, err)
@@ -781,6 +787,7 @@ func TestBeaconStateCapellaToProto(t *testing.T) {
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("parenthash"), 32), resultLatestExecutionPayloadHeader.ParentHash)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("feerecipient"), 20), resultLatestExecutionPayloadHeader.FeeRecipient)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("stateroot"), 32), resultLatestExecutionPayloadHeader.StateRoot)
+	assert.DeepEqual(t, bytesutil.PadTo([]byte("checkpointroot"), 32), resultLatestExecutionPayloadHeader.CheckpointRoot)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("receiptroot"), 32), resultLatestExecutionPayloadHeader.ReceiptsRoot)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("logsbloom"), 256), resultLatestExecutionPayloadHeader.LogsBloom)
 	assert.DeepEqual(t, bytesutil.PadTo([]byte("prevrandao"), 32), resultLatestExecutionPayloadHeader.PrevRandao)

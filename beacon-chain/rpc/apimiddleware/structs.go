@@ -552,44 +552,47 @@ type BlindedBeaconBlockBodyCapellaJson struct {
 }
 
 type ExecutionPayloadJson struct {
-	ParentHash    string   `json:"parent_hash" hex:"true"`
-	FeeRecipient  string   `json:"fee_recipient" hex:"true"`
-	StateRoot     string   `json:"state_root" hex:"true"`
-	ReceiptsRoot  string   `json:"receipts_root" hex:"true"`
-	LogsBloom     string   `json:"logs_bloom" hex:"true"`
-	PrevRandao    string   `json:"prev_randao" hex:"true"`
-	BlockNumber   string   `json:"block_number"`
-	GasLimit      string   `json:"gas_limit"`
-	GasUsed       string   `json:"gas_used"`
-	TimeStamp     string   `json:"timestamp"`
-	ExtraData     string   `json:"extra_data" hex:"true"`
-	BaseFeePerGas string   `json:"base_fee_per_gas" uint256:"true"`
-	BlockHash     string   `json:"block_hash" hex:"true"`
-	Transactions  []string `json:"transactions" hex:"true"`
+	ParentHash     string   `json:"parent_hash" hex:"true"`
+	FeeRecipient   string   `json:"fee_recipient" hex:"true"`
+	StateRoot      string   `json:"state_root" hex:"true"`
+	CheckpointRoot string   `json:"checkpoint_root" hex:"true"`
+	ReceiptsRoot   string   `json:"receipts_root" hex:"true"`
+	LogsBloom      string   `json:"logs_bloom" hex:"true"`
+	PrevRandao     string   `json:"prev_randao" hex:"true"`
+	BlockNumber    string   `json:"block_number"`
+	GasLimit       string   `json:"gas_limit"`
+	GasUsed        string   `json:"gas_used"`
+	TimeStamp      string   `json:"timestamp"`
+	ExtraData      string   `json:"extra_data" hex:"true"`
+	BaseFeePerGas  string   `json:"base_fee_per_gas" uint256:"true"`
+	BlockHash      string   `json:"block_hash" hex:"true"`
+	Transactions   []string `json:"transactions" hex:"true"`
 }
 
 type ExecutionPayloadCapellaJson struct {
-	ParentHash    string            `json:"parent_hash" hex:"true"`
-	FeeRecipient  string            `json:"fee_recipient" hex:"true"`
-	StateRoot     string            `json:"state_root" hex:"true"`
-	ReceiptsRoot  string            `json:"receipts_root" hex:"true"`
-	LogsBloom     string            `json:"logs_bloom" hex:"true"`
-	PrevRandao    string            `json:"prev_randao" hex:"true"`
-	BlockNumber   string            `json:"block_number"`
-	GasLimit      string            `json:"gas_limit"`
-	GasUsed       string            `json:"gas_used"`
-	TimeStamp     string            `json:"timestamp"`
-	ExtraData     string            `json:"extra_data" hex:"true"`
-	BaseFeePerGas string            `json:"base_fee_per_gas" uint256:"true"`
-	BlockHash     string            `json:"block_hash" hex:"true"`
-	Transactions  []string          `json:"transactions" hex:"true"`
-	Withdrawals   []*WithdrawalJson `json:"withdrawals"`
+	ParentHash     string            `json:"parent_hash" hex:"true"`
+	FeeRecipient   string            `json:"fee_recipient" hex:"true"`
+	StateRoot      string            `json:"state_root" hex:"true"`
+	CheckpointRoot string            `json:"checkpoint_root" hex:"true"`
+	ReceiptsRoot   string            `json:"receipts_root" hex:"true"`
+	LogsBloom      string            `json:"logs_bloom" hex:"true"`
+	PrevRandao     string            `json:"prev_randao" hex:"true"`
+	BlockNumber    string            `json:"block_number"`
+	GasLimit       string            `json:"gas_limit"`
+	GasUsed        string            `json:"gas_used"`
+	TimeStamp      string            `json:"timestamp"`
+	ExtraData      string            `json:"extra_data" hex:"true"`
+	BaseFeePerGas  string            `json:"base_fee_per_gas" uint256:"true"`
+	BlockHash      string            `json:"block_hash" hex:"true"`
+	Transactions   []string          `json:"transactions" hex:"true"`
+	Withdrawals    []*WithdrawalJson `json:"withdrawals"`
 }
 
 type ExecutionPayloadHeaderJson struct {
 	ParentHash       string `json:"parent_hash" hex:"true"`
 	FeeRecipient     string `json:"fee_recipient" hex:"true"`
 	StateRoot        string `json:"state_root" hex:"true"`
+	CheckpointRoot   string `json:"checkpoint_root" hex:"true"`
 	ReceiptsRoot     string `json:"receipts_root" hex:"true"`
 	LogsBloom        string `json:"logs_bloom" hex:"true"`
 	PrevRandao       string `json:"prev_randao" hex:"true"`
@@ -607,6 +610,7 @@ type ExecutionPayloadHeaderCapellaJson struct {
 	ParentHash       string `json:"parent_hash" hex:"true"`
 	FeeRecipient     string `json:"fee_recipient" hex:"true"`
 	StateRoot        string `json:"state_root" hex:"true"`
+	CheckpointRoot   string `json:"checkpoint_root" hex:"true"`
 	ReceiptsRoot     string `json:"receipts_root" hex:"true"`
 	LogsBloom        string `json:"logs_bloom" hex:"true"`
 	PrevRandao       string `json:"prev_randao" hex:"true"`

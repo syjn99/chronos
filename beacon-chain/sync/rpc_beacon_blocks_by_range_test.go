@@ -185,6 +185,7 @@ func TestRPCBeaconBlocksByRange_ReconstructsPayloads(t *testing.T) {
 
 	parent := bytesutil.PadTo([]byte("parentHash"), fieldparams.RootLength)
 	stateRoot := bytesutil.PadTo([]byte("stateRoot"), fieldparams.RootLength)
+	checkpointRoot := bytesutil.PadTo([]byte("checkpointRoot"), fieldparams.RootLength)
 	receiptsRoot := bytesutil.PadTo([]byte("receiptsRoot"), fieldparams.RootLength)
 	logsBloom := bytesutil.PadTo([]byte("logs"), fieldparams.LogsBloomLength)
 	tx := gethTypes.NewTransaction(
@@ -200,20 +201,21 @@ func TestRPCBeaconBlocksByRange_ReconstructsPayloads(t *testing.T) {
 	require.NoError(t, err)
 	blockHash := bytesutil.ToBytes32([]byte("foo"))
 	payload := &enginev1.ExecutionPayload{
-		ParentHash:    parent,
-		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:     stateRoot,
-		ReceiptsRoot:  receiptsRoot,
-		LogsBloom:     logsBloom,
-		PrevRandao:    blockHash[:],
-		BlockNumber:   0,
-		GasLimit:      0,
-		GasUsed:       0,
-		Timestamp:     0,
-		ExtraData:     make([]byte, 0),
-		BlockHash:     blockHash[:],
-		BaseFeePerGas: bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
-		Transactions:  encodedBinaryTxs,
+		ParentHash:     parent,
+		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:      stateRoot,
+		CheckpointRoot: checkpointRoot,
+		ReceiptsRoot:   receiptsRoot,
+		LogsBloom:      logsBloom,
+		PrevRandao:     blockHash[:],
+		BlockNumber:    0,
+		GasLimit:       0,
+		GasUsed:        0,
+		Timestamp:      0,
+		ExtraData:      make([]byte, 0),
+		BlockHash:      blockHash[:],
+		BaseFeePerGas:  bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
+		Transactions:   encodedBinaryTxs,
 	}
 	mockEngine := &mockExecution.EngineClient{
 		ExecutionPayloadByBlockHash: map[[32]byte]*enginev1.ExecutionPayload{
@@ -434,7 +436,8 @@ func TestRPCBeaconBlocksByRange_RPCHandlerRateLimitOverflow(t *testing.T) {
 		}
 	}
 	sendRequest := func(p1, p2 *p2ptest.TestP2P, r *Service,
-		req *ethpb.BeaconBlocksByRangeRequest, validateBlocks bool, success bool) error {
+		req *ethpb.BeaconBlocksByRangeRequest, validateBlocks bool, success bool,
+	) error {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		pcl := protocol.ID(p2p.RPCBlocksByRangeTopicV1)
@@ -701,7 +704,8 @@ func TestRPCBeaconBlocksByRange_EnforceResponseInvariants(t *testing.T) {
 	}
 	pcl := protocol.ID(p2p.RPCBlocksByRangeTopicV1)
 	sendRequest := func(p1, p2 *p2ptest.TestP2P, r *Service,
-		req *ethpb.BeaconBlocksByRangeRequest, processBlocks func([]*ethpb.SignedBeaconBlock)) error {
+		req *ethpb.BeaconBlocksByRangeRequest, processBlocks func([]*ethpb.SignedBeaconBlock),
+	) error {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		p2.BHost.SetStreamHandler(pcl, func(stream network.Stream) {
@@ -810,7 +814,8 @@ func TestRPCBeaconBlocksByRange_FilterBlocks(t *testing.T) {
 		}
 	}
 	saveBadBlocks := func(d db2.Database, chain *chainMock.ChainService,
-		req *ethpb.BeaconBlocksByRangeRequest, badBlockNum uint64, finalized bool) {
+		req *ethpb.BeaconBlocksByRangeRequest, badBlockNum uint64, finalized bool,
+	) {
 		blk := util.NewBeaconBlock()
 		blk.Block.Slot = 0
 		previousRoot, err := blk.Block.HashTreeRoot()
@@ -862,7 +867,8 @@ func TestRPCBeaconBlocksByRange_FilterBlocks(t *testing.T) {
 	}
 	pcl := protocol.ID(p2p.RPCBlocksByRangeTopicV1)
 	sendRequest := func(p1, p2 *p2ptest.TestP2P, r *Service,
-		req *ethpb.BeaconBlocksByRangeRequest, processBlocks func([]*ethpb.SignedBeaconBlock)) error {
+		req *ethpb.BeaconBlocksByRangeRequest, processBlocks func([]*ethpb.SignedBeaconBlock),
+	) error {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		p2.BHost.SetStreamHandler(pcl, func(stream network.Stream) {
@@ -1128,5 +1134,4 @@ func TestRPCBeaconBlocksByRange_FilterBlocks_PreviousRoot(t *testing.T) {
 
 	// pointer should reference a new root.
 	require.NotEqual(t, *ptrRt, [32]byte{})
-
 }

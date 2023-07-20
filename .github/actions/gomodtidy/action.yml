@@ -1,5 +1,13 @@
-name: 'Go mod tidy checker'
-description: 'Checks that `go mod tidy` has been applied.'
+name: "Go mod tidy checker"
+description: "Checks that `go mod tidy` has been applied."
+on:
+  workflow_call:
+    inputs:
+      github_token:
+        required: true
+        type: string
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.github_token }}

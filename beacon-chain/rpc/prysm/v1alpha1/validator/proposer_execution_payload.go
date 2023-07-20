@@ -238,29 +238,31 @@ func activationEpochNotReached(slot primitives.Slot) bool {
 
 func emptyPayload() *enginev1.ExecutionPayload {
 	return &enginev1.ExecutionPayload{
-		ParentHash:    make([]byte, fieldparams.RootLength),
-		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:     make([]byte, fieldparams.RootLength),
-		ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-		LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-		PrevRandao:    make([]byte, fieldparams.RootLength),
-		BaseFeePerGas: make([]byte, fieldparams.RootLength),
-		BlockHash:     make([]byte, fieldparams.RootLength),
-		Transactions:  make([][]byte, 0),
+		ParentHash:     make([]byte, fieldparams.RootLength),
+		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:      make([]byte, fieldparams.RootLength),
+		CheckpointRoot: make([]byte, fieldparams.RootLength),
+		ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+		LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+		PrevRandao:     make([]byte, fieldparams.RootLength),
+		BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+		BlockHash:      make([]byte, fieldparams.RootLength),
+		Transactions:   make([][]byte, 0),
 	}
 }
 
 func emptyPayloadCapella() *enginev1.ExecutionPayloadCapella {
 	return &enginev1.ExecutionPayloadCapella{
-		ParentHash:    make([]byte, fieldparams.RootLength),
-		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:     make([]byte, fieldparams.RootLength),
-		ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-		LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-		PrevRandao:    make([]byte, fieldparams.RootLength),
-		BaseFeePerGas: make([]byte, fieldparams.RootLength),
-		BlockHash:     make([]byte, fieldparams.RootLength),
-		Transactions:  make([][]byte, 0),
-		Withdrawals:   make([]*enginev1.Withdrawal, 0),
+		ParentHash:     make([]byte, fieldparams.RootLength),
+		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:      make([]byte, fieldparams.RootLength),
+		CheckpointRoot: make([]byte, fieldparams.RootLength),
+		ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+		LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+		PrevRandao:     make([]byte, fieldparams.RootLength),
+		BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+		BlockHash:      make([]byte, fieldparams.RootLength),
+		Transactions:   make([][]byte, 0),
+		Withdrawals:    make([]*enginev1.Withdrawal, 0),
 	}
 }

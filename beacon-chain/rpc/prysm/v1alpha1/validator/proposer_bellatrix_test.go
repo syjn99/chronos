@@ -93,6 +93,7 @@ func TestServer_setExecutionData(t *testing.T) {
 			Header: &v1.ExecutionPayloadHeaderCapella{
 				FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 				StateRoot:        make([]byte, fieldparams.RootLength),
+				CheckpointRoot:   make([]byte, fieldparams.RootLength),
 				ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 				LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 				PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -149,6 +150,7 @@ func TestServer_setExecutionData(t *testing.T) {
 			Header: &v1.ExecutionPayloadHeaderCapella{
 				FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 				StateRoot:        make([]byte, fieldparams.RootLength),
+				CheckpointRoot:   make([]byte, fieldparams.RootLength),
 				ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 				LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 				PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -230,6 +232,7 @@ func TestServer_setExecutionData(t *testing.T) {
 		require.Equal(t, uint64(4), e.BlockNumber()) // Local block
 	})
 }
+
 func TestServer_getPayloadHeader(t *testing.T) {
 	genesis := time.Now().Add(-time.Duration(params.BeaconConfig().SlotsPerEpoch) * time.Duration(params.BeaconConfig().SecondsPerSlot) * time.Second)
 	params.SetupTestConfigCleanup(t)
@@ -254,6 +257,7 @@ func TestServer_getPayloadHeader(t *testing.T) {
 		Header: &v1.ExecutionPayloadHeader{
 			FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 			PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -291,6 +295,7 @@ func TestServer_getPayloadHeader(t *testing.T) {
 			FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 			StateRoot:        make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 			PrevRandao:       make([]byte, fieldparams.RootLength),
 			BaseFeePerGas:    make([]byte, fieldparams.RootLength),
@@ -564,6 +569,7 @@ func TestServer_getBuilderBlock(t *testing.T) {
 					ParentHash:       make([]byte, fieldparams.RootLength),
 					FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 					StateRoot:        make([]byte, fieldparams.RootLength),
+					CheckpointRoot:   make([]byte, fieldparams.RootLength),
 					ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 					LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 					PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -613,6 +619,7 @@ func TestServer_validateBuilderSignature(t *testing.T) {
 			ParentHash:       make([]byte, fieldparams.RootLength),
 			FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 			PrevRandao:       make([]byte, fieldparams.RootLength),
