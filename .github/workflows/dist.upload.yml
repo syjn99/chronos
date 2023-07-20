@@ -36,4 +36,4 @@ jobs:
       
       - name: Drop metadata
         run: |
-          echo "<${{ format('https://{0}.s3.ap-northeast-2.amazonaws.com/{1}/{2}/{3}.zip',  env.S3_BUCKET_NAME, inputs.tag_name, inputs.version_name, inputs.build_type ) }}|${{ inputs.build_type }}>" >> /usr/local/share/notification/${{ env.S3_BUCKET_NAME }}
+          echo "<${{ format('https://{0}.s3.ap-northeast-2.amazonaws.com/{1}/{2}/{3}.zip',  env.S3_BUCKET_NAME, inputs.tag_name, inputs.version_name, inputs.build_type ) }}|${{ inputs.build_type }}>" >> /usr/local/share/notification/chronos/${{ env.S3_BUCKET_NAME }}
