@@ -320,15 +320,14 @@ func writeWalletPasswordToDisk(walletDir, password string) error {
 func (s *Server) InitializeDerivedWallet(
 	ctx context.Context, req *pb.InitializeDerivedWalletRequest,
 ) (*pb.InitializeDerivedWalletResponse, error) {
-	walletDir := s.walletDir
-	exists, err := wallet.Exists(walletDir)
+	exists, err := wallet.Exists(req.WalletDir)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
 	}
 	if exists {
 		// Open wallet
 		w, err := wallet.OpenWallet(ctx, &wallet.Config{
-			WalletDir:      walletDir,
+			WalletDir:      req.WalletDir,
 			WalletPassword: req.Password,
 		})
 		if err != nil {
