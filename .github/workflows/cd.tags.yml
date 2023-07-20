@@ -7,38 +7,37 @@ on:
       - '*_v*'
 
 jobs:
-  osx-amd64:
-    name: osx-amd64
-    uses: ./.github/workflows/dist.upload.yml
-    with:
-      build_type: chronos_osx_amd64
+  extract_name:
+    runs-on: [self-hosted, linux, x64]
+    outputs:
+      tag_name: ${{ steps.extract.outputs.tag_name }}
+      version_name: ${{ steps.extract.outputs.version_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Extract tag name, version
+        id: extract
+        run: |
+          tag_name="${{ github.ref_name }}"
+          tag_name="${tag_name%%_v*}"
+          version_name="${{ github.ref_name }}"
+          version_name="v${version_name#*_v}"
+          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
+          echo "version_name=$version_name" >> $GITHUB_OUTPUT
 
-  osx-amd64-minimal:
-    name: osx-amd64-minimal
+  build:
+    needs: extract_name
+    strategy:
+      matrix:
+        symbol-list: [chronos_osx_amd64, chronos_osx_arm64, chronos_windows, chronos_osx_amd64_minimal, chronos_osx_arm64_minimal, chronos_windows_minimal]
     uses: ./.github/workflows/dist.upload.yml
+    name: build
     with:
-      build_type: chronos_osx_amd64_minimal
+      build_type: ${{ matrix.symbol-list }}
+      tag_name: ${{ needs.extract_name.outputs.tag_name }}
+      version_name: ${{ needs.extract_name.outputs.version_name }}
 
-  osx-arm64:
-    name: osx-arm64
-    uses: ./.github/workflows/dist.upload.yml
-    with:
-      build_type: chronos_osx_arm64
-
-  osx-arm64-minimal:
-    name: osx-arm64-minimal
-    uses: ./.github/workflows/dist.upload.yml
-    with:
-      build_type: chronos_osx_arm64_minimal
-
-  windows:
-    name: windows
-    uses: ./.github/workflows/dist.upload.yml
-    with:
-      build_type: chronos_windows
-
-  windows-minimal:
-    name: windows-minimal
-    uses: ./.github/workflows/dist.upload.yml
-    with:
-      build_type: chronos_windows_minimal
+  notification:
+    needs: [extract_name, build]
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - run: sh /usr/local/share/notification/chronos/over_dist_notification.sh ${{ needs.extract_name.outputs.tag_name }} ${{ needs.extract_name.outputs.version_name }}
