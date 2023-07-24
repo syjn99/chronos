@@ -32,8 +32,8 @@ jobs:
         with:
           go-version: '1.20.3'
         id: go
-      - name: Build Protocol Buffers
-        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
+      # - name: Build Protocol Buffers
+      #   run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Run Gosec Security Scanner
         run: | # https://github.com/securego/gosec/issues/469
           export PATH=$PATH:$(go env GOPATH)/bin
@@ -52,8 +52,8 @@ jobs:
         with:
           go-version: '1.20.3'
           cache: false
-      - name: Build Protocol Buffers
-        run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
+      # - name: Build Protocol Buffers
+      #   run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
@@ -75,7 +75,7 @@ jobs:
           go-version: '1.20.3'
         id: go
 
-      - name: Check out code into the Go module directory
+      - name: Check out code into the Go module directoryrm -rf bo  
         uses: actions/checkout@v3
       - run: git config --global url."https://$GH_ACCESS_TOKEN@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
       - name: Get dependencies
