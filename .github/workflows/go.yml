@@ -84,8 +84,6 @@ jobs:
       - name: Get dependencies
         run: |
           go get -v -t -d ./...
-      # - name: Build Protocol Buffers
-      #   run: ./hack/update-go-pbs.sh && ./hack/update-go-ssz.sh
       - name: Build
         # Use blst tag to allow go and bazel builds for blst.
         run: go build -v ./...
