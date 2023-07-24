@@ -107,7 +107,7 @@ func NewBeaconState(options ...NewBeaconStateOption) (state.BeaconState, error) 
 		}
 	}
 
-	var st, err = state_native.InitializeFromProtoUnsafePhase0(seed)
+	st, err := state_native.InitializeFromProtoUnsafePhase0(seed)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func NewBeaconStateAltair(options ...func(state *ethpb.BeaconStateAltair) error)
 		}
 	}
 
-	var st, err = state_native.InitializeFromProtoUnsafeAltair(seed)
+	st, err := state_native.InitializeFromProtoUnsafeAltair(seed)
 	if err != nil {
 		return nil, err
 	}
@@ -212,6 +212,7 @@ func NewBeaconStateBellatrix(options ...func(state *ethpb.BeaconStateBellatrix) 
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, 32),
+			CheckpointRoot:   make([]byte, 32),
 			ReceiptsRoot:     make([]byte, 32),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -229,7 +230,7 @@ func NewBeaconStateBellatrix(options ...func(state *ethpb.BeaconStateBellatrix) 
 		}
 	}
 
-	var st, err = state_native.InitializeFromProtoUnsafeBellatrix(seed)
+	st, err := state_native.InitializeFromProtoUnsafeBellatrix(seed)
 	if err != nil {
 		return nil, err
 	}
@@ -279,6 +280,7 @@ func NewBeaconStateCapella(options ...func(state *ethpb.BeaconStateCapella) erro
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, 32),
+			CheckpointRoot:   make([]byte, 32),
 			ReceiptsRoot:     make([]byte, 32),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -297,7 +299,7 @@ func NewBeaconStateCapella(options ...func(state *ethpb.BeaconStateCapella) erro
 		}
 	}
 
-	var st, err = state_native.InitializeFromProtoUnsafeCapella(seed)
+	st, err := state_native.InitializeFromProtoUnsafeCapella(seed)
 	if err != nil {
 		return nil, err
 	}

@@ -143,7 +143,8 @@ func ProcessSlotsUsingNextSlotCache(
 	ctx context.Context,
 	parentState state.BeaconState,
 	parentRoot []byte,
-	slot primitives.Slot) (state.BeaconState, error) {
+	slot primitives.Slot,
+) (state.BeaconState, error) {
 	ctx, span := trace.StartSpan(ctx, "core.state.ProcessSlotsUsingNextSlotCache")
 	defer span.End()
 

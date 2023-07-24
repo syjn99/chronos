@@ -15,13 +15,15 @@ import (
 
 // defaultMinerAddress is used to send deposits and test transactions in the e2e test.
 // This account is given a large initial balance in the genesis block in test setups.
-const defaultMinerAddress = "0x878705ba3f8bc32fcf7f4caa1a35e72af65cf766"
-const defaultTestChainId int64 = 1337
-const defaultCoinbase = "0x0000000000000000000000000000000000000000"
-const defaultDifficulty = "1"
-const defaultMixhash = "0x0000000000000000000000000000000000000000000000000000000000000000"
-const defaultParenthash = "0x0000000000000000000000000000000000000000000000000000000000000000"
-const defaultMinerBalance = "100000000000000000000000000000"
+const (
+	defaultMinerAddress       = "0x878705ba3f8bc32fcf7f4caa1a35e72af65cf766"
+	defaultTestChainId  int64 = 1337
+	defaultCoinbase           = "0x0000000000000000000000000000000000000000"
+	defaultDifficulty         = "1"
+	defaultMixhash            = "0x0000000000000000000000000000000000000000000000000000000000000000"
+	defaultParenthash         = "0x0000000000000000000000000000000000000000000000000000000000000000"
+	defaultMinerBalance       = "100000000000000000000000000000"
+)
 
 // DepositContractCode is the compiled deposit contract code, via https://github.com/protolambda/merge-genesis-tools
 // This is embedded into genesis so that we can start the chain at a merge block.
@@ -64,8 +66,10 @@ var DefaultDepositContractStorage = map[string]string{
 	"0x0000000000000000000000000000000000000000000000000000000000000040": "0x985e929f70af28d0bdd1a90a808f977f597c7c778c489e98d3bd8910d31ac0f7",
 }
 
-var bigz = big.NewInt(0)
-var minerBalance = big.NewInt(0)
+var (
+	bigz         = big.NewInt(0)
+	minerBalance = big.NewInt(0)
+)
 
 // DefaultCliqueSigner is the testnet miner (clique signer) address encoded in the special way EIP-225 requires.
 // EIP-225 assigns a special meaning to the `extra-data` field in the block header for clique chains.
@@ -184,8 +188,8 @@ func defaultDepositContractAllocation(contractAddress string) depositAllocation 
 	}
 }
 
-func deterministicNonce(i uint64) uint64 {
-	return math.MaxUint64/2 + i
+func deterministicNonce(i uint32) uint32 {
+	return math.MaxUint32/2 + i
 }
 
 func init() {

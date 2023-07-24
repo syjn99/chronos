@@ -43,8 +43,7 @@ var (
 	_ = EngineCaller(&mocks.EngineClient{})
 )
 
-type RPCClientBad struct {
-}
+type RPCClientBad struct{}
 
 func (RPCClientBad) Close() {}
 func (RPCClientBad) BatchCall([]gethRPC.BatchElem) error {
@@ -696,6 +695,7 @@ func TestReconstructFullBellatrixBlock(t *testing.T) {
 		jsonPayload["miner"] = common.BytesToAddress([]byte("miner"))
 		jsonPayload["stateRoot"] = common.BytesToHash([]byte("state"))
 		jsonPayload["transactionsRoot"] = common.BytesToHash([]byte("txs"))
+		jsonPayload["checkpointRoot"] = common.BytesToHash([]byte("checkpoint"))
 		jsonPayload["receiptsRoot"] = common.BytesToHash([]byte("receipts"))
 		jsonPayload["logsBloom"] = gethtypes.BytesToBloom([]byte("bloom"))
 		jsonPayload["gasLimit"] = hexutil.EncodeUint64(1)
@@ -855,7 +855,6 @@ func TestReconstructFullBellatrixBlockBatch(t *testing.T) {
 			}
 			require.NoError(t, json.NewEncoder(w).Encode(respJSON))
 			require.NoError(t, json.NewEncoder(w).Encode(respJSON))
-
 		}))
 		defer srv.Close()
 
@@ -1184,7 +1183,7 @@ func Test_handleRPCError(t *testing.T) {
 	got := handleRPCError(nil)
 	require.Equal(t, true, got == nil)
 
-	var tests = []struct {
+	tests := []struct {
 		name             string
 		expected         error
 		expectedContains string
@@ -1274,55 +1273,58 @@ func fixtures() map[string]interface{} {
 	baz := bytesutil.PadTo([]byte("baz"), 256)
 	baseFeePerGas := big.NewInt(12345)
 	executionPayloadFixture := &pb.ExecutionPayload{
-		ParentHash:    foo[:],
-		FeeRecipient:  bar,
-		StateRoot:     foo[:],
-		ReceiptsRoot:  foo[:],
-		LogsBloom:     baz,
-		PrevRandao:    foo[:],
-		BlockNumber:   1,
-		GasLimit:      1,
-		GasUsed:       1,
-		Timestamp:     1,
-		ExtraData:     foo[:],
-		BaseFeePerGas: bytesutil.PadTo(baseFeePerGas.Bytes(), fieldparams.RootLength),
-		BlockHash:     foo[:],
-		Transactions:  [][]byte{foo[:]},
+		ParentHash:     foo[:],
+		FeeRecipient:   bar,
+		StateRoot:      foo[:],
+		CheckpointRoot: foo[:],
+		ReceiptsRoot:   foo[:],
+		LogsBloom:      baz,
+		PrevRandao:     foo[:],
+		BlockNumber:    1,
+		GasLimit:       1,
+		GasUsed:        1,
+		Timestamp:      1,
+		ExtraData:      foo[:],
+		BaseFeePerGas:  bytesutil.PadTo(baseFeePerGas.Bytes(), fieldparams.RootLength),
+		BlockHash:      foo[:],
+		Transactions:   [][]byte{foo[:]},
 	}
 	executionPayloadFixtureCapella := &pb.ExecutionPayloadCapella{
-		ParentHash:    foo[:],
-		FeeRecipient:  bar,
-		StateRoot:     foo[:],
-		ReceiptsRoot:  foo[:],
-		LogsBloom:     baz,
-		PrevRandao:    foo[:],
-		BlockNumber:   1,
-		GasLimit:      1,
-		GasUsed:       1,
-		Timestamp:     1,
-		ExtraData:     foo[:],
-		BaseFeePerGas: bytesutil.PadTo(baseFeePerGas.Bytes(), fieldparams.RootLength),
-		BlockHash:     foo[:],
-		Transactions:  [][]byte{foo[:]},
-		Withdrawals:   []*pb.Withdrawal{},
+		ParentHash:     foo[:],
+		FeeRecipient:   bar,
+		StateRoot:      foo[:],
+		CheckpointRoot: foo[:],
+		ReceiptsRoot:   foo[:],
+		LogsBloom:      baz,
+		PrevRandao:     foo[:],
+		BlockNumber:    1,
+		GasLimit:       1,
+		GasUsed:        1,
+		Timestamp:      1,
+		ExtraData:      foo[:],
+		BaseFeePerGas:  bytesutil.PadTo(baseFeePerGas.Bytes(), fieldparams.RootLength),
+		BlockHash:      foo[:],
+		Transactions:   [][]byte{foo[:]},
+		Withdrawals:    []*pb.Withdrawal{},
 	}
 	hexUint := hexutil.Uint64(1)
 	executionPayloadWithValueFixtureCapella := &pb.GetPayloadV2ResponseJson{
 		ExecutionPayload: &pb.ExecutionPayloadCapellaJSON{
-			ParentHash:    &common.Hash{'a'},
-			FeeRecipient:  &common.Address{'b'},
-			StateRoot:     &common.Hash{'c'},
-			ReceiptsRoot:  &common.Hash{'d'},
-			LogsBloom:     &hexutil.Bytes{'e'},
-			PrevRandao:    &common.Hash{'f'},
-			BaseFeePerGas: "0x123",
-			BlockHash:     &common.Hash{'g'},
-			Transactions:  []hexutil.Bytes{{'h'}},
-			Withdrawals:   []*pb.Withdrawal{},
-			BlockNumber:   &hexUint,
-			GasLimit:      &hexUint,
-			GasUsed:       &hexUint,
-			Timestamp:     &hexUint,
+			ParentHash:     &common.Hash{'a'},
+			FeeRecipient:   &common.Address{'b'},
+			StateRoot:      &common.Hash{'c'},
+			CheckpointRoot: &common.Hash{'d'},
+			ReceiptsRoot:   &common.Hash{'e'},
+			LogsBloom:      &hexutil.Bytes{'f'},
+			PrevRandao:     &common.Hash{'g'},
+			BaseFeePerGas:  "0x123",
+			BlockHash:      &common.Hash{'h'},
+			Transactions:   []hexutil.Bytes{{'i'}},
+			Withdrawals:    []*pb.Withdrawal{},
+			BlockNumber:    &hexUint,
+			GasLimit:       &hexUint,
+			GasUsed:        &hexUint,
+			Timestamp:      &hexUint,
 		},
 		BlockValue: "0x11fffffffff",
 	}
@@ -1331,27 +1333,29 @@ func fixtures() map[string]interface{} {
 	miner := bytesutil.PadTo([]byte("miner"), fieldparams.FeeRecipientLength)
 	stateRoot := bytesutil.PadTo([]byte("stateRoot"), fieldparams.RootLength)
 	transactionsRoot := bytesutil.PadTo([]byte("transactionsRoot"), fieldparams.RootLength)
+	checkpointRoot := bytesutil.PadTo([]byte("checkpointRoot"), fieldparams.RootLength)
 	receiptsRoot := bytesutil.PadTo([]byte("receiptsRoot"), fieldparams.RootLength)
 	logsBloom := bytesutil.PadTo([]byte("logs"), fieldparams.LogsBloomLength)
 	executionBlock := &pb.ExecutionBlock{
 		Version: version.Bellatrix,
 		Header: gethtypes.Header{
-			ParentHash:  common.BytesToHash(parent),
-			UncleHash:   common.BytesToHash(sha3Uncles),
-			Coinbase:    common.BytesToAddress(miner),
-			Root:        common.BytesToHash(stateRoot),
-			TxHash:      common.BytesToHash(transactionsRoot),
-			ReceiptHash: common.BytesToHash(receiptsRoot),
-			Bloom:       gethtypes.BytesToBloom(logsBloom),
-			Difficulty:  big.NewInt(1),
-			Number:      big.NewInt(2),
-			GasLimit:    3,
-			GasUsed:     4,
-			Time:        5,
-			Extra:       []byte("extra"),
-			MixDigest:   common.BytesToHash([]byte("mix")),
-			Nonce:       gethtypes.EncodeNonce(6),
-			BaseFee:     big.NewInt(7),
+			ParentHash:     common.BytesToHash(parent),
+			UncleHash:      common.BytesToHash(sha3Uncles),
+			Coinbase:       common.BytesToAddress(miner),
+			Root:           common.BytesToHash(stateRoot),
+			TxHash:         common.BytesToHash(transactionsRoot),
+			CheckpointRoot: common.BytesToHash(checkpointRoot),
+			ReceiptHash:    common.BytesToHash(receiptsRoot),
+			Bloom:          gethtypes.BytesToBloom(logsBloom),
+			Difficulty:     big.NewInt(1),
+			Number:         big.NewInt(2),
+			GasLimit:       3,
+			GasUsed:        4,
+			Time:           5,
+			Extra:          []byte("extra"),
+			MixDigest:      common.BytesToHash([]byte("mix")),
+			Nonce:          gethtypes.EncodeNonce(6),
+			BaseFee:        big.NewInt(7),
 		},
 	}
 	status := &pb.PayloadStatus{
