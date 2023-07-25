@@ -1023,8 +1023,8 @@ def prysm_deps():
             "//third_party:com_github_ethereum_go_ethereum_secp256k1.patch",
         ],
         replace = "github.com/superblock-dev/kairos",
-        sum = "h1:rqw8syAWIvbkJBj0I+5oNG68aQHalj2zgaOZbq2nAL8=",
-        version = "v0.0.0-20230714074913-0ebf07654cfb",
+        sum = "h1:C+hcaHrlEbA2xp84/KpyCE9dcmzide3LIhrKAuDjPus=",
+        version = "v0.0.0-20230725040008-76a94c12bf9b",
     )
 
     go_repository(

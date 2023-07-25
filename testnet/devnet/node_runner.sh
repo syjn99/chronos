@@ -4,18 +4,14 @@ KAIROS_PATH=$BASEDIR/../../../kairos
 # Get the OS name
 os_name=$(uname)
 
+minimal=""
+
 authport=8551
 rpcport=4000
 monitorport=8080
 udpport=12000
 tcpport=13000
 rpcgatewayport=3500
-
-# Update over-devnet repository to recent one
-cd $BASEDIR/../../../over-devnet
-git fetch origin
-git checkout master
-git pull
 
 if [ "$1" = "clean" ]; then
     # Clear former data
@@ -24,6 +20,12 @@ if [ "$1" = "clean" ]; then
     exit 0
 
 elif [ "$1" = "init" ]; then
+    # Update over-devnet repository to recent one
+    cd $BASEDIR/../../../over-devnet
+    git fetch origin
+    git checkout master
+    git pull
+
     # copy genesis & config for main devnet
     cp ./under_devnet/files/genesis.ssz ../chronos/testnet/devnet/genesis.ssz
     cp ./under_devnet/files/config.yml ../chronos/testnet/devnet/config.yml
@@ -31,9 +33,18 @@ elif [ "$1" = "init" ]; then
     cd -
     
 elif [ "$1" = "pver" ]; then
+    echo "minimal build"
+    minimal="--config=minimal "
+
+    # Update over-devnet repository to recent one
+    cd $BASEDIR/../../../over-devnet
+    git fetch origin
+    git checkout master
+    git pull
+
     # copy genesis & config for minimal devnet (pver)
-    cp ./pver_devnet/files/genesis.ssz ../chronos/testnet/devnet/genesis.ssz
-    cp ./pver_devnet/files/config.yml ../chronos/testnet/devnet/config.yml
+    cp ./pver_devnet/files/genesis_minimal.ssz ../chronos/testnet/devnet/genesis.ssz
+    cp ./pver_devnet/files/config_minimal.yml ../chronos/testnet/devnet/config.yml
     cp ./pver_devnet/files/bootnode.yaml ../chronos/testnet/devnet/bootnode.yaml
     cd -
 
@@ -58,9 +69,8 @@ elif [ "$1" = "stop" ]; then
 
 elif [ "$1" = "run" ]; then
     rm -rf $BASEDIR/logs/chronos*
-    mkdir $BASEDIR/logs
 
-    nohup $BASEDIR/node/run_node.sh > logs/chronos.out &
+    nohup $BASEDIR/node/run_node.sh > $BASEDIR/logs/chronos.out &
     exit 0
 else
     echo "Invalid argument. should be one of below
@@ -102,7 +112,7 @@ echo "#!/bin/sh" > "$script_name"
 cat << EOF >> "$script_name"
 KAIROS_PATH=$KAIROS_PATH/testnet/devnet/node-0/geth
 
-bazel run --config=minimal //cmd/beacon-chain:beacon-chain -- \\
+bazel run $minimal//cmd/beacon-chain:beacon-chain -- \\
 -datadir=$BASEDIR/node \\
 -genesis-state=$BASEDIR/genesis.ssz \\
 -chain-config-file=$BASEDIR/config.yml \\
