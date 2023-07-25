@@ -806,6 +806,7 @@ func TestReconstructFullBellatrixBlockBatch(t *testing.T) {
 		jsonPayload["sha3Uncles"] = common.BytesToHash([]byte("uncles"))
 		jsonPayload["miner"] = common.BytesToAddress([]byte("miner"))
 		jsonPayload["stateRoot"] = common.BytesToHash([]byte("state"))
+		jsonPayload["checkpointRoot"] = common.BytesToHash([]byte("checkpoint"))
 		jsonPayload["transactionsRoot"] = common.BytesToHash([]byte("txs"))
 		jsonPayload["receiptsRoot"] = common.BytesToHash([]byte("receipts"))
 		jsonPayload["logsBloom"] = gethtypes.BytesToBloom([]byte("bloom"))
