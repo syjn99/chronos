@@ -1190,7 +1190,7 @@ func getFields() fields {
 		ParentHash:     root[:],
 		FeeRecipient:   b20,
 		StateRoot:      root[:],
-		Checkpointroot: root[:],
+		CheckpointRoot: root[:],
 		ReceiptsRoot:   root[:],
 		LogsBloom:      b256,
 		PrevRandao:     root[:],

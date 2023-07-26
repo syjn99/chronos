@@ -27,6 +27,7 @@ func TestBeaconStateMerkleProofs_phase0_notsupported(t *testing.T) {
 		require.ErrorContains(t, "not supported", err)
 	})
 }
+
 func TestBeaconStateMerkleProofs_altair(t *testing.T) {
 	ctx := context.Background()
 	altair, err := util.NewBeaconStateAltair()
@@ -106,7 +107,7 @@ func TestBeaconStateMerkleProofs_bellatrix(t *testing.T) {
 		"0x173669ae8794c057def63b20372114a628abb029354a2ef50d7a1aaa9a3dab4a",
 		"0xe8facaa9be1c488207092f135ca6159f7998f313459b4198f46a9433f8b346e6",
 		"0x0a7910590f2a08faa740a5c40e919722b80a786d18d146318309926a6b2ab95e",
-		"0xa83dc5a6222b6e5d5f11115ec4ba4035512c060e74908c56ebc25ad74dd25c18",
+		"0xecc58dee1410e7defb79493c2fbea1fdb1cfc9e301370367a499b60d7417e2a2",
 		"0x4616e1d9312a92eb228e8cd5483fa1fca64d99781d62129bc53718d194b98c45",
 	}
 	t.Run("current sync committee", func(t *testing.T) {

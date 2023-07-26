@@ -220,7 +220,8 @@ func TestProcessEpoch_BadBalanceBellatrix(t *testing.T) {
 }
 
 func createFullBellatrixBlockWithOperations(t *testing.T) (state.BeaconState,
-	*ethpb.SignedBeaconBlockBellatrix) {
+	*ethpb.SignedBeaconBlockBellatrix,
+) {
 	_, altairBlk := createFullAltairBlockWithOperations(t)
 	blk := &ethpb.SignedBeaconBlockBellatrix{
 		Block: &ethpb.BeaconBlockBellatrix{
@@ -239,17 +240,17 @@ func createFullBellatrixBlockWithOperations(t *testing.T) (state.BeaconState,
 				VoluntaryExits:    altairBlk.Block.Body.VoluntaryExits,
 				SyncAggregate:     altairBlk.Block.Body.SyncAggregate,
 				ExecutionPayload: &enginev1.ExecutionPayload{
-					ParentHash:    make([]byte, fieldparams.RootLength),
-					FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-					StateRoot:     make([]byte, fieldparams.RootLength),
-					CheckpointRoot make([]byte, fieldparams.RootLength),
-					ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-					LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-					PrevRandao:    make([]byte, fieldparams.RootLength),
-					BaseFeePerGas: bytesutil.PadTo([]byte{1, 2, 3, 4}, fieldparams.RootLength),
-					BlockHash:     make([]byte, fieldparams.RootLength),
-					Transactions:  make([][]byte, 0),
-					ExtraData:     make([]byte, 0),
+					ParentHash:     make([]byte, fieldparams.RootLength),
+					FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+					StateRoot:      make([]byte, fieldparams.RootLength),
+					CheckpointRoot: make([]byte, fieldparams.RootLength),
+					ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+					LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+					PrevRandao:     make([]byte, fieldparams.RootLength),
+					BaseFeePerGas:  bytesutil.PadTo([]byte{1, 2, 3, 4}, fieldparams.RootLength),
+					BlockHash:      make([]byte, fieldparams.RootLength),
+					Transactions:   make([][]byte, 0),
+					ExtraData:      make([]byte, 0),
 				},
 			},
 		},
@@ -260,7 +261,8 @@ func createFullBellatrixBlockWithOperations(t *testing.T) (state.BeaconState,
 }
 
 func createFullCapellaBlockWithOperations(t *testing.T) (state.BeaconState,
-	*ethpb.SignedBeaconBlockCapella) {
+	*ethpb.SignedBeaconBlockCapella,
+) {
 	_, bellatrixBlk := createFullBellatrixBlockWithOperations(t)
 	blk := &ethpb.SignedBeaconBlockCapella{
 		Block: &ethpb.BeaconBlockCapella{
@@ -279,18 +281,18 @@ func createFullCapellaBlockWithOperations(t *testing.T) (state.BeaconState,
 				VoluntaryExits:    bellatrixBlk.Block.Body.VoluntaryExits,
 				SyncAggregate:     bellatrixBlk.Block.Body.SyncAggregate,
 				ExecutionPayload: &enginev1.ExecutionPayloadCapella{
-					ParentHash:    make([]byte, fieldparams.RootLength),
-					FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-					StateRoot:     make([]byte, fieldparams.RootLength),
-					CheckpointRoot: make([]byte, fieldparams.RootLength), 
-					ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-					LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-					PrevRandao:    make([]byte, fieldparams.RootLength),
-					BaseFeePerGas: bytesutil.PadTo([]byte{1, 2, 3, 4}, fieldparams.RootLength),
-					BlockHash:     make([]byte, fieldparams.RootLength),
-					Transactions:  make([][]byte, 0),
-					Withdrawals:   make([]*enginev1.Withdrawal, 0),
-					ExtraData:     make([]byte, 0),
+					ParentHash:     make([]byte, fieldparams.RootLength),
+					FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+					StateRoot:      make([]byte, fieldparams.RootLength),
+					CheckpointRoot: make([]byte, fieldparams.RootLength),
+					ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+					LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+					PrevRandao:     make([]byte, fieldparams.RootLength),
+					BaseFeePerGas:  bytesutil.PadTo([]byte{1, 2, 3, 4}, fieldparams.RootLength),
+					BlockHash:      make([]byte, fieldparams.RootLength),
+					Transactions:   make([][]byte, 0),
+					Withdrawals:    make([]*enginev1.Withdrawal, 0),
+					ExtraData:      make([]byte, 0),
 				},
 			},
 		},
