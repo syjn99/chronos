@@ -36,7 +36,7 @@ func (e executionPayload) IsNil() bool {
 }
 
 // IsBlinded returns true if the underlying data is blinded.
-func (e executionPayload) IsBlinded() bool {
+func (executionPayload) IsBlinded() bool {
 	return false
 }
 
@@ -151,18 +151,18 @@ func (e executionPayload) Transactions() ([][]byte, error) {
 }
 
 // TransactionsRoot --
-func (e executionPayload) TransactionsRoot() ([]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayload) TransactionsRoot() ([]byte, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // Withdrawals --
-func (e executionPayload) Withdrawals() ([]*enginev1.Withdrawal, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayload) Withdrawals() ([]*enginev1.Withdrawal, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // WithdrawalsRoot --
-func (e executionPayload) WithdrawalsRoot() ([]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayload) WithdrawalsRoot() ([]byte, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // PbBellatrix --
@@ -172,12 +172,12 @@ func (e executionPayload) PbBellatrix() (*enginev1.ExecutionPayload, error) {
 
 // PbCapella --
 func (executionPayload) PbCapella() (*enginev1.ExecutionPayloadCapella, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // ValueInGwei --
 func (executionPayload) ValueInGwei() (uint64, error) {
-	return 0, consensus_types.ErrUnsupportedGetter
+	return 0, consensus_types.ErrUnsupportedField
 }
 
 // executionPayloadHeader is a convenience wrapper around a blinded beacon block body's execution header data structure
@@ -202,7 +202,7 @@ func (e executionPayloadHeader) IsNil() bool {
 }
 
 // IsBlinded returns true if the underlying data is a header.
-func (e executionPayloadHeader) IsBlinded() bool {
+func (executionPayloadHeader) IsBlinded() bool {
 	return true
 }
 
@@ -313,7 +313,7 @@ func (e executionPayloadHeader) BlockHash() []byte {
 
 // Transactions --
 func (executionPayloadHeader) Transactions() ([][]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // TransactionsRoot --
@@ -322,28 +322,28 @@ func (e executionPayloadHeader) TransactionsRoot() ([]byte, error) {
 }
 
 // Withdrawals --
-func (e executionPayloadHeader) Withdrawals() ([]*enginev1.Withdrawal, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayloadHeader) Withdrawals() ([]*enginev1.Withdrawal, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // WithdrawalsRoot --
-func (e executionPayloadHeader) WithdrawalsRoot() ([]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayloadHeader) WithdrawalsRoot() ([]byte, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // PbCapella --
 func (executionPayloadHeader) PbCapella() (*enginev1.ExecutionPayloadCapella, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // PbBellatrix --
 func (executionPayloadHeader) PbBellatrix() (*enginev1.ExecutionPayload, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // ValueInGwei --
 func (executionPayloadHeader) ValueInGwei() (uint64, error) {
-	return 0, consensus_types.ErrUnsupportedGetter
+	return 0, consensus_types.ErrUnsupportedField
 }
 
 // PayloadToHeader converts `payload` into execution payload header format.
@@ -398,7 +398,7 @@ func (e executionPayloadCapella) IsNil() bool {
 }
 
 // IsBlinded returns true if the underlying data is blinded.
-func (e executionPayloadCapella) IsBlinded() bool {
+func (executionPayloadCapella) IsBlinded() bool {
 	return false
 }
 
@@ -513,8 +513,8 @@ func (e executionPayloadCapella) Transactions() ([][]byte, error) {
 }
 
 // TransactionsRoot --
-func (e executionPayloadCapella) TransactionsRoot() ([]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayloadCapella) TransactionsRoot() ([]byte, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // Withdrawals --
@@ -523,8 +523,8 @@ func (e executionPayloadCapella) Withdrawals() ([]*enginev1.Withdrawal, error) {
 }
 
 // WithdrawalsRoot --
-func (e executionPayloadCapella) WithdrawalsRoot() ([]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayloadCapella) WithdrawalsRoot() ([]byte, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // PbCapella --
@@ -534,7 +534,7 @@ func (e executionPayloadCapella) PbCapella() (*enginev1.ExecutionPayloadCapella,
 
 // PbBellatrix --
 func (executionPayloadCapella) PbBellatrix() (*enginev1.ExecutionPayload, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // ValueInGwei --
@@ -565,7 +565,7 @@ func (e executionPayloadHeaderCapella) IsNil() bool {
 }
 
 // IsBlinded returns true if the underlying data is blinded.
-func (e executionPayloadHeaderCapella) IsBlinded() bool {
+func (executionPayloadHeaderCapella) IsBlinded() bool {
 	return true
 }
 
@@ -676,7 +676,7 @@ func (e executionPayloadHeaderCapella) BlockHash() []byte {
 
 // Transactions --
 func (executionPayloadHeaderCapella) Transactions() ([][]byte, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // TransactionsRoot --
@@ -685,8 +685,8 @@ func (e executionPayloadHeaderCapella) TransactionsRoot() ([]byte, error) {
 }
 
 // Withdrawals --
-func (e executionPayloadHeaderCapella) Withdrawals() ([]*enginev1.Withdrawal, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+func (executionPayloadHeaderCapella) Withdrawals() ([]*enginev1.Withdrawal, error) {
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // WithdrawalsRoot --
@@ -696,12 +696,12 @@ func (e executionPayloadHeaderCapella) WithdrawalsRoot() ([]byte, error) {
 
 // PbCapella --
 func (executionPayloadHeaderCapella) PbCapella() (*enginev1.ExecutionPayloadCapella, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // PbBellatrix --
 func (executionPayloadHeaderCapella) PbBellatrix() (*enginev1.ExecutionPayload, error) {
-	return nil, consensus_types.ErrUnsupportedGetter
+	return nil, consensus_types.ErrUnsupportedField
 }
 
 // ValueInGwei --
@@ -781,7 +781,7 @@ func IsEmptyExecutionData(data interfaces.ExecutionData) (bool, error) {
 
 	txs, err := data.Transactions()
 	switch {
-	case errors.Is(err, consensus_types.ErrUnsupportedGetter):
+	case errors.Is(err, consensus_types.ErrUnsupportedField):
 	case err != nil:
 		return false, err
 	default:
