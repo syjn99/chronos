@@ -12,6 +12,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/signing"
 	"github.com/prysmaticlabs/prysm/v4/cmd"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
+	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
@@ -221,7 +222,11 @@ func (s *Server) CreateAccountsAndDepositData(
 		return nil, err
 	}
 
-	latestIndex, err := createAccountsFromDerivedWallet(ctx, s.wallet, req.Password, req.NumAccounts)
+	decryptedPassword, err := aes.Decrypt([]byte(req.Password), s.cipherKey)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
+	}
+	latestIndex, err := createAccountsFromDerivedWallet(ctx, s.wallet, string(decryptedPassword), req.NumAccounts)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Could not recover accounts from wallet")
 	}
