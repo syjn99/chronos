@@ -61,16 +61,17 @@ func Test_unblindBuilderBlock(t *testing.T) {
 				b.Block.Slot = 1
 				b.Block.ProposerIndex = 2
 				b.Block.Body.ExecutionPayload = &v1.ExecutionPayload{
-					ParentHash:    make([]byte, fieldparams.RootLength),
-					FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-					StateRoot:     make([]byte, fieldparams.RootLength),
-					ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-					LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
-					PrevRandao:    make([]byte, fieldparams.RootLength),
-					BaseFeePerGas: make([]byte, fieldparams.RootLength),
-					BlockHash:     make([]byte, fieldparams.RootLength),
-					Transactions:  make([][]byte, 0),
-					GasLimit:      123,
+					ParentHash:     make([]byte, fieldparams.RootLength),
+					FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+					StateRoot:      make([]byte, fieldparams.RootLength),
+					CheckpointRoot: make([]byte, fieldparams.RootLength),
+					ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+					LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
+					PrevRandao:     make([]byte, fieldparams.RootLength),
+					BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+					BlockHash:      make([]byte, fieldparams.RootLength),
+					Transactions:   make([][]byte, 0),
+					GasLimit:       123,
 				}
 				wb, err := blocks.NewSignedBeaconBlock(b)
 				require.NoError(t, err)
@@ -144,6 +145,7 @@ func Test_unblindBuilderBlock(t *testing.T) {
 					ParentHash:       make([]byte, fieldparams.RootLength),
 					FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 					StateRoot:        make([]byte, fieldparams.RootLength),
+					CheckpointRoot:   make([]byte, fieldparams.RootLength),
 					ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 					LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 					PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -202,6 +204,7 @@ func Test_unblindBuilderBlock(t *testing.T) {
 					ParentHash:       make([]byte, fieldparams.RootLength),
 					FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 					StateRoot:        make([]byte, fieldparams.RootLength),
+					CheckpointRoot:   make([]byte, fieldparams.RootLength),
 					ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 					LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 					PrevRandao:       make([]byte, fieldparams.RootLength),
