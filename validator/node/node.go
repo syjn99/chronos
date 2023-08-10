@@ -78,6 +78,7 @@ type ValidatorClient struct {
 	walletInitialized *event.Feed
 	closeCh           chan struct{} // Channel to wait for termination notifications.
 	stopCh            chan struct{}
+	cipherKey         []byte
 }
 
 // NewValidatorClient creates a new instance of the Prysm validator client.
@@ -377,7 +378,17 @@ func (c *ValidatorClient) initializeForWeb(cliCtx *cli.Context) error {
 
 // Not initialize Wallet Here, initialize Wallet by call InitializeDerivedWallet api
 func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
-	var err error
+	// Read cyper key from stdin.
+	buffer := make([]byte, 32)
+	n, err := os.Stdin.Read(buffer)
+	if err != nil {
+		return err
+	}
+	if n != 32 {
+		return errors.New("invalid cyper key length")
+	}
+	c.cipherKey = buffer
+
 	dataDir := cliCtx.String(flags.WalletDirFlag.Name)
 	if cliCtx.String(cmd.DataDirFlag.Name) != cmd.DefaultDataDir() {
 		dataDir = cliCtx.String(cmd.DataDirFlag.Name)
@@ -773,6 +784,7 @@ func (c *ValidatorClient) registerRPCService(cliCtx *cli.Context) error {
 	clientCert := c.cliCtx.String(flags.CertFlag.Name)
 	server := rpc.NewServer(cliCtx.Context, &rpc.Config{
 		ValDB:                    c.db,
+		CipherKey:                c.cipherKey,
 		Host:                     rpcHost,
 		Port:                     fmt.Sprintf("%d", rpcPort),
 		WalletInitializedFeed:    c.walletInitialized,
