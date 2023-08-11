@@ -325,7 +325,7 @@ func (s *Server) InitializeDerivedWallet(
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
 	}
-	decryptedPassword, err := aes.Decrypt([]byte(req.Password), s.cipherKey)
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, []byte(req.Password))
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
 	}

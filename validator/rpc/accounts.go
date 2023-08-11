@@ -222,7 +222,7 @@ func (s *Server) CreateAccountsAndDepositData(
 		return nil, err
 	}
 
-	decryptedPassword, err := aes.Decrypt([]byte(req.Password), s.cipherKey)
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, []byte(req.Password))
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
 	}
