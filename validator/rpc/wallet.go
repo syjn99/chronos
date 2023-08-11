@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
@@ -325,7 +326,11 @@ func (s *Server) InitializeDerivedWallet(
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
 	}
-	decryptedPassword, err := aes.Decrypt(s.cipherKey, []byte(req.Password))
+	password, err := hexutil.Decode(req.Password)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Could not decode password")
+	}
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, password)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
 	}

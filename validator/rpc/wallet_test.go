@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/prysmaticlabs/prysm/v4/async/event"
@@ -378,6 +379,7 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	}
 	password := "testpassword"
 	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+
 	require.NoError(t, err)
 
 	// Test case 1. Working case.
@@ -385,7 +387,7 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	// new path
 	req1 := &pb.InitializeDerivedWalletRequest{
 		WalletDir:    testPath,
-		Password:     string(encryptedPassword),
+		Password:     hexutil.Encode(encryptedPassword),
 		MnemonicLang: "english",
 	}
 	res1, err1 := s.InitializeDerivedWallet(ctx, req1)
@@ -398,7 +400,7 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	// exist and normal path
 	req2 := &pb.InitializeDerivedWalletRequest{
 		WalletDir:    testPath,
-		Password:     string(encryptedPassword),
+		Password:     hexutil.Encode(encryptedPassword),
 		MnemonicLang: "english",
 	}
 	res2, err2 := s.InitializeDerivedWallet(ctx, req2)
@@ -423,7 +425,7 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	testPath = "./testpath"
 	req4 := &pb.InitializeDerivedWalletRequest{
 		WalletDir:    testPath,
-		Password:     string(wrongEncryptedPassword),
+		Password:     hexutil.Encode(wrongEncryptedPassword),
 		MnemonicLang: "english",
 	}
 	_, err4 := s.InitializeDerivedWallet(ctx, req4)
