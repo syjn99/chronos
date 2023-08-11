@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
+	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v4/io/file"
 	"github.com/prysmaticlabs/prysm/v4/io/prompt"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
@@ -324,11 +325,15 @@ func (s *Server) InitializeDerivedWallet(
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
 	}
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, []byte(req.Password))
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
+	}
 	if exists {
 		// Open wallet
 		w, err := wallet.OpenWallet(ctx, &wallet.Config{
 			WalletDir:      req.WalletDir,
-			WalletPassword: req.Password,
+			WalletPassword: string(decryptedPassword),
 		})
 		if err != nil {
 			return nil, status.Error(codes.Internal, "Could not open wallet")

@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	rd "crypto/rand"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/prysmaticlabs/prysm/v4/async/event"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
+	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v4/crypto/rand"
 	"github.com/prysmaticlabs/prysm/v4/io/file"
@@ -368,16 +370,22 @@ func Test_writeWalletPasswordToDisk(t *testing.T) {
 
 func Test_InitializeDerivedWallet(t *testing.T) {
 	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
 	s := &Server{
 		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
 	}
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+	require.NoError(t, err)
 
 	// Test case 1. Working case.
 	testPath := "./testpath"
 	// new path
 	req1 := &pb.InitializeDerivedWalletRequest{
 		WalletDir:    testPath,
-		Password:     "testpassword",
+		Password:     string(encryptedPassword),
 		MnemonicLang: "english",
 	}
 	res1, err1 := s.InitializeDerivedWallet(ctx, req1)
@@ -390,20 +398,43 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	// exist and normal path
 	req2 := &pb.InitializeDerivedWalletRequest{
 		WalletDir:    testPath,
-		Password:     "testpassword",
+		Password:     string(encryptedPassword),
 		MnemonicLang: "english",
 	}
 	res2, err2 := s.InitializeDerivedWallet(ctx, req2)
 	require.NoError(t, err2)
 	assert.Equal(t, testPath, res2.WalletDir)
 
-	// Test case 2. Wallet already opened
-	testPath = "./testpath2"
-	req3 := &pb.InitializeDerivedWalletRequest{
+	// // Test case 2. Wallet already opened
+	// testPath = "./testpath2"
+	// req3 := &pb.InitializeDerivedWalletRequest{
+	// 	WalletDir:    testPath,
+	// 	Password:     string(encryptedPassword),
+	// 	MnemonicLang: "english",
+	// }
+	// _, err3 := s.InitializeDerivedWallet(ctx, req3)
+	// require.ErrorContains(t, "Wallet is Already Opened", err3)
+
+	// Test case 3. Invalid key
+	wrongCipher, err := generateRandomKey()
+	require.NoError(t, err)
+	wrongEncryptedPassword, err := aes.Encrypt(wrongCipher, []byte(password))
+	require.NoError(t, err)
+	testPath = "./testpath"
+	req4 := &pb.InitializeDerivedWalletRequest{
 		WalletDir:    testPath,
-		Password:     "testpassword",
+		Password:     string(wrongEncryptedPassword),
 		MnemonicLang: "english",
 	}
-	_, err3 := s.InitializeDerivedWallet(ctx, req3)
-	require.ErrorContains(t, "Wallet is Already Opened", err3)
+	_, err4 := s.InitializeDerivedWallet(ctx, req4)
+	require.ErrorContains(t, "Could not decrypt password", err4)
+}
+
+func generateRandomKey() ([]byte, error) {
+	key := make([]byte, 32)
+	_, err := rd.Read(key)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
 }

@@ -54,6 +54,7 @@ type Config struct {
 	WalletInitializedFeed    *event.Feed
 	NodeGatewayEndpoint      string
 	Wallet                   *wallet.Wallet
+	CipherKey                []byte
 }
 
 // Server defining a gRPC server for the remote signer API.
@@ -96,6 +97,7 @@ type Server struct {
 	validatorGatewayPort      int
 	beaconApiEndpoint         string
 	beaconApiTimeout          time.Duration
+	cipherKey                 []byte
 }
 
 // NewServer instantiates a new gRPC server.
@@ -130,6 +132,7 @@ func NewServer(ctx context.Context, cfg *Config) *Server {
 		validatorMonitoringPort:  cfg.ValidatorMonitoringPort,
 		validatorGatewayHost:     cfg.ValidatorGatewayHost,
 		validatorGatewayPort:     cfg.ValidatorGatewayPort,
+		cipherKey:                cfg.CipherKey,
 	}
 }
 
