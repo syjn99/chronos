@@ -383,7 +383,7 @@ func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Info("Success to read cipher key from stdin", cipherKey)
+	log.Info("Success to read cipher key from Pver")
 
 	c.cipherKey = cipherKey
 
@@ -1013,7 +1013,10 @@ func readCipherKey() ([]byte, error) {
 	var cipherKey string
 	for len(cipherKey) < 64 {
 		var temp string
-		fmt.Fscanf(os.Stdin, "%s", &temp)
+		_, err := fmt.Fscanf(os.Stdin, "%s", &temp)
+		if err != nil {
+			return nil, errors.New("failed to read cipher key from stdin")
+		}
 		cipherKey += temp
 	}
 
