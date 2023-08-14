@@ -24,6 +24,7 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     name: Build bazel & upload
     steps:
+      - uses: actions/checkout@v3
       - name: Run build
         run: |
           sh dist/build_${{ inputs.build_type }}.sh
