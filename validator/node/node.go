@@ -378,16 +378,14 @@ func (c *ValidatorClient) initializeForWeb(cliCtx *cli.Context) error {
 
 // Not initialize Wallet Here, initialize Wallet by call InitializeDerivedWallet api
 func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
-	// Read cyper key from stdin.
-	buffer := make([]byte, 32)
-	n, err := os.Stdin.Read(buffer)
+	// Read cipher key from stdin.
+	cipherKey, err := readCipherKey()
 	if err != nil {
 		return err
 	}
-	if n != 32 {
-		return errors.New("invalid cyper key length")
-	}
-	c.cipherKey = buffer
+	log.Info("Success to read cipher key from Pver")
+
+	c.cipherKey = cipherKey
 
 	dataDir := cliCtx.String(flags.WalletDirFlag.Name)
 	if cliCtx.String(cmd.DataDirFlag.Name) != cmd.DefaultDataDir() {
@@ -1009,4 +1007,27 @@ func unmarshalFromFile(ctx context.Context, from string, to interface{}) error {
 
 func configureFastSSZHashingAlgorithm() {
 	fastssz.EnableVectorizedHTR = true
+}
+
+func readCipherKey() ([]byte, error) {
+	var cipherKey string
+	for len(cipherKey) < 64 {
+		var temp string
+		_, err := fmt.Fscanf(os.Stdin, "%s", &temp)
+		if err != nil {
+			return nil, errors.New("failed to read cipher key from stdin")
+		}
+		cipherKey += temp
+	}
+
+	data, err := hexutil.Decode(cipherKey)
+	if err != nil {
+		return nil, errors.New("invalid cipher key")
+	}
+
+	if len(data) != 32 {
+		return nil, errors.New("invalid cipher key length")
+	}
+
+	return data, nil
 }

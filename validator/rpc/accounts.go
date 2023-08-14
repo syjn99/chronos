@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/api/pagination"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/signing"
@@ -222,7 +223,11 @@ func (s *Server) CreateAccountsAndDepositData(
 		return nil, err
 	}
 
-	decryptedPassword, err := aes.Decrypt(s.cipherKey, []byte(req.Password))
+	password, err := hexutil.Decode(req.Password)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Could not decode password")
+	}
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, password)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
 	}
