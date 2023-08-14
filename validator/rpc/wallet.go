@@ -349,7 +349,7 @@ func (s *Server) InitializeDerivedWallet(
 		s.wallet = w
 	} else {
 		// Create wallet and open it
-		w, err := createDerivedKeymanagerWallet(ctx, req.WalletDir, req.Password, req.MnemonicLang)
+		w, err := createDerivedKeymanagerWallet(ctx, req.WalletDir, string(decryptedPassword), req.MnemonicLang)
 		if err != nil {
 			return nil, err
 		}
