@@ -32,4 +32,5 @@
     "go.lintOnSave": "off",
     "go.vetOnSave": "off",
     "go.buildFlags": ["-tags=minimal"],
+    "search.followSymlinks": false
 }

@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -245,6 +246,9 @@ func (*Server) ValidateKeystores(
 		if err := json.Unmarshal([]byte(encoded), &keystore); err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "Not a valid EIP-2335 keystore JSON file: %v", err)
 		}
+		if keystore.Description == "" && keystore.Name != "" {
+			keystore.Description = keystore.Name
+		}
 		if _, err := decryptor.Decrypt(keystore.Crypto, req.KeystoresPassword); err != nil {
 			doesNotDecrypt := strings.Contains(err.Error(), keymanager.IncorrectPasswordErrMsg)
 			if doesNotDecrypt {
@@ -310,6 +314,7 @@ func writeWalletPasswordToDisk(walletDir, password string) error {
 	}
 	passwordFilePath := filepath.Join(walletDir, wallet.DefaultWalletPasswordFile)
 	if file.FileExists(passwordFilePath) {
+		return fmt.Errorf("cannot write wallet password file as it already exists %s", passwordFilePath)
 	}
 	return file.WriteFile(passwordFilePath, []byte(password))
 }

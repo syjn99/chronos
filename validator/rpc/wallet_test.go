@@ -95,11 +95,11 @@ func TestServer_CreateWallet_Local(t *testing.T) {
 		cryptoFields, err := encryptor.Encrypt(privKey.Marshal(), strongPass)
 		require.NoError(t, err)
 		item := &keymanager.Keystore{
-			Crypto:  cryptoFields,
-			ID:      id.String(),
-			Version: encryptor.Version(),
-			Pubkey:  pubKey,
-			Name:    encryptor.Name(),
+			Crypto:      cryptoFields,
+			ID:          id.String(),
+			Version:     encryptor.Version(),
+			Pubkey:      pubKey,
+			Description: encryptor.Name(),
 		}
 		encodedFile, err := json.MarshalIndent(item, "", "\t")
 		require.NoError(t, err)
@@ -243,11 +243,11 @@ func TestServer_ValidateKeystores_OK(t *testing.T) {
 		cryptoFields, err := encryptor.Encrypt(privKey.Marshal(), strongPass)
 		require.NoError(t, err)
 		item := &keymanager.Keystore{
-			Crypto:  cryptoFields,
-			ID:      id.String(),
-			Version: encryptor.Version(),
-			Pubkey:  pubKey,
-			Name:    encryptor.Name(),
+			Crypto:      cryptoFields,
+			ID:          id.String(),
+			Version:     encryptor.Version(),
+			Pubkey:      pubKey,
+			Description: encryptor.Name(),
 		}
 		encodedFile, err := json.MarshalIndent(item, "", "\t")
 		require.NoError(t, err)
@@ -280,11 +280,11 @@ func TestServer_ValidateKeystores_OK(t *testing.T) {
 	cryptoFields, err := encryptor.Encrypt(privKey.Marshal(), differentPassword)
 	require.NoError(t, err)
 	item := &keymanager.Keystore{
-		Crypto:  cryptoFields,
-		ID:      id.String(),
-		Version: encryptor.Version(),
-		Pubkey:  pubKey,
-		Name:    encryptor.Name(),
+		Crypto:      cryptoFields,
+		ID:          id.String(),
+		Version:     encryptor.Version(),
+		Pubkey:      pubKey,
+		Description: encryptor.Name(),
 	}
 	encodedFile, err := json.MarshalIndent(item, "", "\t")
 	keystores = append(keystores, string(encodedFile))

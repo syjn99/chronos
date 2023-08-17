@@ -232,13 +232,13 @@ func New(cliCtx *cli.Context, opts ...Option) (*BeaconNode, error) {
 		return nil, err
 	}
 
-	log.Debugln("Registering Determinstic Genesis Service")
-	if err := beacon.registerDeterminsticGenesisService(); err != nil {
+	log.Debugln("Registering Deterministic Genesis Service")
+	if err := beacon.registerDeterministicGenesisService(); err != nil {
 		return nil, err
 	}
 
 	log.Debugln("Registering Blockchain Service")
-	if err := beacon.registerBlockchainService(beacon.forkChoicer, synchronizer); err != nil {
+	if err := beacon.registerBlockchainService(beacon.forkChoicer, synchronizer, beacon.initialSyncComplete); err != nil {
 		return nil, err
 	}
 
@@ -602,7 +602,7 @@ func (b *BeaconNode) registerAttestationPool() error {
 	return b.services.RegisterService(s)
 }
 
-func (b *BeaconNode) registerBlockchainService(fc forkchoice.ForkChoicer, gs *startup.ClockSynchronizer) error {
+func (b *BeaconNode) registerBlockchainService(fc forkchoice.ForkChoicer, gs *startup.ClockSynchronizer, syncComplete chan struct{}) error {
 	var web3Service *execution.Service
 	if err := b.services.FetchService(&web3Service); err != nil {
 		return err
@@ -633,6 +633,7 @@ func (b *BeaconNode) registerBlockchainService(fc forkchoice.ForkChoicer, gs *st
 		blockchain.WithFinalizedStateAtStartUp(b.finalizedStateAtStartUp),
 		blockchain.WithProposerIdsCache(b.proposerIdsCache),
 		blockchain.WithClockSynchronizer(gs),
+		blockchain.WithSyncComplete(syncComplete),
 	)
 
 	blockchainService, err := blockchain.NewService(b.ctx, opts...)
@@ -939,7 +940,7 @@ func (b *BeaconNode) registerGRPCGateway(router *mux.Router) error {
 	return b.services.RegisterService(g)
 }
 
-func (b *BeaconNode) registerDeterminsticGenesisService() error {
+func (b *BeaconNode) registerDeterministicGenesisService() error {
 	genesisTime := b.cliCtx.Uint64(flags.InteropGenesisTimeFlag.Name)
 	genesisValidators := b.cliCtx.Uint64(flags.InteropNumValidatorsFlag.Name)
 
@@ -1002,7 +1003,8 @@ func (b *BeaconNode) registerBuilderService(cliCtx *cli.Context) error {
 	opts := append(b.serviceFlagOpts.builderOpts,
 		builder.WithHeadFetcher(chainService),
 		builder.WithDatabase(b.db))
-	if cliCtx.Bool(flags.EnableRegistrationCache.Name) {
+	// make cache the default.
+	if !cliCtx.Bool(features.DisableRegistrationCache.Name) {
 		opts = append(opts, builder.WithRegistrationCache())
 	}
 	svc, err := builder.NewService(b.ctx, opts...)
