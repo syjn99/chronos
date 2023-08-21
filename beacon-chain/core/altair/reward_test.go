@@ -37,21 +37,21 @@ func Test_BaseReward(t *testing.T) {
 			name:      "active balance is 32eth",
 			valIdx:    0,
 			st:        genState(1),
-			want:      11448672,
+			want:      761035007584,
 			errString: "",
 		},
 		{
 			name:      "active balance is 32eth * target committee size",
 			valIdx:    0,
 			st:        genState(params.BeaconConfig().TargetCommitteeSize),
-			want:      1011904,
+			want:      5945585984,
 			errString: "",
 		},
 		{
-			name:      "active balance is 32eth * max validator per  committee size",
+			name:      "active balance is 32eth * max validator per committee size",
 			valIdx:    0,
 			st:        genState(params.BeaconConfig().MaxValidatorsPerCommittee),
-			want:      252960,
+			want:      371599104,
 			errString: "",
 		},
 	}
@@ -95,35 +95,35 @@ func Test_BaseRewardWithTotalBalance(t *testing.T) {
 			name:          "active balance is 1",
 			valIdx:        0,
 			activeBalance: 1,
-			want:          2048000000000,
-			errString:     "",
+			want:          0,
+			errString:     "active balance can't be lower than effective balance increment",
 		},
 		{
 			name:          "active balance is 1eth",
 			valIdx:        0,
 			activeBalance: params.BeaconConfig().EffectiveBalanceIncrement,
-			want:          64765024,
+			want:          24353120243520,
 			errString:     "",
 		},
 		{
 			name:          "active balance is 32eth",
 			valIdx:        0,
 			activeBalance: params.BeaconConfig().MaxEffectiveBalance,
-			want:          11448672,
+			want:          761035007584,
 			errString:     "",
 		},
 		{
 			name:          "active balance is 32eth * 1m validators",
 			valIdx:        0,
 			activeBalance: params.BeaconConfig().MaxEffectiveBalance * 1e9,
-			want:          544,
+			want:          1792,
 			errString:     "",
 		},
 		{
 			name:          "active balance is max uint64",
 			valIdx:        0,
 			activeBalance: math.MaxUint64,
-			want:          448,
+			want:          1312,
 			errString:     "",
 		},
 	}
@@ -143,50 +143,57 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 	helpers.ClearCache()
 	tests := []struct {
 		name          string
+		epoch         primitives.Epoch
 		activeBalance uint64
 		want          uint64
 		errString     string
 	}{
 		{
 			name:          "active balance is 0",
+			epoch:         primitives.Epoch(0),
 			activeBalance: 0,
 			want:          0,
 			errString:     "active balance can't be 0",
 		},
 		{
 			name:          "active balance is 1",
+			epoch:         primitives.Epoch(0),
 			activeBalance: 1,
-			want:          64000000000,
-			errString:     "",
+			want:          0,
+			errString:     "active balance can't be lower than effective balance increment",
 		},
 		{
 			name:          "active balance is 1eth",
+			epoch:         primitives.Epoch(0),
 			activeBalance: params.BeaconConfig().EffectiveBalanceIncrement,
-			want:          2023907,
+			want:          761035007610,
 			errString:     "",
 		},
 		{
 			name:          "active balance is 32eth",
+			epoch:         primitives.Epoch(0),
 			activeBalance: params.BeaconConfig().MaxEffectiveBalance,
-			want:          357771,
+			want:          23782343987,
 			errString:     "",
 		},
 		{
 			name:          "active balance is 32eth * 1m validators",
+			epoch:         primitives.Epoch(0),
 			activeBalance: params.BeaconConfig().MaxEffectiveBalance * 1e9,
-			want:          17,
+			want:          56,
 			errString:     "",
 		},
 		{
 			name:          "active balance is max uint64",
+			epoch:         primitives.Epoch(0),
 			activeBalance: math.MaxUint64,
-			want:          14,
+			want:          41,
 			errString:     "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := altair.BaseRewardPerIncrement(tt.activeBalance)
+			got, err := altair.BaseRewardPerIncrement(tt.epoch, tt.activeBalance)
 			if (err != nil) && (tt.errString != "") {
 				require.ErrorContains(t, tt.errString, err)
 				return

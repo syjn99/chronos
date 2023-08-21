@@ -6,9 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/signing"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	p2pType "github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/types"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
+	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
@@ -64,7 +66,8 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	state.BeaconState,
 	[]bls.PublicKey,
 	uint64,
-	error) {
+	error,
+) {
 	currentSyncCommittee, err := s.CurrentSyncCommittee()
 	if err != nil {
 		return nil, nil, 0, err
@@ -78,11 +81,8 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	}
 	votedKeys := make([]bls.PublicKey, 0, len(committeeKeys))
 
-	activeBalance, err := helpers.TotalActiveBalance(s)
-	if err != nil {
-		return nil, nil, 0, err
-	}
-	proposerReward, participantReward, err := SyncRewards(activeBalance)
+	curEpoch := time.CurrentEpoch(s)
+	proposerReward, participantReward, err := SyncRewards(curEpoch)
 	if err != nil {
 		return nil, nil, 0, err
 	}
@@ -148,14 +148,10 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 }
 
 // SyncRewards returns the proposer reward and the sync participant reward given the total active balance in state.
-func SyncRewards(activeBalance uint64) (proposerReward, participantReward uint64, err error) {
+func SyncRewards(epoch primitives.Epoch) (proposerReward, participantReward uint64, err error) {
 	cfg := params.BeaconConfig()
-	totalActiveIncrements := activeBalance / cfg.EffectiveBalanceIncrement
-	baseRewardPerInc, err := BaseRewardPerIncrement(activeBalance)
-	if err != nil {
-		return 0, 0, err
-	}
-	totalBaseRewards := baseRewardPerInc * totalActiveIncrements
+
+	totalBaseRewards := helpers.EpochIssuance(epoch)
 	maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
 	participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
 	proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)

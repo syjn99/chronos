@@ -112,7 +112,8 @@ func TestProcessSlashings(t *testing.T) {
 				},
 			},
 			wantedErr: "",
-		}}
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -181,7 +182,6 @@ func TestProcessProposedBlock(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestProcessBlock_AllEventsTrackedVals(t *testing.T) {

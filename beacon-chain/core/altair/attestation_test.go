@@ -58,7 +58,9 @@ func TestProcessAttestations_NeitherCurrentNorPrevEpoch(t *testing.T) {
 	att := util.HydrateAttestation(&ethpb.Attestation{
 		Data: &ethpb.AttestationData{
 			Source: &ethpb.Checkpoint{Epoch: 0, Root: []byte("hello-world")},
-			Target: &ethpb.Checkpoint{Epoch: 0}}})
+			Target: &ethpb.Checkpoint{Epoch: 0},
+		},
+	})
 
 	b := util.NewBeaconBlockAltair()
 	b.Block = &ethpb.BeaconBlockAltair{
@@ -169,7 +171,8 @@ func TestProcessAttestations_InvalidAggregationBitsLength(t *testing.T) {
 	att := &ethpb.Attestation{
 		Data: &ethpb.AttestationData{
 			Source: &ethpb.Checkpoint{Epoch: 0, Root: []byte("hello-world")},
-			Target: &ethpb.Checkpoint{Epoch: 0}},
+			Target: &ethpb.Checkpoint{Epoch: 0},
+		},
 		AggregationBits: aggBits,
 	}
 
@@ -294,7 +297,8 @@ func TestValidatorFlag_Has(t *testing.T) {
 		set      uint8
 		expected []uint8
 	}{
-		{name: "none",
+		{
+			name:     "none",
 			set:      0,
 			expected: []uint8{},
 		},
@@ -358,7 +362,8 @@ func TestValidatorFlag_Add(t *testing.T) {
 		expectedTrue  []uint8
 		expectedFalse []uint8
 	}{
-		{name: "none",
+		{
+			name:          "none",
 			set:           []uint8{},
 			expectedTrue:  []uint8{},
 			expectedFalse: []uint8{params.BeaconConfig().TimelySourceFlagIndex, params.BeaconConfig().TimelyTargetFlagIndex, params.BeaconConfig().TimelyHeadFlagIndex},
@@ -447,7 +452,8 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 		wantedBalance       uint64
 		wantedParticipation []byte
 	}{
-		{name: "none participated",
+		{
+			name:    "none participated",
 			indices: []uint64{}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: false,
 				targetFlagIndex: false,
@@ -456,7 +462,8 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 			wantedParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
 			wantedBalance:       32000000000,
 		},
-		{name: "some participated without flags",
+		{
+			name:    "some participated without flags",
 			indices: []uint64{0, 1, 2, 3}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: false,
 				targetFlagIndex: false,
@@ -465,32 +472,35 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 			wantedParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
 			wantedBalance:       32000000000,
 		},
-		{name: "some participated with some flags",
+		{
+			name:    "some participated with some flags",
 			indices: []uint64{0, 1, 2, 3}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: true,
 				targetFlagIndex: true,
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
-			wantedBalance:       32000090342,
+			wantedBalance:       32132713965,
 		},
-		{name: "all participated with some flags",
+		{
+			name:    "all participated with some flags",
 			indices: []uint64{0, 1, 2, 3, 4, 5, 6, 7}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: true,
 				targetFlagIndex: false,
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
-			wantedBalance:       32000063240,
+			wantedBalance:       32092899776,
 		},
-		{name: "all participated with all flags",
+		{
+			name:    "all participated with all flags",
 			indices: []uint64{0, 1, 2, 3, 4, 5, 6, 7}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: true,
 				targetFlagIndex: true,
 				headFlagIndex:   true,
 			},
 			wantedParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
-			wantedBalance:       32000243925,
+			wantedBalance:       32358327707,
 		},
 	}
 	for _, test := range tests {
@@ -543,7 +553,8 @@ func TestEpochParticipation(t *testing.T) {
 		wantedNumerator          uint64
 		wantedEpochParticipation []byte
 	}{
-		{name: "none participated",
+		{
+			name:    "none participated",
 			indices: []uint64{}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: false,
 				targetFlagIndex: false,
@@ -552,7 +563,8 @@ func TestEpochParticipation(t *testing.T) {
 			wantedNumerator:          0,
 			wantedEpochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
 		},
-		{name: "some participated without flags",
+		{
+			name:    "some participated without flags",
 			indices: []uint64{0, 1, 2, 3}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: false,
 				targetFlagIndex: false,
@@ -561,31 +573,34 @@ func TestEpochParticipation(t *testing.T) {
 			wantedNumerator:          0,
 			wantedEpochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
 		},
-		{name: "some participated with some flags",
+		{
+			name:    "some participated with some flags",
 			indices: []uint64{0, 1, 2, 3}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: true,
 				targetFlagIndex: true,
 				headFlagIndex:   false,
 			},
-			wantedNumerator:          40473600,
+			wantedNumerator:          59455856640,
 			wantedEpochParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
 		},
-		{name: "all participated with some flags",
+		{
+			name:    "all participated with some flags",
 			indices: []uint64{0, 1, 2, 3, 4, 5, 6, 7}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: true,
 				targetFlagIndex: false,
 				headFlagIndex:   false,
 			},
-			wantedNumerator:          28331520,
+			wantedNumerator:          41619099648,
 			wantedEpochParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
 		},
-		{name: "all participated with all flags",
+		{
+			name:    "all participated with all flags",
 			indices: []uint64{0, 1, 2, 3, 4, 5, 6, 7}, epochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0}, participatedFlags: map[uint8]bool{
 				sourceFlagIndex: true,
 				targetFlagIndex: true,
 				headFlagIndex:   true,
 			},
-			wantedNumerator:          109278720,
+			wantedNumerator:          160530812928,
 			wantedEpochParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
 		},
 	}

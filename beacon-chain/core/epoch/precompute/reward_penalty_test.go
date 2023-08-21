@@ -14,7 +14,6 @@ import (
 	fieldparams "github.com/prysmaticlabs/prysm/v4/config/fieldparams"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
-	"github.com/prysmaticlabs/prysm/v4/math"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v4/runtime/version"
 	"github.com/prysmaticlabs/prysm/v4/testing/assert"
@@ -51,11 +50,11 @@ func TestProcessRewardsAndPenaltiesPrecompute(t *testing.T) {
 	require.Equal(t, true, processedState.Version() == version.Phase0)
 
 	// Indices that voted everything except for head, lost a bit money
-	wanted := uint64(31999810265)
+	wanted := uint64(31721300657)
 	assert.Equal(t, wanted, beaconState.Balances()[4], "Unexpected balance")
 
 	// Indices that did not vote, lost more money
-	wanted = uint64(31999873505)
+	wanted = uint64(31814200433)
 	assert.Equal(t, wanted, beaconState.Balances()[0], "Unexpected balance")
 }
 
@@ -107,18 +106,20 @@ func TestAttestationDeltaPrecompute(t *testing.T) {
 	require.NoError(t, err)
 
 	attestedIndices := []primitives.ValidatorIndex{55, 1339, 1746, 1811, 1569}
+	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
+	currentEpochIncrement := totalBalance / effectiveBalanceIncrement
 	for _, i := range attestedIndices {
 		base, err := baseReward(beaconState, i)
 		require.NoError(t, err, "Could not get base reward")
 
 		// Base rewards for getting source right
-		wanted := attestedBalance*base/totalBalance +
-			bp.PrevEpochTargetAttested*base/totalBalance +
-			bp.PrevEpochHeadAttested*base/totalBalance
+		wanted := attestedBalance/effectiveBalanceIncrement*base/currentEpochIncrement +
+			bp.PrevEpochTargetAttested/effectiveBalanceIncrement*base/currentEpochIncrement +
+			bp.PrevEpochHeadAttested/effectiveBalanceIncrement*base/currentEpochIncrement
 		// Base rewards for proposer and attesters working together getting attestation
 		// on chain in the fatest manner
 		proposerReward := base / params.BeaconConfig().ProposerRewardQuotient
-		wanted += (base-proposerReward)*uint64(params.BeaconConfig().MinAttestationInclusionDelay) - 1
+		wanted += (base - proposerReward) * uint64(params.BeaconConfig().MinAttestationInclusionDelay)
 		assert.Equal(t, wanted, rewards[i], "Unexpected reward balance for validator with index %d", i)
 		// Since all these validators attested, they shouldn't get penalized.
 		assert.Equal(t, uint64(0), penalties[i], "Unexpected penalty balance")
@@ -254,7 +255,7 @@ func TestProcessRewardsAndPenaltiesPrecompute_SlashedInactivePenalty(t *testing.
 		penalty := 3 * base
 		proposerReward := base / params.BeaconConfig().ProposerRewardQuotient
 		penalty += params.BeaconConfig().BaseRewardsPerEpoch*base - proposerReward
-		penalty += vp[i].CurrentEpochEffectiveBalance * uint64(finalityDelay) / params.BeaconConfig().InactivityPenaltyQuotient
+		penalty += vp[i].CurrentEpochEffectiveBalance / params.BeaconConfig().EffectiveBalanceIncrement * uint64(finalityDelay) / params.BeaconConfig().InactivityPenaltyQuotient
 		assert.Equal(t, penalty, penalties[i], "Unexpected slashed indices penalty balance")
 		assert.Equal(t, uint64(0), rewards[i], "Unexpected slashed indices reward balance")
 	}
@@ -307,15 +308,17 @@ func TestProposerDeltaPrecompute_HappyCase(t *testing.T) {
 	require.NoError(t, err)
 
 	proposerIndex := primitives.ValidatorIndex(1)
-	b := &Balance{ActiveCurrentEpoch: 1000}
+	b := &Balance{ActiveCurrentEpoch: 1000000000000}
 	v := []*Validator{
 		{IsPrevEpochAttester: true, CurrentEpochEffectiveBalance: 32, ProposerIndex: proposerIndex},
 	}
 	r, err := ProposersDelta(beaconState, b, v)
 	require.NoError(t, err)
 
-	baseReward := v[0].CurrentEpochEffectiveBalance * params.BeaconConfig().BaseRewardFactor /
-		math.IntegerSquareRoot(b.ActiveCurrentEpoch) / params.BeaconConfig().BaseRewardsPerEpoch
+	curEpoch := time.CurrentEpoch(beaconState)
+	currentEpochIncrement := b.ActiveCurrentEpoch / params.BeaconConfig().EffectiveBalanceIncrement
+	vBalance := v[0].CurrentEpochEffectiveBalance / params.BeaconConfig().EffectiveBalanceIncrement
+	baseReward := vBalance * helpers.EpochIssuance(curEpoch) / currentEpochIncrement / params.BeaconConfig().BaseRewardsPerEpoch
 	proposerReward := baseReward / params.BeaconConfig().ProposerRewardQuotient
 
 	assert.Equal(t, proposerReward, r[proposerIndex], "Unexpected proposer reward")
@@ -372,8 +375,10 @@ func baseReward(state state.ReadOnlyBeaconState, index primitives.ValidatorIndex
 	if err != nil {
 		return 0, err
 	}
-	effectiveBalance := val.EffectiveBalance()
-	baseReward := effectiveBalance * params.BeaconConfig().BaseRewardFactor /
-		math.IntegerSquareRoot(totalBalance) / params.BeaconConfig().BaseRewardsPerEpoch
+	effectiveBalanceInc := val.EffectiveBalance() / params.BeaconConfig().EffectiveBalanceIncrement
+	totalBalanceInc := totalBalance / params.BeaconConfig().EffectiveBalanceIncrement
+	curEpoch := time.CurrentEpoch(state)
+	baseReward := effectiveBalanceInc * helpers.EpochIssuance(curEpoch) /
+		totalBalanceInc / params.BeaconConfig().BaseRewardsPerEpoch
 	return baseReward, nil
 }

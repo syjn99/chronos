@@ -3,10 +3,10 @@ package altair
 import (
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
-	"github.com/prysmaticlabs/prysm/v4/math"
 )
 
 // BaseReward takes state and validator index and calculate
@@ -40,7 +40,8 @@ func BaseRewardWithTotalBalance(s state.ReadOnlyBeaconState, index primitives.Va
 	}
 	cfg := params.BeaconConfig()
 	increments := val.EffectiveBalance() / cfg.EffectiveBalanceIncrement
-	baseRewardPerInc, err := BaseRewardPerIncrement(totalBalance)
+	curEpoch := time.CurrentEpoch(s)
+	baseRewardPerInc, err := BaseRewardPerIncrement(curEpoch, totalBalance)
 	if err != nil {
 		return 0, err
 	}
@@ -50,13 +51,18 @@ func BaseRewardWithTotalBalance(s state.ReadOnlyBeaconState, index primitives.Va
 // BaseRewardPerIncrement of the beacon state
 //
 // Spec code:
-// def get_base_reward_per_increment(state: BeaconState) -> Gwei:
+// def get_base_reward_per_increment(epoch, activeBalance) -> Gwei:
 //
-//	return Gwei(EFFECTIVE_BALANCE_INCREMENT * BASE_REWARD_FACTOR // integer_squareroot(get_total_active_balance(state)))
-func BaseRewardPerIncrement(activeBalance uint64) (uint64, error) {
+//	return Gwei(Issuance_Per_Epoch * EffectiveBalanceIncrement // get_total_active_balance(state))
+func BaseRewardPerIncrement(epoch primitives.Epoch, activeBalance uint64) (uint64, error) {
 	if activeBalance == 0 {
 		return 0, errors.New("active balance can't be 0")
 	}
+
 	cfg := params.BeaconConfig()
-	return cfg.EffectiveBalanceIncrement * cfg.BaseRewardFactor / math.CachedSquareRoot(activeBalance), nil
+	if activeBalance < cfg.EffectiveBalanceIncrement {
+		return 0, errors.New("active balance can't be lower than effective balance increment")
+	}
+	totalActiveIncrement := activeBalance / cfg.EffectiveBalanceIncrement
+	return helpers.EpochIssuance(epoch) / totalActiveIncrement, nil
 }

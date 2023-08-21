@@ -2,7 +2,6 @@ package altair_test
 
 import (
 	"context"
-	"math"
 	"testing"
 
 	"github.com/prysmaticlabs/go-bitfield"
@@ -57,7 +56,7 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 	var reward uint64
 	beaconState, reward, err = altair.ProcessSyncAggregate(context.Background(), beaconState, syncAggregate)
 	require.NoError(t, err)
-	assert.Equal(t, uint64(72192), reward)
+	assert.Equal(t, uint64(106170880), reward)
 
 	// Use a non-sync committee index to compare profitability.
 	syncCommittee := make(map[primitives.ValidatorIndex]bool)
@@ -197,7 +196,7 @@ func TestProcessSyncCommittee_DontPrecompute(t *testing.T) {
 	require.Equal(t, 511, len(votedKeys))
 	require.DeepEqual(t, committeeKeys[0], votedKeys[0].Marshal())
 	balances := st.Balances()
-	require.Equal(t, uint64(988), balances[idx])
+	require.Equal(t, uint64(1451559), balances[idx])
 }
 
 func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
@@ -237,18 +236,18 @@ func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
 			require.DeepEqual(t, true, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
-			require.Equal(t, uint64(32000000988), balances[idx])
+			require.Equal(t, uint64(32001451559), balances[idx])
 		} else {
 			pk := bytesutil.ToBytes48(committeeKeys[i])
 			require.DeepEqual(t, false, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
 			if idx != proposerIndex {
-				require.Equal(t, uint64(31999999012), balances[idx])
+				require.Equal(t, uint64(31998548441), balances[idx])
 			}
 		}
 	}
-	require.Equal(t, uint64(32000035108), balances[proposerIndex])
+	require.Equal(t, uint64(32051633881), balances[proposerIndex])
 }
 
 func Test_VerifySyncCommitteeSig(t *testing.T) {
@@ -290,57 +289,92 @@ func Test_VerifySyncCommitteeSig(t *testing.T) {
 func Test_SyncRewards(t *testing.T) {
 	tests := []struct {
 		name                  string
-		activeBalance         uint64
+		epoch                 primitives.Epoch
 		wantProposerReward    uint64
 		wantParticipantReward uint64
 		errString             string
 	}{
 		{
-			name:                  "active balance is 0",
-			activeBalance:         0,
-			wantProposerReward:    0,
-			wantParticipantReward: 0,
+			name:                  "epoch is 1 (year 1) ",
+			epoch:                 primitives.Epoch(0),
+			wantProposerReward:    207365,
+			wantParticipantReward: 1451559,
 			errString:             "active balance can't be 0",
 		},
 		{
-			name:                  "active balance is 1",
-			activeBalance:         1,
-			wantProposerReward:    0,
-			wantParticipantReward: 0,
+			name:                  "epoch is 82126 (year 2)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear + 1),
+			wantProposerReward:    190776,
+			wantParticipantReward: 1335434,
 			errString:             "",
 		},
 		{
-			name:                  "active balance is 1eth",
-			activeBalance:         params.BeaconConfig().EffectiveBalanceIncrement,
-			wantProposerReward:    0,
-			wantParticipantReward: 3,
+			name:                  "epoch is 164251 (year 3)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*2 + 1),
+			wantProposerReward:    174187,
+			wantParticipantReward: 1219309,
 			errString:             "",
 		},
 		{
-			name:                  "active balance is 32eth",
-			activeBalance:         params.BeaconConfig().MaxEffectiveBalance,
-			wantProposerReward:    3,
-			wantParticipantReward: 21,
+			name:                  "epoch is 82126 (year 4)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*3 + 1),
+			wantProposerReward:    157597,
+			wantParticipantReward: 1103184,
 			errString:             "",
 		},
 		{
-			name:                  "active balance is 32eth * 1m validators",
-			activeBalance:         params.BeaconConfig().MaxEffectiveBalance * 1e9,
-			wantProposerReward:    62780,
-			wantParticipantReward: 439463,
+			name:                  "epoch is 82126 (year 5)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*4 + 1),
+			wantProposerReward:    141008,
+			wantParticipantReward: 987060,
 			errString:             "",
 		},
 		{
-			name:                  "active balance is max uint64",
-			activeBalance:         math.MaxUint64,
-			wantProposerReward:    70368,
-			wantParticipantReward: 492581,
+			name:                  "epoch is 82126 (year 6)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*5 + 1),
+			wantProposerReward:    124419,
+			wantParticipantReward: 870935,
+			errString:             "",
+		},
+		{
+			name:                  "epoch is 82126 (year 7)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*6 + 1),
+			wantProposerReward:    107830,
+			wantParticipantReward: 754810,
+			errString:             "",
+		},
+		{
+			name:                  "epoch is 82126 (year 8)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*7 + 1),
+			wantProposerReward:    91240,
+			wantParticipantReward: 638685,
+			errString:             "",
+		},
+		{
+			name:                  "epoch is 82126 (year 9)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*8 + 1),
+			wantProposerReward:    74651,
+			wantParticipantReward: 522561,
+			errString:             "",
+		},
+		{
+			name:                  "epoch is 82126 (year 10)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*9 + 1),
+			wantProposerReward:    58062,
+			wantParticipantReward: 406436,
+			errString:             "",
+		},
+		{
+			name:                  "epoch is 82126 (year 11)",
+			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*10 + 1),
+			wantProposerReward:    49767,
+			wantParticipantReward: 348374,
 			errString:             "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			proposerReward, participantReward, err := altair.SyncRewards(tt.activeBalance)
+			proposerReward, participantReward, err := altair.SyncRewards(tt.epoch)
 			if (err != nil) && (tt.errString != "") {
 				require.ErrorContains(t, tt.errString, err)
 				return

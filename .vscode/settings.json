@@ -1,5 +1,4 @@
 {
-    "go.goroot": "${workspaceFolder}/bazel-${workspaceFolderBasename}/external/go_sdk",
     "go.toolsEnvVars": {
         "GOPACKAGESDRIVER": "${workspaceFolder}/tools/gopackagesdriver.sh"
     },
@@ -31,6 +30,5 @@
     "go.buildOnSave": "off",
     "go.lintOnSave": "off",
     "go.vetOnSave": "off",
-    "go.buildFlags": ["-tags=minimal"],
     "search.followSymlinks": false
 }

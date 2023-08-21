@@ -271,9 +271,11 @@ func AttestationsDelta(beaconState state.BeaconState, bal *precompute.Balance, v
 	cfg := params.BeaconConfig()
 	prevEpoch := time.PrevEpoch(beaconState)
 	finalizedEpoch := beaconState.FinalizedCheckpointEpoch()
-	increment := cfg.EffectiveBalanceIncrement
-	factor := cfg.BaseRewardFactor
-	baseRewardMultiplier := increment * factor / math.CachedSquareRoot(bal.ActiveCurrentEpoch)
+	curEpoch := time.CurrentEpoch(beaconState)
+	baseRewardPerIncrement, err := BaseRewardPerIncrement(curEpoch, bal.ActiveCurrentEpoch)
+	if err != nil {
+		return nil, err
+	}
 	leak := helpers.IsInInactivityLeak(prevEpoch, finalizedEpoch)
 
 	// Modified in Altair and Bellatrix.
@@ -285,7 +287,7 @@ func AttestationsDelta(beaconState state.BeaconState, bal *precompute.Balance, v
 	inactivityDenominator := bias * inactivityPenaltyQuotient
 
 	for i, v := range vals {
-		attDeltas[i], err = attestationDelta(bal, v, baseRewardMultiplier, inactivityDenominator, leak)
+		attDeltas[i], err = attestationDelta(bal, v, baseRewardPerIncrement, inactivityDenominator, leak)
 		if err != nil {
 			return nil, err
 		}
@@ -297,8 +299,9 @@ func AttestationsDelta(beaconState state.BeaconState, bal *precompute.Balance, v
 func attestationDelta(
 	bal *precompute.Balance,
 	val *precompute.Validator,
-	baseRewardMultiplier, inactivityDenominator uint64,
-	inactivityLeak bool) (*AttDelta, error) {
+	baseRewardPerIncrement, inactivityDenominator uint64,
+	inactivityLeak bool,
+) (*AttDelta, error) {
 	eligible := val.IsActivePrevEpoch || (val.IsSlashed && !val.IsWithdrawableCurrentEpoch)
 	// Per spec `ActiveCurrentEpoch` can't be 0 to process attestation delta.
 	if !eligible || bal.ActiveCurrentEpoch == 0 {
@@ -308,7 +311,7 @@ func attestationDelta(
 	cfg := params.BeaconConfig()
 	increment := cfg.EffectiveBalanceIncrement
 	effectiveBalance := val.CurrentEpochEffectiveBalance
-	baseReward := (effectiveBalance / increment) * baseRewardMultiplier
+	baseReward := (effectiveBalance / increment) * baseRewardPerIncrement
 	activeIncrement := bal.ActiveCurrentEpoch / increment
 
 	weightDenominator := cfg.WeightDenominator

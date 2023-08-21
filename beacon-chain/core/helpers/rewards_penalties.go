@@ -177,3 +177,14 @@ func IsInInactivityLeak(prevEpoch, finalizedEpoch primitives.Epoch) bool {
 func FinalityDelay(prevEpoch, finalizedEpoch primitives.Epoch) primitives.Epoch {
 	return prevEpoch - finalizedEpoch
 }
+
+// EpochIssuance returns the total amount of ETH(in Gwei) to be issued in the given epoch.
+func EpochIssuance(epoch primitives.Epoch) uint64 {
+	cfg := params.BeaconConfig()
+	issuanceRateIndex := epoch.Div(cfg.EpochsPerYear)
+	// After year 10 issuance rate is fixed to 1.5%
+	if issuanceRateIndex >= primitives.Epoch(len(cfg.IssuanceRate)) {
+		issuanceRateIndex = primitives.Epoch(len(cfg.IssuanceRate)) - 1
+	}
+	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100)
+}

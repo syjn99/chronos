@@ -7,11 +7,12 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
-	"github.com/prysmaticlabs/prysm/v4/math"
 )
 
-type attesterRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, []uint64, error)
-type proposerRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, error)
+type (
+	attesterRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, []uint64, error)
+	proposerRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, error)
+)
 
 // ProcessRewardsAndPenaltiesPrecompute processes the rewards and penalties of individual validator.
 // This is an optimized version by passing in precomputed validator attesting records and total epoch balances.
@@ -72,24 +73,23 @@ func AttestationsDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Val
 	prevEpoch := time.PrevEpoch(state)
 	finalizedEpoch := state.FinalizedCheckpointEpoch()
 
-	sqrtActiveCurrentEpoch := math.CachedSquareRoot(pBal.ActiveCurrentEpoch)
 	for i, v := range vp {
-		rewards[i], penalties[i] = attestationDelta(pBal, sqrtActiveCurrentEpoch, v, prevEpoch, finalizedEpoch)
+		rewards[i], penalties[i] = attestationDelta(pBal, v, prevEpoch, finalizedEpoch)
 	}
 	return rewards, penalties, nil
 }
 
-func attestationDelta(pBal *Balance, sqrtActiveCurrentEpoch uint64, v *Validator, prevEpoch, finalizedEpoch primitives.Epoch) (uint64, uint64) {
+func attestationDelta(pBal *Balance, v *Validator, prevEpoch, finalizedEpoch primitives.Epoch) (uint64, uint64) {
 	if !EligibleForRewards(v) || pBal.ActiveCurrentEpoch == 0 {
 		return 0, 0
 	}
 
 	baseRewardsPerEpoch := params.BeaconConfig().BaseRewardsPerEpoch
 	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
-	vb := v.CurrentEpochEffectiveBalance
-	br := vb * params.BeaconConfig().BaseRewardFactor / sqrtActiveCurrentEpoch / baseRewardsPerEpoch
+	currentEpochIncrement := pBal.ActiveCurrentEpoch / effectiveBalanceIncrement
+	vb := v.CurrentEpochEffectiveBalance / effectiveBalanceIncrement
+	br := vb * helpers.EpochIssuance(prevEpoch.Add(1)) / currentEpochIncrement / baseRewardsPerEpoch
 	r, p := uint64(0), uint64(0)
-	currentEpochBalance := pBal.ActiveCurrentEpoch / effectiveBalanceIncrement
 
 	// Process source reward / penalty
 	if v.IsPrevEpochAttester && !v.IsSlashed {
@@ -103,7 +103,7 @@ func attestationDelta(pBal *Balance, sqrtActiveCurrentEpoch uint64, v *Validator
 			r += br
 		} else {
 			rewardNumerator := br * (pBal.PrevEpochAttested / effectiveBalanceIncrement)
-			r += rewardNumerator / currentEpochBalance
+			r += rewardNumerator / currentEpochIncrement
 		}
 	} else {
 		p += br
@@ -117,7 +117,7 @@ func attestationDelta(pBal *Balance, sqrtActiveCurrentEpoch uint64, v *Validator
 			r += br
 		} else {
 			rewardNumerator := br * (pBal.PrevEpochTargetAttested / effectiveBalanceIncrement)
-			r += rewardNumerator / currentEpochBalance
+			r += rewardNumerator / currentEpochIncrement
 		}
 	} else {
 		p += br
@@ -131,7 +131,7 @@ func attestationDelta(pBal *Balance, sqrtActiveCurrentEpoch uint64, v *Validator
 			r += br
 		} else {
 			rewardNumerator := br * (pBal.PrevEpochHeadAttested / effectiveBalanceIncrement)
-			r += rewardNumerator / currentEpochBalance
+			r += rewardNumerator / currentEpochIncrement
 		}
 	} else {
 		p += br
@@ -159,16 +159,10 @@ func ProposersDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Valida
 	numofVals := state.NumValidators()
 	rewards := make([]uint64, numofVals)
 
-	totalBalance := pBal.ActiveCurrentEpoch
-	balanceSqrt := math.CachedSquareRoot(totalBalance)
-	// Balance square root cannot be 0, this prevents division by 0.
-	if balanceSqrt == 0 {
-		balanceSqrt = 1
-	}
-
-	baseRewardFactor := params.BeaconConfig().BaseRewardFactor
+	curEpoch := time.CurrentEpoch(state)
 	baseRewardsPerEpoch := params.BeaconConfig().BaseRewardsPerEpoch
 	proposerRewardQuotient := params.BeaconConfig().ProposerRewardQuotient
+	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
 	for _, v := range vp {
 		if uint64(v.ProposerIndex) >= uint64(len(rewards)) {
 			// This should never happen with a valid state / validator.
@@ -176,8 +170,9 @@ func ProposersDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Valida
 		}
 		// Only apply inclusion rewards to proposer only if the attested hasn't been slashed.
 		if v.IsPrevEpochAttester && !v.IsSlashed {
-			vBalance := v.CurrentEpochEffectiveBalance
-			baseReward := vBalance * baseRewardFactor / balanceSqrt / baseRewardsPerEpoch
+			currentEpochIncrement := pBal.ActiveCurrentEpoch / effectiveBalanceIncrement
+			vBalanceIncrement := v.CurrentEpochEffectiveBalance / effectiveBalanceIncrement
+			baseReward := vBalanceIncrement * helpers.EpochIssuance(curEpoch) / currentEpochIncrement / baseRewardsPerEpoch
 			proposerReward := baseReward / proposerRewardQuotient
 			rewards[v.ProposerIndex] += proposerReward
 		}

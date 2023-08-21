@@ -89,12 +89,15 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	HysteresisQuotient:             4,
 	HysteresisDownwardMultiplier:   1,
 	HysteresisUpwardMultiplier:     5,
+	IssuanceRate:                   [11]uint64{625, 575, 525, 475, 425, 375, 325, 275, 225, 175, 150},
+	IssuancePrecision:              100,
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,
 	MaxEffectiveBalance:       32 * 1e9,
 	EjectionBalance:           16 * 1e9,
 	EffectiveBalanceIncrement: 1 * 1e9,
+	MaxTokenSupply:            1000000000 * 1e9,
 
 	// Initial value constants.
 	BLSWithdrawalPrefixByte:         byte(0),
@@ -106,6 +109,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	SecondsPerSlot:                   12,
 	SlotsPerEpoch:                    32,
 	SqrRootSlotsPerEpoch:             5,
+	EpochsPerYear:                    82125, // 365(Days)*24(Hours)*60(minutes)*60(Seconds)/12(Seconds per slot)/32(Slots per epoch)
 	MinSeedLookahead:                 1,
 	MaxSeedLookahead:                 4,
 	EpochsPerEth1VotingPeriod:        64,

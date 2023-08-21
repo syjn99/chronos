@@ -105,7 +105,8 @@ func SetParticipationAndRewardProposer(
 	beaconState state.BeaconState,
 	targetEpoch primitives.Epoch,
 	indices []uint64,
-	participatedFlags map[uint8]bool, totalBalance uint64) (state.BeaconState, error) {
+	participatedFlags map[uint8]bool, totalBalance uint64,
+) (state.BeaconState, error) {
 	var proposerRewardNumerator uint64
 	currentEpoch := time.CurrentEpoch(beaconState)
 	var stateErr error
