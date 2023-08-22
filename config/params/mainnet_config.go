@@ -112,12 +112,12 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	EpochsPerYear:                    82125, // 365(Days)*24(Hours)*60(minutes)*60(Seconds)/12(Seconds per slot)/32(Slots per epoch)
 	MinSeedLookahead:                 1,
 	MaxSeedLookahead:                 4,
-	EpochsPerEth1VotingPeriod:        64,
+	EpochsPerEth1VotingPeriod:        16, // 512 slots
 	SlotsPerHistoricalRoot:           8192,
 	MinValidatorWithdrawabilityDelay: 256,
 	ShardCommitteePeriod:             256,
 	MinEpochsToInactivityPenalty:     4,
-	Eth1FollowDistance:               2048,
+	Eth1FollowDistance:               32,
 
 	// Fork choice algorithm constants.
 	ProposerScoreBoost:              40,
