@@ -2,7 +2,12 @@ package beacon
 
 import (
 	"context"
+	"encoding/hex"
+	"math"
+	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 	corehelpers "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
@@ -12,6 +17,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
+	"github.com/prysmaticlabs/prysm/v4/network"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/eth/v1"
 	"github.com/prysmaticlabs/prysm/v4/proto/migration"
 	"github.com/prysmaticlabs/prysm/v4/time/slots"
@@ -315,4 +321,146 @@ func handleValContainerErr(err error) error {
 		return status.Errorf(codes.InvalidArgument, "Invalid validator ID: %v", invalidIdErr)
 	}
 	return status.Errorf(codes.Internal, "Could not get validator container: %v", err)
+}
+
+type ValidatorEstimatedActivationResponse struct {
+	WaitingEpoch  uint64 `json:"waiting_epoch"`
+	EligibleEpoch uint64 `json:"eligible_epoch"`
+	Status        uint64 `json:"status"`
+}
+
+type Validator struct {
+	Index                      uint64
+	PublicKey                  []byte
+	ActivationEligibilityEpoch uint64
+	ActivationEpoch            uint64
+}
+
+// ListValidators returns filterable list of validators with their balance, status and index.
+func (bs *Server) EstimatedActivation(w http.ResponseWriter, r *http.Request) {
+	segments := strings.Split(r.URL.Path, "/")
+	pubKey := segments[len(segments)-1]
+	if pubKey == "estimated_activation" {
+		pubKey = ""
+	} else if !is96CharHex(pubKey) {
+		handleHTTPError(w, "this is not a proper BLS public key : "+pubKey, http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+	st, err := bs.HeadFetcher.HeadState(ctx)
+	if err != nil {
+		handleHTTPError(w, "could not get head state : "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	epoch := slots.ToEpoch(st.Slot())
+	allValidators := st.Validators()
+	lastActiveIdx, activeValCount := 0, uint64(0)
+	activationQ := make([]Validator, 0)
+	waitingEpoch, eligibleEpoch, status := uint64(0), uint64(0), uint64(0)
+	for i, validator := range allValidators {
+		readOnlyVal, err := statenative.NewValidator(validator)
+		if err != nil {
+			handleHTTPError(w, "could not convert validator: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		status, err := helpers.ValidatorStatus(readOnlyVal, epoch)
+		if err != nil {
+			handleHTTPError(w, "could not get validator sub status: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if status == ethpb.ValidatorStatus_ACTIVE {
+			lastActiveIdx = i
+			activeValCount++
+			if hex.EncodeToString(validator.GetPublicKey()) == pubKey {
+				response := &ValidatorEstimatedActivationResponse{
+					WaitingEpoch:  uint64(0),
+					EligibleEpoch: uint64(validator.ActivationEligibilityEpoch),
+					Status:        3,
+				}
+				network.WriteJson(w, response)
+				return
+			}
+			continue
+		}
+
+		subStatus, err := helpers.ValidatorSubStatus(readOnlyVal, epoch)
+		if err != nil {
+			handleHTTPError(w, "could not get validator sub status: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		if subStatus == ethpb.ValidatorStatus_PENDING_QUEUED {
+			activationQ = append(activationQ, Validator{
+				Index:                      uint64(i),
+				PublicKey:                  validator.GetPublicKey(),
+				ActivationEligibilityEpoch: uint64(validator.GetActivationEligibilityEpoch()),
+				ActivationEpoch:            uint64(validator.GetActivationEpoch()),
+			})
+		}
+	}
+
+	activationsPerEpoch := uint64(math.Max(float64(params.BeaconConfig().MinPerEpochChurnLimit), float64(activeValCount/params.BeaconConfig().ChurnLimitQuotient)))
+	baseEligibleSlots := params.BeaconConfig().Eth1FollowDistance + params.BeaconConfig().Eth1DataVotesLength()/2 + uint64(params.BeaconConfig().SlotsPerEpoch.Mul(3))
+
+	if len(pubKey) == 0 {
+		if len(activationQ) == 0 {
+			waitingEpoch = uint64(0)
+		} else {
+			waitingEpoch = (uint64(len(activationQ))+activationsPerEpoch)/activationsPerEpoch + uint64(params.BeaconConfig().MaxSeedLookahead)
+		}
+		eligibleEpoch = uint64(slots.ToEpoch(st.Slot().Add(baseEligibleSlots)))
+	} else {
+		if len(activationQ) == 0 {
+			waitingEpoch = uint64(0)
+			eligibleEpoch = uint64(slots.ToEpoch(st.Slot().Add(baseEligibleSlots)))
+		} else {
+			for _, val := range activationQ {
+				if pubKey == hex.EncodeToString(val.PublicKey) {
+					eligibleEpoch = val.ActivationEligibilityEpoch
+					if val.ActivationEpoch < uint64(params.BeaconConfig().FarFutureEpoch) {
+						waitingEpoch = val.ActivationEpoch - uint64(slots.ToEpoch(st.Slot()))
+						status = 2
+					} else {
+						pendingQueueSize := val.Index - uint64(lastActiveIdx)
+						waitingEpoch = uint64((pendingQueueSize+activationsPerEpoch)/activationsPerEpoch + uint64(params.BeaconConfig().MaxSeedLookahead))
+						status = 1
+					}
+					break
+				}
+			}
+			if status == 0 {
+				waitingEpoch = (uint64(len(activationQ))+activationsPerEpoch)/activationsPerEpoch + uint64(params.BeaconConfig().MaxSeedLookahead)
+				eligibleEpoch = uint64(slots.ToEpoch(st.Slot().Add(baseEligibleSlots)))
+			}
+		}
+	}
+
+	response := &ValidatorEstimatedActivationResponse{
+		WaitingEpoch:  waitingEpoch,
+		EligibleEpoch: eligibleEpoch,
+		Status:        status,
+	}
+	network.WriteJson(w, response)
+}
+
+func handleHTTPError(w http.ResponseWriter, message string, code int) {
+	errJson := &network.DefaultErrorJson{
+		Message: message,
+		Code:    code,
+	}
+	network.WriteError(w, errJson)
+}
+
+func is96CharHex(s string) bool {
+	if len(s) != 96 {
+		return false
+	}
+	match, err := regexp.MatchString("^[a-fA-F0-9]{96}$", s)
+	if err != nil {
+		return false
+	}
+
+	return match
 }

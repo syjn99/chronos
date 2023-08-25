@@ -186,8 +186,10 @@ func NewService(ctx context.Context, cfg *Config) *Service {
 }
 
 // paranoid build time check to ensure ChainInfoFetcher implements required interfaces
-var _ stategen.CanonicalChecker = blockchain.ChainInfoFetcher(nil)
-var _ stategen.CurrentSlotter = blockchain.ChainInfoFetcher(nil)
+var (
+	_ stategen.CanonicalChecker = blockchain.ChainInfoFetcher(nil)
+	_ stategen.CurrentSlotter   = blockchain.ChainInfoFetcher(nil)
+)
 
 // Start the gRPC server.
 func (s *Service) Start() {
@@ -384,6 +386,7 @@ func (s *Service) Start() {
 	s.cfg.Router.HandleFunc("/prysm/validators/performance", httpServer.GetValidatorPerformance)
 	s.cfg.Router.HandleFunc("/eth/v2/beacon/blocks", beaconChainServerV1.PublishBlockV2)
 	s.cfg.Router.HandleFunc("/eth/v2/beacon/blinded_blocks", beaconChainServerV1.PublishBlindedBlockV2)
+	s.cfg.Router.HandleFunc("/chronos/validator/estimated_activation/{pub_key}", beaconChainServerV1.EstimatedActivation)
 	ethpbv1alpha1.RegisterNodeServer(s.grpcServer, nodeServer)
 	ethpbservice.RegisterBeaconNodeServer(s.grpcServer, nodeServerV1)
 	ethpbv1alpha1.RegisterHealthServer(s.grpcServer, nodeServer)
