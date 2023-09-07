@@ -31,8 +31,10 @@ import (
 
 var log = logrus.WithField("prefix", "flags")
 
-const enabledFeatureFlag = "Enabled feature flag"
-const disabledFeatureFlag = "Disabled feature flag"
+const (
+	enabledFeatureFlag  = "Enabled feature flag"
+	disabledFeatureFlag = "Disabled feature flag"
+)
 
 // Flags is a struct to represent which features the client will perform on runtime.
 type Flags struct {
@@ -40,6 +42,7 @@ type Flags struct {
 	RemoteSlasherProtection             bool // RemoteSlasherProtection utilizes a beacon node with --slasher mode for validator slashing protection.
 	WriteSSZStateTransitions            bool // WriteSSZStateTransitions to tmp directory.
 	EnablePeerScorer                    bool // EnablePeerScorer enables experimental peer scoring in p2p.
+	DisableCheckBadPeer                 bool
 	DisableReorgLateBlocks              bool // DisableReorgLateBlocks disables reorgs of late blocks.
 	WriteWalletPasswordOnWebOnboarding  bool // WriteWalletPasswordOnWebOnboarding writes the password to disk after Prysm web signup.
 	EnableDoppelGanger                  bool // EnableDoppelGanger enables doppelganger protection on startup for the validator.
@@ -80,8 +83,10 @@ type Flags struct {
 	AggregateIntervals [3]time.Duration
 }
 
-var featureConfig *Flags
-var featureConfigLock sync.RWMutex
+var (
+	featureConfig     *Flags
+	featureConfigLock sync.RWMutex
+)
 
 // Get retrieves feature config.
 func Get() *Flags {
@@ -184,6 +189,11 @@ func ConfigureBeaconChain(ctx *cli.Context) error {
 	if ctx.Bool(disablePeerScorer.Name) {
 		logDisabled(disablePeerScorer)
 		cfg.EnablePeerScorer = false
+	}
+	cfg.DisableCheckBadPeer = false
+	if ctx.Bool(disableCheckBadPeer.Name) {
+		logEnabled(disableCheckBadPeer)
+		cfg.DisableCheckBadPeer = true
 	}
 	if ctx.Bool(disableBroadcastSlashingFlag.Name) {
 		logDisabled(disableBroadcastSlashingFlag)

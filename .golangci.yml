@@ -5,7 +5,7 @@ run:
   skip-dirs:
     - proto
     - tools/analyzers
-  timeout: 15m
+  timeout: 20m
   go: '1.20.3'
 
 linters:

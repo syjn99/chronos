@@ -49,6 +49,10 @@ var (
 		Name:  "disable-peer-scorer",
 		Usage: "(Danger): Disables P2P peer scorer. Do NOT use this in production!",
 	}
+	disableCheckBadPeer = &cli.BoolFlag{
+		Name:  "disable-check-bad-peer",
+		Usage: "(Danger): Disables checking if a peer is bad. Do NOT use this in production!",
+	}
 	writeWalletPasswordOnWebOnboarding = &cli.BoolFlag{
 		Name: "write-wallet-password-on-web-onboarding",
 		Usage: "(Danger): Writes the wallet password to the wallet directory on completing Prysm web onboarding. " +
@@ -195,6 +199,7 @@ var BeaconChainFlags = append(deprecatedBeaconFlags, append(deprecatedFlags, []c
 	SepoliaTestnet,
 	Mainnet,
 	disablePeerScorer,
+	disableCheckBadPeer,
 	disableBroadcastSlashingFlag,
 	enableSlasherFlag,
 	enableHistoricalSpaceRepresentation,

@@ -141,7 +141,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Additional context: https://github.com/ethereum/consensus-specs/issues/2132
 	// Bug prompting this change: https://github.com/prysmaticlabs/prysm/issues/7856
 	// Future optimization: https://github.com/prysmaticlabs/prysm/issues/7739
-	SecondsPerETH1Block: 14,
+	SecondsPerETH1Block: 12,
 
 	// State list length constants.
 	EpochsPerHistoricalVector: 65536,

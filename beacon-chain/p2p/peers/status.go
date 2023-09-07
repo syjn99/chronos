@@ -335,6 +335,9 @@ func (p *Status) IsBad(pid peer.ID) bool {
 
 // isBad is the lock-free version of IsBad.
 func (p *Status) isBad(pid peer.ID) bool {
+	if features.Get().DisableCheckBadPeer {
+		return false
+	}
 	// Do not disconnect from trusted peers.
 	if p.store.IsTrustedPeer(pid) {
 		return false
