@@ -357,3 +357,7 @@ func (v *ValidatorService) GenesisInfo(ctx context.Context) (*ethpb.Genesis, err
 	nc := ethpb.NewNodeClient(v.conn.GetGrpcClientConn())
 	return nc.GetGenesis(ctx, &emptypb.Empty{})
 }
+
+func (v *ValidatorService) IsWaitingKeyManagerInitialization() bool {
+	return v.validator.IsWaitingForKeymanagerInitialization()
+}

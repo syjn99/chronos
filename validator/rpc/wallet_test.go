@@ -373,9 +373,18 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	ctx := context.Background()
 	cipher, err := generateRandomKey()
 	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.MockValidator{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	s := &Server{
 		walletInitializedFeed: new(event.Feed),
 		cipherKey:             cipher,
+		validatorService:      vs,
 	}
 	password := "testpassword"
 	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
@@ -408,16 +417,19 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	assert.Equal(t, testPath, res2.WalletDir)
 
 	// // Test case 2. Wallet already opened
-	// testPath = "./testpath2"
-	// req3 := &pb.InitializeDerivedWalletRequest{
-	// 	WalletDir:    testPath,
-	// 	Password:     string(encryptedPassword),
-	// 	MnemonicLang: "english",
-	// }
-	// _, err3 := s.InitializeDerivedWallet(ctx, req3)
-	// require.ErrorContains(t, "Wallet is Already Opened", err3)
+	testPath = "./testpath2"
+	req3 := &pb.InitializeDerivedWalletRequest{
+		WalletDir:    testPath,
+		Password:     string(encryptedPassword),
+		MnemonicLang: "english",
+	}
+	_, err3 := s.InitializeDerivedWallet(ctx, req3)
+	require.ErrorContains(t, "Wallet is Already Opened", err3)
 
 	// Test case 3. Invalid key
+	s.wallet = nil
+	s.walletInitialized = false
+
 	wrongCipher, err := generateRandomKey()
 	require.NoError(t, err)
 	wrongEncryptedPassword, err := aes.Encrypt(wrongCipher, []byte(password))

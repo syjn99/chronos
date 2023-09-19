@@ -212,3 +212,7 @@ func (m *MockValidator) SetProposerSettings(_ context.Context, settings *validat
 	m.proposerSettings = settings
 	return nil
 }
+
+func (m *MockValidator) IsWaitingForKeymanagerInitialization() bool {
+	return true
+}

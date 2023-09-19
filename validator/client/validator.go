@@ -65,45 +65,46 @@ var (
 )
 
 type validator struct {
-	logValidatorBalances               bool
-	useWeb                             bool
-	emitAccountMetrics                 bool
-	domainDataLock                     sync.Mutex
-	attLogsLock                        sync.Mutex
-	aggregatedSlotCommitteeIDCacheLock sync.Mutex
-	highestValidSlotLock               sync.Mutex
-	prevBalanceLock                    sync.RWMutex
-	slashableKeysLock                  sync.RWMutex
-	eipImportBlacklistedPublicKeys     map[[fieldparams.BLSPubkeyLength]byte]bool
-	walletInitializedFeed              *event.Feed
-	attLogs                            map[[32]byte]*attSubmitted
-	startBalances                      map[[fieldparams.BLSPubkeyLength]byte]uint64
-	duties                             *ethpb.DutiesResponse
-	prevBalance                        map[[fieldparams.BLSPubkeyLength]byte]uint64
-	pubkeyToValidatorIndex             map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex
-	signedValidatorRegistrations       map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1
-	graffitiOrderedIndex               uint64
-	aggregatedSlotCommitteeIDCache     *lru.Cache
-	domainDataCache                    *ristretto.Cache
-	highestValidSlot                   primitives.Slot
-	genesisTime                        uint64
-	blockFeed                          *event.Feed
-	interopKeysConfig                  *local.InteropKeymanagerConfig
-	wallet                             *wallet.Wallet
-	graffitiStruct                     *graffiti.Graffiti
-	node                               iface.NodeClient
-	slashingProtectionClient           iface.SlasherClient
-	db                                 vdb.Database
-	beaconClient                       iface.BeaconChainClient
-	keyManager                         keymanager.IKeymanager
-	ticker                             slots.Ticker
-	validatorClient                    iface.ValidatorClient
-	graffiti                           []byte
-	voteStats                          voteStats
-	syncCommitteeStats                 syncCommitteeStats
-	Web3SignerConfig                   *remoteweb3signer.SetupConfig
-	proposerSettings                   *validatorserviceconfig.ProposerSettings
-	walletInitializedChannel           chan *wallet.Wallet
+	isWaitingForKeymanagerInitialization bool // used to check if validator is waiting for keymanager to be initialized Only for pver
+	logValidatorBalances                 bool
+	useWeb                               bool
+	emitAccountMetrics                   bool
+	domainDataLock                       sync.Mutex
+	attLogsLock                          sync.Mutex
+	aggregatedSlotCommitteeIDCacheLock   sync.Mutex
+	highestValidSlotLock                 sync.Mutex
+	prevBalanceLock                      sync.RWMutex
+	slashableKeysLock                    sync.RWMutex
+	eipImportBlacklistedPublicKeys       map[[fieldparams.BLSPubkeyLength]byte]bool
+	walletInitializedFeed                *event.Feed
+	attLogs                              map[[32]byte]*attSubmitted
+	startBalances                        map[[fieldparams.BLSPubkeyLength]byte]uint64
+	duties                               *ethpb.DutiesResponse
+	prevBalance                          map[[fieldparams.BLSPubkeyLength]byte]uint64
+	pubkeyToValidatorIndex               map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex
+	signedValidatorRegistrations         map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1
+	graffitiOrderedIndex                 uint64
+	aggregatedSlotCommitteeIDCache       *lru.Cache
+	domainDataCache                      *ristretto.Cache
+	highestValidSlot                     primitives.Slot
+	genesisTime                          uint64
+	blockFeed                            *event.Feed
+	interopKeysConfig                    *local.InteropKeymanagerConfig
+	wallet                               *wallet.Wallet
+	graffitiStruct                       *graffiti.Graffiti
+	node                                 iface.NodeClient
+	slashingProtectionClient             iface.SlasherClient
+	db                                   vdb.Database
+	beaconClient                         iface.BeaconChainClient
+	keyManager                           keymanager.IKeymanager
+	ticker                               slots.Ticker
+	validatorClient                      iface.ValidatorClient
+	graffiti                             []byte
+	voteStats                            voteStats
+	syncCommitteeStats                   syncCommitteeStats
+	Web3SignerConfig                     *remoteweb3signer.SetupConfig
+	proposerSettings                     *validatorserviceconfig.ProposerSettings
+	walletInitializedChannel             chan *wallet.Wallet
 }
 
 type validatorStatus struct {
@@ -117,6 +118,14 @@ func (v *validator) Done() {
 	v.ticker.Done()
 }
 
+// IsWaitingForKeymanagerInitialization returns true if the validator is waiting for the keymanager to be initialized. Only for pver
+func (v *validator) IsWaitingForKeymanagerInitialization() bool {
+	if v.useWeb && v.wallet == nil {
+		return v.isWaitingForKeymanagerInitialization
+	}
+	return false
+}
+
 // WaitForKeymanagerInitialization checks if the validator needs to wait for
 func (v *validator) WaitForKeymanagerInitialization(ctx context.Context) error {
 	genesisRoot, err := v.db.GenesisValidatorsRoot(ctx)
@@ -125,12 +134,16 @@ func (v *validator) WaitForKeymanagerInitialization(ctx context.Context) error {
 	}
 
 	if v.useWeb && v.wallet == nil {
+		if !v.isWaitingForKeymanagerInitialization {
+			v.isWaitingForKeymanagerInitialization = true
+		}
 		log.Info("Waiting for keymanager to initialize validator client with web UI")
 		// if wallet is not set, wait for it to be set through the UI
 		km, err := waitForWebWalletInitialization(ctx, v.walletInitializedFeed, v.walletInitializedChannel)
 		if err != nil {
 			return err
 		}
+		v.isWaitingForKeymanagerInitialization = false
 		v.keyManager = km
 	} else {
 		if v.interopKeysConfig != nil {

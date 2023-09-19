@@ -8,10 +8,11 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
-	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v4/io/file"
 	"github.com/prysmaticlabs/prysm/v4/io/prompt"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
@@ -327,6 +328,16 @@ func writeWalletPasswordToDisk(walletDir, password string) error {
 func (s *Server) InitializeDerivedWallet(
 	ctx context.Context, req *pb.InitializeDerivedWalletRequest,
 ) (*pb.InitializeDerivedWalletResponse, error) {
+	// initialize derived wallet can only be called once
+	if s.wallet != nil {
+		return nil, status.Error(codes.AlreadyExists, "Wallet is Already Opened")
+	}
+
+	// check if wallet Initialized Event channel is Opened
+	if !s.validatorService.IsWaitingKeyManagerInitialization() {
+		return nil, status.Error(codes.Unavailable, "Client is not ready to listen wallet initialized event")
+	}
+
 	exists, err := wallet.Exists(req.WalletDir)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
@@ -339,6 +350,7 @@ func (s *Server) InitializeDerivedWallet(
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
 	}
+
 	if exists {
 		// Open wallet
 		w, err := wallet.OpenWallet(ctx, &wallet.Config{

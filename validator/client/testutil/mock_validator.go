@@ -285,3 +285,7 @@ func (f *FakeValidator) SetProposerSettings(_ context.Context, settings *validat
 	f.proposerSettings = settings
 	return nil
 }
+
+func (f *FakeValidator) IsWaitingForKeymanagerInitialization() bool {
+	return false
+}
