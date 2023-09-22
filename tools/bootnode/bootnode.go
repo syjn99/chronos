@@ -108,6 +108,13 @@ func main() {
 	node := listener.Self()
 	log.Infof("Running bootnode: %s", node.String())
 
+	// Write the enr to a file.
+	err = os.WriteFile("./enr.txt", []byte(node.String()), 0600)
+	if err != nil {
+		log.WithError(err).Error("Failed to write to file")
+	}
+	fmt.Println("enr.txt file written successfully!")
+
 	handler := &handler{
 		listener: listener,
 	}
