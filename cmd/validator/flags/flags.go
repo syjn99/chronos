@@ -311,16 +311,10 @@ var (
 		Usage: "Skips the y/n confirmation userprompt for sending a deposit to the deposit contract",
 		Value: false,
 	}
-	// EnableWebFlag enables controlling the validator client via the Prysm web ui. This is a work in progress.
-	EnableWebFlag = &cli.BoolFlag{
-		Name:  "web",
-		Usage: "Enables the web portal for the validator client (work in progress)",
-		Value: false,
-	}
-	// EnablePverFlag enables controlling the validator client via the Pver.
-	EnablePverFlag = &cli.BoolFlag{
-		Name:  "pver",
-		Usage: "Enables validator client for pver",
+	// EnableOverNodeFlag enables controlling the validator client via the OverNode.
+	EnableOverNodeFlag = &cli.BoolFlag{
+		Name:  "over-node",
+		Usage: "Enables validator client for OverNode ",
 		Value: false,
 	}
 	// SlashingProtectionExportDirFlag allows specifying the outpt directory

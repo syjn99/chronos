@@ -58,7 +58,6 @@ import (
 	remoteweb3signer "github.com/prysmaticlabs/prysm/v4/validator/keymanager/remote-web3signer"
 	"github.com/prysmaticlabs/prysm/v4/validator/rpc"
 	validatormiddleware "github.com/prysmaticlabs/prysm/v4/validator/rpc/apimiddleware"
-	"github.com/prysmaticlabs/prysm/v4/validator/web"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -132,24 +131,10 @@ func NewValidatorClient(cliCtx *cli.Context) (*ValidatorClient, error) {
 
 	configureFastSSZHashingAlgorithm()
 
-	// If the --pver flag is enabled to administer the validator
-	// client via a pver, we start the validator client in a different way.
-	if cliCtx.IsSet(flags.EnablePverFlag.Name) {
-		if err := validatorClient.initializeForPver(cliCtx); err != nil {
-			return nil, err
-		}
-		return validatorClient, nil
-	}
-
-	// If the --web flag is enabled to administer the validator
-	// client via a web portal, we start the validator client in a different way.
-	// Change Web flag name to enable keymanager API, look at merging initializeFromCLI and initializeForWeb maybe after WebUI DEPRECATED.
-	if cliCtx.IsSet(flags.EnableWebFlag.Name) {
-		if cliCtx.IsSet(flags.Web3SignerURLFlag.Name) || cliCtx.IsSet(flags.Web3SignerPublicValidatorKeysFlag.Name) {
-			log.Warn("Remote Keymanager API enabled. Prysm web does not properly support web3signer at this time")
-		}
-		log.Info("Enabling web portal to manage the validator client")
-		if err := validatorClient.initializeForWeb(cliCtx); err != nil {
+	// If the --over-node flag is enabled to administer the validator
+	// client via a overNode, we start the validator client in a different way.
+	if cliCtx.IsSet(flags.EnableOverNodeFlag.Name) {
+		if err := validatorClient.initializeForOverNode(cliCtx); err != nil {
 			return nil, err
 		}
 		return validatorClient, nil
@@ -298,94 +283,14 @@ func (c *ValidatorClient) initializeFromCLI(cliCtx *cli.Context) error {
 	return nil
 }
 
-func (c *ValidatorClient) initializeForWeb(cliCtx *cli.Context) error {
-	var err error
-	dataDir := cliCtx.String(flags.WalletDirFlag.Name)
-	if cliCtx.IsSet(flags.Web3SignerURLFlag.Name) {
-		c.wallet = wallet.NewWalletForWeb3Signer()
-	} else {
-		// Read the wallet password file from the cli context.
-		if err = setWalletPasswordFilePath(cliCtx); err != nil {
-			return errors.Wrap(err, "could not read wallet password file")
-		}
-
-		// Read the wallet from the specified path.
-		w, err := wallet.OpenWalletOrElseCli(cliCtx, func(cliCtx *cli.Context) (*wallet.Wallet, error) {
-			return nil, nil
-		})
-		if err != nil {
-			return errors.Wrap(err, "could not open wallet")
-		}
-		c.wallet = w
-		if c.wallet != nil {
-			dataDir = c.wallet.AccountsDir()
-		}
-	}
-
-	if cliCtx.String(cmd.DataDirFlag.Name) != cmd.DefaultDataDir() {
-		dataDir = cliCtx.String(cmd.DataDirFlag.Name)
-	}
-	clearFlag := cliCtx.Bool(cmd.ClearDB.Name)
-	forceClearFlag := cliCtx.Bool(cmd.ForceClearDB.Name)
-
-	if clearFlag || forceClearFlag {
-		if dataDir == "" {
-			dataDir = cmd.DefaultDataDir()
-			if dataDir == "" {
-				// skipcq: RVV-A0003
-				log.Fatal(
-					"Could not determine your system'c HOME path, please specify a --datadir you wish " +
-						"to use for your validator data",
-				)
-			}
-		}
-		if err := clearDB(cliCtx.Context, dataDir, forceClearFlag); err != nil {
-			return err
-		}
-	}
-	log.WithField("databasePath", dataDir).Info("Checking DB")
-	valDB, err := kv.NewKVStore(cliCtx.Context, dataDir, &kv.Config{
-		PubKeys: nil,
-	})
-	if err != nil {
-		return errors.Wrap(err, "could not initialize db")
-	}
-	c.db = valDB
-	if err := valDB.RunUpMigrations(cliCtx.Context); err != nil {
-		return errors.Wrap(err, "could not run database migration")
-	}
-
-	if !cliCtx.Bool(cmd.DisableMonitoringFlag.Name) {
-		if err := c.registerPrometheusService(cliCtx); err != nil {
-			return err
-		}
-	}
-	if err := c.registerValidatorService(cliCtx); err != nil {
-		return err
-	}
-	if err := c.registerRPCService(cliCtx); err != nil {
-		return err
-	}
-	if err := c.registerRPCGatewayService(cliCtx); err != nil {
-		return err
-	}
-	gatewayHost := cliCtx.String(flags.GRPCGatewayHost.Name)
-	gatewayPort := cliCtx.Int(flags.GRPCGatewayPort.Name)
-	webAddress := fmt.Sprintf("http://%s:%d", gatewayHost, gatewayPort)
-	log.WithField("address", webAddress).Info(
-		"Starting Prysm web UI on address, open in browser to access",
-	)
-	return nil
-}
-
 // Not initialize Wallet Here, initialize Wallet by call InitializeDerivedWallet api
-func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
+func (c *ValidatorClient) initializeForOverNode(cliCtx *cli.Context) error {
 	// Read cipher key from stdin.
 	cipherKey, err := readCipherKey()
 	if err != nil {
 		return err
 	}
-	log.Info("Success to read cipher key from Pver")
+	log.Info("Success to read cipher key from OverNode")
 
 	c.cipherKey = cipherKey
 
@@ -437,13 +342,6 @@ func (c *ValidatorClient) initializeForPver(cliCtx *cli.Context) error {
 	if err := c.registerRPCGatewayService(cliCtx); err != nil {
 		return err
 	}
-	gatewayHost := cliCtx.String(flags.GRPCGatewayHost.Name)
-	gatewayPort := cliCtx.Int(flags.GRPCGatewayPort.Name)
-	webAddress := fmt.Sprintf("http://%s:%d", gatewayHost, gatewayPort) // TODO check and Remove Prysm web UI
-	log.WithField("address", webAddress).Info(
-		"Starting Prysm web UI on address, open in browser to access",
-	)
-
 	return nil
 }
 
@@ -517,7 +415,7 @@ func (c *ValidatorClient) registerValidatorService(cliCtx *cli.Context) error {
 		GrpcRetryDelay:             grpcRetryDelay,
 		GrpcHeadersFlag:            c.cliCtx.String(flags.GrpcHeadersFlag.Name),
 		ValDB:                      c.db,
-		UseWeb:                     c.cliCtx.Bool(flags.EnableWebFlag.Name) || c.cliCtx.Bool(flags.EnablePverFlag.Name),
+		UseWeb:                     c.cliCtx.Bool(flags.EnableOverNodeFlag.Name),
 		InteropKeysConfig:          interopKeysConfig,
 		Wallet:                     c.wallet,
 		WalletInitializedFeed:      c.walletInitialized,
@@ -821,6 +719,7 @@ func (c *ValidatorClient) registerRPCService(cliCtx *cli.Context) error {
 	walletDir := cliCtx.String(flags.WalletDirFlag.Name)
 	grpcHeaders := c.cliCtx.String(flags.GrpcHeadersFlag.Name)
 	clientCert := c.cliCtx.String(flags.CertFlag.Name)
+	isOverNode := c.cliCtx.Bool(flags.EnableOverNodeFlag.Name)
 	server := rpc.NewServer(cliCtx.Context, &rpc.Config{
 		ValDB:                    c.db,
 		CipherKey:                c.cipherKey,
@@ -844,6 +743,7 @@ func (c *ValidatorClient) registerRPCService(cliCtx *cli.Context) error {
 		ClientGrpcRetryDelay:     grpcRetryDelay,
 		ClientGrpcHeaders:        strings.Split(grpcHeaders, ","),
 		ClientWithCert:           clientCert,
+		IsOverNode:               isOverNode,
 	})
 	return c.services.RegisterService(server)
 }
@@ -862,6 +762,7 @@ func (c *ValidatorClient) registerRPCGatewayService(cliCtx *cli.Context) error {
 	rpcAddr := net.JoinHostPort(rpcHost, fmt.Sprintf("%d", rpcPort))
 	gatewayAddress := net.JoinHostPort(gatewayHost, fmt.Sprintf("%d", gatewayPort))
 	timeout := cliCtx.Int(cmd.ApiTimeoutFlag.Name)
+	isOverNode := c.cliCtx.Bool(flags.EnableOverNodeFlag.Name)
 	var allowedOrigins []string
 	if cliCtx.IsSet(flags.GPRCGatewayCorsDomain.Name) {
 		allowedOrigins = strings.Split(cliCtx.String(flags.GPRCGatewayCorsDomain.Name), ",")
@@ -877,10 +778,13 @@ func (c *ValidatorClient) registerRPCGatewayService(cliCtx *cli.Context) error {
 		validatorpb.RegisterHealthHandler,
 		validatorpb.RegisterAccountsHandler,
 		validatorpb.RegisterBeaconHandler,
-		validatorpb.RegisterSlashingProtectionHandler,
 		ethpbservice.RegisterKeyManagementHandler,
-		pb.RegisterPverHandler,
 	}
+
+	if isOverNode {
+		registrations = append(registrations, pb.RegisterOverNodeHandler)
+	}
+
 	gwmux := gwruntime.NewServeMux(
 		gwruntime.WithMarshalerOption(gwruntime.MIMEWildcard, &gwruntime.HTTPBodyMarshaler{
 			Marshaler: &gwruntime.JSONPb{
@@ -913,7 +817,7 @@ func (c *ValidatorClient) registerRPCGatewayService(cliCtx *cli.Context) error {
 		} else {
 			// Finally, we handle with the web server.
 			// DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
-			web.Handler(w, req)
+			// web.Handler(w, req)
 		}
 	}
 
@@ -939,30 +843,6 @@ func (c *ValidatorClient) registerRPCGatewayService(cliCtx *cli.Context) error {
 		return err
 	}
 	return c.services.RegisterService(gw)
-}
-
-func setWalletPasswordFilePath(cliCtx *cli.Context) error {
-	walletDir := cliCtx.String(flags.WalletDirFlag.Name)
-	defaultWalletPasswordFilePath := filepath.Join(walletDir, wallet.DefaultWalletPasswordFile)
-	if file.FileExists(defaultWalletPasswordFilePath) {
-		// Ensure file has proper permissions.
-		hasPerms, err := file.HasReadWritePermissions(defaultWalletPasswordFilePath)
-		if err != nil {
-			return err
-		}
-		if !hasPerms {
-			return fmt.Errorf(
-				"wallet password file %s does not have proper 0600 permissions",
-				defaultWalletPasswordFilePath,
-			)
-		}
-
-		// Set the filepath into the cli context.
-		if err := cliCtx.Set(flags.WalletPasswordFileFlag.Name, defaultWalletPasswordFilePath); err != nil {
-			return errors.Wrap(err, "could not set default wallet password file path")
-		}
-	}
-	return nil
 }
 
 func clearDB(ctx context.Context, dataDir string, force bool) error {

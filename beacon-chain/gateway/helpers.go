@@ -17,7 +17,7 @@ type MuxConfig struct {
 }
 
 // DefaultConfig returns a fully configured MuxConfig with standard gateway behavior.
-func DefaultConfig(enableDebugRPCEndpoints bool, enablePverRPCEndpoints bool, httpModules string) MuxConfig {
+func DefaultConfig(enableDebugRPCEndpoints bool, enableOverNodeRPCEndpoints bool, httpModules string) MuxConfig {
 	var v1AlphaPbHandler, ethPbHandler *gateway.PbMux
 	if flags.EnableHTTPPrysmAPI(httpModules) {
 		v1AlphaRegistrations := []gateway.PbHandlerRegistration{
@@ -29,8 +29,8 @@ func DefaultConfig(enableDebugRPCEndpoints bool, enablePverRPCEndpoints bool, ht
 		if enableDebugRPCEndpoints {
 			v1AlphaRegistrations = append(v1AlphaRegistrations, ethpbalpha.RegisterDebugHandler)
 		}
-		if enablePverRPCEndpoints {
-			v1AlphaRegistrations = append(v1AlphaRegistrations, ethpbalpha.RegisterPverHandler)
+		if enableOverNodeRPCEndpoints {
+			v1AlphaRegistrations = append(v1AlphaRegistrations, ethpbalpha.RegisterOverNodeHandler)
 		}
 
 		v1AlphaMux := gwruntime.NewServeMux(

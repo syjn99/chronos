@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"path/filepath"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -31,6 +30,7 @@ import (
 
 // Config options for the gRPC server.
 type Config struct {
+	IsOverNode               bool
 	ValidatorGatewayHost     string
 	ValidatorGatewayPort     int
 	ValidatorMonitoringHost  string
@@ -89,6 +89,7 @@ type Server struct {
 	walletDir                 string
 	wallet                    *wallet.Wallet
 	walletInitializedFeed     *event.Feed
+	isOverNode                bool
 	walletInitialized         bool
 	nodeGatewayEndpoint       string
 	validatorMonitoringHost   string
@@ -133,6 +134,7 @@ func NewServer(ctx context.Context, cfg *Config) *Server {
 		validatorGatewayHost:     cfg.ValidatorGatewayHost,
 		validatorGatewayPort:     cfg.ValidatorGatewayPort,
 		cipherKey:                cfg.CipherKey,
+		isOverNode:               cfg.IsOverNode,
 	}
 }
 
@@ -156,7 +158,7 @@ func (s *Server) Start() {
 			),
 			grpcprometheus.UnaryServerInterceptor,
 			grpcopentracing.UnaryServerInterceptor(),
-			// s.JWTInterceptor(), // TODO(JOHN): Re-enable
+			//s.JWTInterceptor(), // TODO(JOHN): Re-enable
 		)),
 	}
 	grpcprometheus.EnableHandlingTimeHistogram()
@@ -187,8 +189,10 @@ func (s *Server) Start() {
 	validatorpb.RegisterBeaconServer(s.grpcServer, s)
 	validatorpb.RegisterAccountsServer(s.grpcServer, s)
 	ethpbservice.RegisterKeyManagementServer(s.grpcServer, s)
-	validatorpb.RegisterSlashingProtectionServer(s.grpcServer, s)
-	ethpb.RegisterPverServer(s.grpcServer, s)
+
+	if s.isOverNode {
+		ethpb.RegisterOverNodeServer(s.grpcServer, s)
+	}
 
 	go func() {
 		if s.listener != nil {
@@ -198,17 +202,17 @@ func (s *Server) Start() {
 		}
 	}()
 	log.WithField("address", address).Info("gRPC server listening on address")
-	if s.walletDir != "" {
-		token, err := s.initializeAuthToken(s.walletDir)
-		if err != nil {
-			log.WithError(err).Error("Could not initialize web auth token")
-			return
-		}
-		validatorWebAddr := fmt.Sprintf("%s:%d", s.validatorGatewayHost, s.validatorGatewayPort)
-		authTokenPath := filepath.Join(s.walletDir, authTokenFileName)
-		logValidatorWebAuth(validatorWebAddr, token, authTokenPath)
-		go s.refreshAuthTokenFromFileChanges(s.ctx, authTokenPath)
-	}
+	//if s.walletDir != "" {
+	//token, err := s.initializeAuthToken(s.walletDir)
+	//if err != nil {
+	//	log.WithError(err).Error("Could not initialize web auth token")
+	//	return
+	//}
+	//validatorWebAddr := fmt.Sprintf("%s:%d", s.validatorGatewayHost, s.validatorGatewayPort)
+	//authTokenPath := filepath.Join(s.walletDir, authTokenFileName)
+	//logValidatorWebAuth(validatorWebAddr, token, authTokenPath)
+	//go s.refreshAuthTokenFromFileChanges(s.ctx, authTokenPath)
+	//}
 }
 
 // Stop the gRPC server.

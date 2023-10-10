@@ -812,7 +812,7 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 
 	maxMsgSize := b.cliCtx.Int(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
 	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
-	enablePverRPCEndpoints := b.cliCtx.Bool(flags.EnablePverRPCEndpoints.Name)
+	enableOverNodeRPCEndpoints := b.cliCtx.Bool(flags.EnableOverNodeRPCEndpoints.Name)
 
 	p2pService := b.fetchP2P()
 	rpcService := rpc.NewService(b.ctx, &rpc.Config{
@@ -858,7 +858,7 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 		OperationNotifier:             b,
 		StateGen:                      b.stateGen,
 		EnableDebugRPCEndpoints:       enableDebugRPCEndpoints,
-		EnablePverRPCEndpoints:        enablePverRPCEndpoints,
+		EnableOverNodeRPCEndpoints:    enableOverNodeRPCEndpoints,
 		MaxMsgSize:                    maxMsgSize,
 		ProposerIdsCache:              b.proposerIdsCache,
 		BlockBuilder:                  b.fetchBuilderService(),
@@ -904,13 +904,13 @@ func (b *BeaconNode) registerGRPCGateway(router *mux.Router) error {
 	gatewayAddress := fmt.Sprintf("%s:%d", gatewayHost, gatewayPort)
 	allowedOrigins := strings.Split(b.cliCtx.String(flags.GPRCGatewayCorsDomain.Name), ",")
 	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
-	enablePverRPCEndpoints := b.cliCtx.Bool(flags.EnablePverRPCEndpoints.Name)
+	enableOverNodeRPCEndpoints := b.cliCtx.Bool(flags.EnableOverNodeRPCEndpoints.Name)
 	selfCert := b.cliCtx.String(flags.CertFlag.Name)
 	maxCallSize := b.cliCtx.Uint64(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
 	httpModules := b.cliCtx.String(flags.HTTPModules.Name)
 	timeout := b.cliCtx.Int(cmd.ApiTimeoutFlag.Name)
 
-	gatewayConfig := gateway.DefaultConfig(enableDebugRPCEndpoints, enablePverRPCEndpoints, httpModules)
+	gatewayConfig := gateway.DefaultConfig(enableDebugRPCEndpoints, enableOverNodeRPCEndpoints, httpModules)
 	muxs := make([]*apigateway.PbMux, 0)
 	if gatewayConfig.V1AlphaPbMux != nil {
 		muxs = append(muxs, gatewayConfig.V1AlphaPbMux)

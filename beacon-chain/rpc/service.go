@@ -100,7 +100,7 @@ type Config struct {
 	GenesisTimeFetcher            blockchain.TimeFetcher
 	GenesisFetcher                blockchain.GenesisFetcher
 	EnableDebugRPCEndpoints       bool
-	EnablePverRPCEndpoints        bool
+	EnableOverNodeRPCEndpoints    bool
 	MockEth1Votes                 bool
 	AttestationsPool              attestations.Pool
 	ExitPool                      voluntaryexits.PoolManager
@@ -427,8 +427,8 @@ func (s *Service) Start() {
 	ethpbv1alpha1.RegisterBeaconNodeValidatorServer(s.grpcServer, validatorServer)
 	ethpbservice.RegisterBeaconValidatorServer(s.grpcServer, validatorServerV1)
 
-	if s.cfg.EnablePverRPCEndpoints {
-		ethpbv1alpha1.RegisterPverServer(s.grpcServer, nodeServer)
+	if s.cfg.EnableOverNodeRPCEndpoints {
+		ethpbv1alpha1.RegisterOverNodeServer(s.grpcServer, nodeServer)
 	}
 	// Register reflection service on gRPC server.
 	reflection.Register(s.grpcServer)

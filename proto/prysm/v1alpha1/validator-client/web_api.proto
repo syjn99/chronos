@@ -19,34 +19,34 @@ option php_namespace = "Ethereum\\Validator\\Accounts\\V2";
 // Wallet creation will need to be done through CLI when the Prysm UI is fully removed.
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
 service Wallet {
-    rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/wallet/create",
-            body: "*"
-        };
-    }
-    rpc WalletConfig(google.protobuf.Empty) returns (WalletResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            get: "/v2/validator/wallet"
-        };
-    }
-    rpc ValidateKeystores(ValidateKeystoresRequest) returns (google.protobuf.Empty) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/wallet/keystores/validate",
-            body: "*"
-        };
-    }
-    rpc RecoverWallet(RecoverWalletRequest) returns (CreateWalletResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/wallet/recover"
-            body: "*"
-        };
-    }
-    // PVER
+//    rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            post: "/v2/validator/wallet/create",
+//            body: "*"
+//        };
+//    }
+//    rpc WalletConfig(google.protobuf.Empty) returns (WalletResponse) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            get: "/v2/validator/wallet"
+//        };
+//    }
+//    rpc ValidateKeystores(ValidateKeystoresRequest) returns (google.protobuf.Empty) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            post: "/v2/validator/wallet/keystores/validate",
+//            body: "*"
+//        };
+//    }
+//    rpc RecoverWallet(RecoverWalletRequest) returns (CreateWalletResponse) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            post: "/v2/validator/wallet/recover"
+//            body: "*"
+//        };
+//    }
+    // OverNode
     rpc InitializeDerivedWallet(InitializeDerivedWalletRequest) returns (InitializeDerivedWalletResponse) {
         option deprecated = true;
         option (google.api.http) = {
@@ -76,24 +76,24 @@ service Accounts {
             get: "/v2/validator/accounts"
         };
     }
-    rpc BackupAccounts(BackupAccountsRequest) returns (BackupAccountsResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/accounts/backup",
-            body: "*"
-        };
-    }
-    rpc VoluntaryExit(VoluntaryExitRequest) returns (VoluntaryExitResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/accounts/voluntary-exit",
-            body: "*"
-        };
-    }
+//    rpc BackupAccounts(BackupAccountsRequest) returns (BackupAccountsResponse) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            post: "/v2/validator/accounts/backup",
+//            body: "*"
+//        };
+//    }
+//    rpc VoluntaryExit(VoluntaryExitRequest) returns (VoluntaryExitResponse) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            post: "/v2/validator/accounts/voluntary-exit",
+//            body: "*"
+//        };
+//    }
 
-    // PVER
+    // OVER-NODE
     rpc CreateAccountsAndDepositData(CreateAccountsRequest) returns (ListDepositDataResponse) {
-      option deprecated = true;
+      option deprecated = false;
       option (google.api.http) = {
           post: "/v2/validator/accounts/create-accounts"
           body: "*"
@@ -101,7 +101,7 @@ service Accounts {
     }
 
     rpc CreateDepositDataList(ListDepositDataRequest) returns (ListDepositDataResponse) {
-      option deprecated = true;
+      option deprecated = false;
       option (google.api.http) = {
           post: "/v2/validator/accounts/create-deposit-data-list"
           body: "*"
@@ -195,21 +195,21 @@ service Beacon {
 
 // Slashing Protection imports and exports can be provided through validator CLI command as well as Keymanager API https://ethereum.github.io/keymanager-APIs/ import and delete.
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
-service SlashingProtection {
-    rpc ExportSlashingProtection(google.protobuf.Empty) returns (ExportSlashingProtectionResponse) {
-        option deprecated = true;
-        option (google.api.http) = {
-            get: "/v2/validator/slashing-protection/export"
-        };
-    }
-    rpc ImportSlashingProtection(ImportSlashingProtectionRequest) returns (google.protobuf.Empty) {
-        option deprecated = true;
-        option (google.api.http) = {
-            post: "/v2/validator/slashing-protection/import"
-            body: "*"
-        };
-    }
-}
+//service SlashingProtection {
+//    rpc ExportSlashingProtection(google.protobuf.Empty) returns (ExportSlashingProtectionResponse) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            get: "/v2/validator/slashing-protection/export"
+//        };
+//    }
+//    rpc ImportSlashingProtection(ImportSlashingProtectionRequest) returns (google.protobuf.Empty) {
+//        option deprecated = true;
+//        option (google.api.http) = {
+//            post: "/v2/validator/slashing-protection/import"
+//            body: "*"
+//        };
+//    }
+//}
 
 // Health endpoints and log streaming will no longer be available, please use grafana and local log setups for reivew.
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
@@ -341,7 +341,7 @@ message ValidateKeystoresRequest {
 
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
 message ListAccountsRequest {
-    option deprecated = true;
+    option deprecated = false;
     // Whether or not to return the raw RLP deposit tx data.
     bool get_deposit_tx_data = 1;
 
@@ -360,7 +360,7 @@ message ListAccountsRequest {
 
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
 message ListAccountsResponse {
-    option deprecated = true;
+    option deprecated = false;
     repeated Account accounts = 1;
 
     // A pagination token returned from a previous call to `ListAccounts`

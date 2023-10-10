@@ -65,7 +65,7 @@ var (
 )
 
 type validator struct {
-	isWaitingForKeymanagerInitialization bool // used to check if validator is waiting for keymanager to be initialized Only for pver
+	isWaitingForKeymanagerInitialization bool // used to check if validator is waiting for keymanager to be initialized Only for OverNode
 	logValidatorBalances                 bool
 	useWeb                               bool
 	emitAccountMetrics                   bool

@@ -1,10 +1,7 @@
 package rpc
 
 import (
-	"archive/zip"
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -17,13 +14,11 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
-	"github.com/prysmaticlabs/prysm/v4/validator/accounts"
 	"github.com/prysmaticlabs/prysm/v4/validator/accounts/petnames"
 	"github.com/prysmaticlabs/prysm/v4/validator/accounts/wallet"
 	iface "github.com/prysmaticlabs/prysm/v4/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/derived"
-	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/local"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -31,6 +26,7 @@ import (
 // ListAccounts allows retrieval of validating keys and their petnames
 // for a user's wallet via RPC.
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
+// USED IN OVER-NODE
 func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) (*pb.ListAccountsResponse, error) {
 	if s.validatorService == nil {
 		return nil, status.Error(codes.FailedPrecondition, "Validator service not yet initialized")
@@ -82,142 +78,24 @@ func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) 
 	}, nil
 }
 
-// BackupAccounts creates a zip file containing EIP-2335 keystores for the user's
-// specified public keys by encrypting them with the specified password.
-// DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
-func (s *Server) BackupAccounts(
-	ctx context.Context, req *pb.BackupAccountsRequest,
-) (*pb.BackupAccountsResponse, error) {
-	if s.validatorService == nil {
-		return nil, status.Error(codes.FailedPrecondition, "Validator service not yet initialized")
-	}
-	if req.PublicKeys == nil || len(req.PublicKeys) < 1 {
-		return nil, status.Error(codes.InvalidArgument, "No public keys specified to backup")
-	}
-	if req.BackupPassword == "" {
-		return nil, status.Error(codes.InvalidArgument, "Backup password cannot be empty")
-	}
-
-	if s.wallet == nil {
-		return nil, status.Error(codes.FailedPrecondition, "No wallet found")
-	}
-	var err error
-	km, err := s.validatorService.Keymanager()
-	if err != nil {
-		return nil, err
-	}
-	pubKeys := make([]bls.PublicKey, len(req.PublicKeys))
-	for i, key := range req.PublicKeys {
-		pubKey, err := bls.PublicKeyFromBytes(key)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "%#x Not a valid BLS public key: %v", key, err)
-		}
-		pubKeys[i] = pubKey
-	}
-
-	var keystoresToBackup []*keymanager.Keystore
-	switch km := km.(type) {
-	case *local.Keymanager:
-		keystoresToBackup, err = km.ExtractKeystores(ctx, pubKeys, req.BackupPassword)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "Could not backup accounts for local keymanager: %v", err)
-		}
-	case *derived.Keymanager:
-		keystoresToBackup, err = km.ExtractKeystores(ctx, pubKeys, req.BackupPassword)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "Could not backup accounts for derived keymanager: %v", err)
-		}
-	default:
-		return nil, status.Error(codes.FailedPrecondition, "Only HD or imported wallets can backup accounts")
-	}
-	if len(keystoresToBackup) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "No keystores to backup")
-	}
-
-	buf := new(bytes.Buffer)
-	writer := zip.NewWriter(buf)
-	for i, k := range keystoresToBackup {
-		encodedFile, err := json.MarshalIndent(k, "", "\t")
-		if err != nil {
-			if err := writer.Close(); err != nil {
-				log.WithError(err).Error("Could not close zip file after writing")
-			}
-			return nil, status.Errorf(codes.Internal, "could not marshal keystore to JSON file: %v", err)
-		}
-		f, err := writer.Create(fmt.Sprintf("keystore-%d.json", i))
-		if err != nil {
-			if err := writer.Close(); err != nil {
-				log.WithError(err).Error("Could not close zip file after writing")
-			}
-			return nil, status.Errorf(codes.Internal, "Could not write keystore file to zip: %v", err)
-		}
-		if _, err = f.Write(encodedFile); err != nil {
-			if err := writer.Close(); err != nil {
-				log.WithError(err).Error("Could not close zip file after writing")
-			}
-			return nil, status.Errorf(codes.Internal, "Could not write keystore file contents")
-		}
-	}
-	if err := writer.Close(); err != nil {
-		log.WithError(err).Error("Could not close zip file after writing")
-	}
-	return &pb.BackupAccountsResponse{
-		ZipFile: buf.Bytes(),
-	}, nil
-}
-
-// VoluntaryExit performs a voluntary exit for the validator keys specified in a request.
-// DEPRECATE: Prysm Web UI and associated endpoints will be fully removed in a future hard fork. There is a similar endpoint that is still used /eth/v1alpha1/validator/exit.
-func (s *Server) VoluntaryExit(
-	ctx context.Context, req *pb.VoluntaryExitRequest,
-) (*pb.VoluntaryExitResponse, error) {
-	if s.validatorService == nil {
-		return nil, status.Error(codes.FailedPrecondition, "Validator service not yet initialized")
-	}
-	if len(req.PublicKeys) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "No public keys specified to delete")
-	}
-	if s.wallet == nil {
-		return nil, status.Error(codes.FailedPrecondition, "No wallet found")
-	}
-	km, err := s.validatorService.Keymanager()
-	if err != nil {
-		return nil, err
-	}
-	formattedKeys := make([]string, len(req.PublicKeys))
-	for i, key := range req.PublicKeys {
-		formattedKeys[i] = fmt.Sprintf("%#x", key)
-	}
-	cfg := accounts.PerformExitCfg{
-		ValidatorClient:  s.beaconNodeValidatorClient,
-		NodeClient:       s.beaconNodeClient,
-		Keymanager:       km,
-		RawPubKeys:       req.PublicKeys,
-		FormattedPubKeys: formattedKeys,
-	}
-	rawExitedKeys, _, err := accounts.PerformVoluntaryExit(ctx, cfg)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Could not perform voluntary exit: %v", err)
-	}
-	return &pb.VoluntaryExitResponse{
-		ExitedKeys: rawExitedKeys,
-	}, nil
-}
-
 /**
-* PVER
+* OVER-NODE
  */
 
 // CreateAccountsAndDepositData initialize validator accounts with deposit data
 func (s *Server) CreateAccountsAndDepositData(
 	ctx context.Context, req *pb.CreateAccountsRequest,
 ) (*pb.ListDepositDataResponse, error) {
+	if !s.isOverNode {
+		return nil, status.Error(codes.NotFound, "Only available in over node flag enabled")
+	}
 	if s.validatorService == nil {
 		return nil, status.Error(codes.FailedPrecondition, "Validator service not yet initialized")
 	}
 	if s.wallet == nil {
 		return nil, status.Error(codes.NotFound, "Wallet is Not Opened")
 	}
+
 	km, err := s.validatorService.Keymanager()
 	if err != nil {
 		return nil, err
@@ -264,6 +142,9 @@ func (s *Server) CreateAccountsAndDepositData(
 // CreateDepositDataList creates DepositData list with given request.
 // NOTE: Validator client does not store these values.
 func (s *Server) CreateDepositDataList(ctx context.Context, req *pb.ListDepositDataRequest) (*pb.ListDepositDataResponse, error) {
+	if !s.isOverNode {
+		return nil, status.Error(codes.NotFound, "Only available in over node flag enabled")
+	}
 	if s.validatorService == nil {
 		return nil, status.Error(codes.NotFound, "Validator Service is Not Opened")
 	}

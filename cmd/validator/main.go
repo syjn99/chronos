@@ -16,7 +16,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/cmd/validator/flags"
 	slashingprotectioncommands "github.com/prysmaticlabs/prysm/v4/cmd/validator/slashing-protection"
 	walletcommands "github.com/prysmaticlabs/prysm/v4/cmd/validator/wallet"
-	"github.com/prysmaticlabs/prysm/v4/cmd/validator/web"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
 	"github.com/prysmaticlabs/prysm/v4/io/file"
 	"github.com/prysmaticlabs/prysm/v4/io/logs"
@@ -69,8 +68,7 @@ var appFlags = []cli.Flag{
 	flags.SlasherCertFlag,
 	flags.WalletPasswordFileFlag,
 	flags.WalletDirFlag,
-	flags.EnableWebFlag,
-	flags.EnablePverFlag,
+	flags.EnableOverNodeFlag,
 	flags.GraffitiFileFlag,
 	// Consensys' Web3Signer flags
 	flags.Web3SignerURLFlag,
@@ -132,7 +130,6 @@ func main() {
 		accountcommands.Commands,
 		slashingprotectioncommands.Commands,
 		dbcommands.Commands,
-		web.Commands,
 	}
 
 	app.Flags = appFlags

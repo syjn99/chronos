@@ -7,6 +7,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/io/file"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v4/runtime/version"
+	prysmTime "github.com/prysmaticlabs/prysm/v4/time"
 )
 
 var (
@@ -16,18 +17,21 @@ var (
 
 func main() {
 	flag.Parse()
+
+	// if timestamp is not set, use current time + 60s
+	if *timestamp == 0 {
+		*timestamp = uint64(prysmTime.Now().Unix() + 60)
+	}
+
 	enc, err := file.ReadFileAsBytes(*genesisPath)
 	if err != nil {
 		panic(err)
 	}
 
-	// temp, err := detect.
 	detector, err := detect.FromState(enc)
 	if err != nil {
 		panic(err)
 	}
-
-	// forkName := version.String(detector.Fork)
 
 	switch fork := detector.Fork; fork {
 	case version.Phase0:
@@ -96,33 +100,4 @@ func main() {
 		}
 		return
 	}
-
-	// beaconState, err := detector.UnmarshalBeaconState(enc)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// s := beaconState.WriteOnlyBeaconState
-	// err = s.SetGenesisTime(*timestamp)
-	// // err = beaconState.WriteOnlyBeaconState().SetGenesisTime(*timestamp)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// // beaconState.GenesisTime = *timestamp
-
-	// protoState := &ethpb.BeaconState{}
-	// // if err := protoState.UnmarshalSSZ(enc); err != nil {
-	// // 	panic(err)
-	// // }
-	// // protoState.GenesisTime = *timestamp
-
-	// enc, err = beaconState.MarshalSSZ()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// err = file.WriteFile(*genesisPath, enc)
-	// if err != nil {
-	// 	panic(err)
-	// }
 }
