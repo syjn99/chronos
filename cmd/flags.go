@@ -207,7 +207,7 @@ var (
 
 	LogRotateFlag = &cli.BoolFlag{
 		Name:  "log-rotate",
-		Usage: "Specify log file name, relative or absolute",
+		Usage: "Enables log file rotation",
 		Value: false,
 	}
 	LogMaxSizeMBsFlag = &cli.IntFlag{
