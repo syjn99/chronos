@@ -2,14 +2,21 @@ package rpc
 
 import (
 	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
+	"github.com/prysmaticlabs/prysm/v4/io/file"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
 	"github.com/prysmaticlabs/prysm/v4/validator/accounts/wallet"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/derived"
+	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/local"
+	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -54,6 +61,24 @@ func (s *Server) InitializeDerivedWallet(
 		}
 		if w.KeymanagerKind() != keymanager.Derived {
 			return nil, status.Error(codes.Internal, "Wallet is not a derived keymanager wallet")
+		}
+		// check mnemonic, second check keystore
+		chk, err := checkPasswordValid(filepath.Join(w.AccountsDir(), derived.MnemonicStoreFileName), string(decryptedPassword))
+		if err == nil {
+			_, err = checkPasswordValid(filepath.Join(w.AccountsDir(), local.AccountsPath, local.AccountsKeystoreFileName), string(decryptedPassword))
+			if err != nil {
+				// keystore file exist and keystore file password incorrect
+				return nil, status.Error(codes.InvalidArgument, "Password is not correct")
+			}
+			if !chk {
+				err = derived.GenerateAndSaveMnemonic(derived.DefaultMnemonicLanguage, string(decryptedPassword), w.AccountsDir())
+				if err != nil {
+					return nil, status.Error(codes.Internal, "Could not generate and save mnemonic")
+				}
+			}
+		} else {
+			//  password incorrect
+			return nil, status.Error(codes.InvalidArgument, "Password is not correct")
 		}
 		s.wallet = w
 	} else {
@@ -103,4 +128,31 @@ func createDerivedKeymanagerWallet(
 	}
 
 	return w, nil
+}
+
+type KeyStoreRepresent struct {
+	Crypto map[string]interface{} `json:"crypto"`
+}
+
+func checkPasswordValid(path string, password string) (bool, error) {
+	if !file.FileExists(path) {
+		return false, nil
+	}
+	rawData, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		return false, err
+	}
+	keystoreFile := &KeyStoreRepresent{}
+	if err := json.Unmarshal(rawData, keystoreFile); err != nil {
+		return false, err
+	}
+
+	decryptor := keystorev4.New()
+	_, err = decryptor.Decrypt(keystoreFile.Crypto, password)
+	if err != nil && strings.Contains(err.Error(), keymanager.IncorrectPasswordErrMsg) {
+		return false, err
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }

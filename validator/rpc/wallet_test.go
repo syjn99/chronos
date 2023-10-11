@@ -366,6 +366,7 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	}
 
 	s := &Server{
+		isOverNode:            true,
 		walletInitializedFeed: new(event.Feed),
 		cipherKey:             cipher,
 		validatorService:      vs,

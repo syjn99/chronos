@@ -20,7 +20,7 @@ import (
 
 const (
 	confirmationText      = "Confirm you have written down the recovery words somewhere safe (offline) [y|Y]"
-	mnemonicStoreFileName = "mnemonic-store.json"
+	MnemonicStoreFileName = "mnemonic-store.json"
 )
 
 // MnemonicGenerator implements methods for creating
@@ -191,7 +191,7 @@ func SaveMnemonicStore(mnemonic string, password string, path string, lastIndex 
 	if err != nil {
 		return err
 	}
-	err = file.WriteFile(filepath.Join(filepath.Clean(path), mnemonicStoreFileName), encoded)
+	err = file.WriteFile(filepath.Join(filepath.Clean(path), MnemonicStoreFileName), encoded)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func SaveMnemonicStore(mnemonic string, password string, path string, lastIndex 
 }
 
 func LoadMnemonic(path string, password string) (*MnemonicStore, error) {
-	mnemonicFile := filepath.Join(path, mnemonicStoreFileName)
+	mnemonicFile := filepath.Join(path, MnemonicStoreFileName)
 	if file.FileExists(mnemonicFile) {
 		rawData, err := os.ReadFile(filepath.Clean(mnemonicFile))
 		if err != nil {
