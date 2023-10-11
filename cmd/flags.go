@@ -204,6 +204,33 @@ var (
 		Name:  "log-file",
 		Usage: "Specify log file name, relative or absolute",
 	}
+
+	LogRotateFlag = &cli.BoolFlag{
+		Name:  "log-rotate",
+		Usage: "Specify log file name, relative or absolute",
+		Value: false,
+	}
+	LogMaxSizeMBsFlag = &cli.IntFlag{
+		Name:  "log-maxsize",
+		Usage: "Maximum size in MBs of a single log file",
+		Value: 100,
+	}
+	LogMaxBackupsFlag = &cli.IntFlag{
+		Name:  "log-maxbackups",
+		Usage: "Maximum number of log files to retain",
+		Value: 10,
+	}
+	LogMaxAgeFlag = &cli.IntFlag{
+		Name:  "log-maxage",
+		Usage: "Maximum number of days to retain a log file",
+		Value: 30,
+	}
+	LogCompressFlag = &cli.BoolFlag{
+		Name:  "log-compress",
+		Usage: "Compress the log files",
+		Value: false,
+	}
+
 	// EnableUPnPFlag specifies if UPnP should be enabled or not. The default value is false.
 	EnableUPnPFlag = &cli.BoolFlag{
 		Name:  "enable-upnp",

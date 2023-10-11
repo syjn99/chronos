@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func addLogWriter(w io.Writer) {
+func AddLogWriter(w io.Writer) {
 	mw := io.MultiWriter(logrus.StandardLogger().Out, w)
 	logrus.SetOutput(mw)
 }
@@ -25,7 +25,7 @@ func ConfigurePersistentLogging(logFileName string) error {
 		return err
 	}
 
-	addLogWriter(f)
+	AddLogWriter(f)
 
 	logrus.Info("File logging initialized")
 	return nil

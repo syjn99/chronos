@@ -164,6 +164,11 @@ var appHelpFlagGroups = []flagGroup{
 		Flags: []cli.Flag{
 			cmd.LogFormat,
 			cmd.LogFileName,
+			cmd.LogRotateFlag,
+			cmd.LogMaxSizeMBsFlag,
+			cmd.LogMaxBackupsFlag,
+			cmd.LogMaxAgeFlag,
+			cmd.LogCompressFlag,
 		},
 	},
 	{

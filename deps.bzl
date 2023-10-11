@@ -1767,8 +1767,8 @@ def prysm_deps():
     go_repository(
         name = "com_github_grpc_ecosystem_grpc_gateway",
         importpath = "github.com/grpc-ecosystem/grpc-gateway",
-        sum = "h1:UImYN5qQ8tuGpGE16ZmjvcTtTw24zw1QAp/SlnNrZhI=",
-        version = "v1.9.5",
+        sum = "h1:gmcG1KaJ57LophUzW0Hy8NmPhnMZb4M0+kPpLofRdBo=",
+        version = "v1.16.0",
     )
     go_repository(
         name = "com_github_grpc_ecosystem_grpc_gateway_v2",
@@ -5327,6 +5327,12 @@ def prysm_deps():
         version = "v2.0.0-20180705113604-9856a29383ce",
     )
 
+    go_repository(
+        name = "in_gopkg_natefinch_lumberjack_v2",
+        importpath = "gopkg.in/natefinch/lumberjack.v2",
+        sum = "h1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=",
+        version = "v2.2.1",
+    )
     go_repository(
         name = "in_gopkg_natefinch_npipe_v2",
         importpath = "gopkg.in/natefinch/npipe.v2",
