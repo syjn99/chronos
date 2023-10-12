@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	runtimeDebug "runtime/debug"
@@ -28,6 +29,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/validator/node"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func startNode(ctx *cli.Context) error {
@@ -95,6 +97,11 @@ var appFlags = []cli.Flag{
 	cmd.TraceSampleFractionFlag,
 	cmd.LogFormat,
 	cmd.LogFileName,
+	cmd.LogRotateFlag,
+	cmd.LogMaxSizeMBsFlag,
+	cmd.LogMaxBackupsFlag,
+	cmd.LogMaxAgeFlag,
+	cmd.LogCompressFlag,
 	cmd.ConfigFileFlag,
 	cmd.ChainConfigFileFlag,
 	cmd.GrpcMaxCallRecvMsgSizeFlag,
@@ -167,8 +174,19 @@ func main() {
 		}
 
 		logFileName := ctx.String(cmd.LogFileName.Name)
+		rotation := ctx.Bool(cmd.LogRotateFlag.Name)
 		if logFileName != "" {
-			if err := logs.ConfigurePersistentLogging(logFileName); err != nil {
+			if rotation {
+				lumberjackLogger := &lumberjack.Logger{
+					Filename:   logFileName,
+					MaxSize:    ctx.Int(cmd.LogMaxSizeMBsFlag.Name), // MB
+					MaxBackups: ctx.Int(cmd.LogMaxBackupsFlag.Name),
+					MaxAge:     ctx.Int(cmd.LogMaxAgeFlag.Name), // days
+					Compress:   ctx.Bool(cmd.LogCompressFlag.Name),
+				}
+				logs.AddLogWriter(io.MultiWriter(logrus.StandardLogger().Out, lumberjackLogger))
+				log.Info("Log rotation activated. path=", logFileName, ", MaxSize=", lumberjackLogger.MaxSize, ", MaxBackups=", lumberjackLogger.MaxBackups, ", MaxAge=", lumberjackLogger.MaxAge, ", Compress=", lumberjackLogger.Compress)
+			} else if err := logs.ConfigurePersistentLogging(logFileName); err != nil {
 				log.WithError(err).Error("Failed to configuring logging to disk.")
 			}
 		}
