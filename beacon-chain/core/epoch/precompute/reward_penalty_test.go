@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
-	"github.com/prysmaticlabs/go-bitfield"
+	bitfield "github.com/prysmaticlabs/go-bitfield"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/epoch"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
@@ -50,11 +50,11 @@ func TestProcessRewardsAndPenaltiesPrecompute(t *testing.T) {
 	require.Equal(t, true, processedState.Version() == version.Phase0)
 
 	// Indices that voted everything except for head, lost a bit money
-	wanted := uint64(31721300657)
+	wanted := uint64(31993032518) // uint64(31721300657)
 	assert.Equal(t, wanted, beaconState.Balances()[4], "Unexpected balance")
 
 	// Indices that did not vote, lost more money
-	wanted = uint64(31814200433)
+	wanted = uint64(31995355006) // uint64(31814200433)
 	assert.Equal(t, wanted, beaconState.Balances()[0], "Unexpected balance")
 }
 

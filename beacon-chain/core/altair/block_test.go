@@ -56,7 +56,7 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 	var reward uint64
 	beaconState, reward, err = altair.ProcessSyncAggregate(context.Background(), beaconState, syncAggregate)
 	require.NoError(t, err)
-	assert.Equal(t, uint64(106170880), reward)
+	assert.Equal(t, uint64(2654208), reward) // 106170880
 
 	// Use a non-sync committee index to compare profitability.
 	syncCommittee := make(map[primitives.ValidatorIndex]bool)
@@ -196,7 +196,7 @@ func TestProcessSyncCommittee_DontPrecompute(t *testing.T) {
 	require.Equal(t, 511, len(votedKeys))
 	require.DeepEqual(t, committeeKeys[0], votedKeys[0].Marshal())
 	balances := st.Balances()
-	require.Equal(t, uint64(1451559), balances[idx])
+	require.Equal(t, uint64(36288), balances[idx]) // 1451559
 }
 
 func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
@@ -236,18 +236,18 @@ func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
 			require.DeepEqual(t, true, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
-			require.Equal(t, uint64(32001451559), balances[idx])
+			require.Equal(t, uint64(32000036288), balances[idx]) // 32001451559
 		} else {
 			pk := bytesutil.ToBytes48(committeeKeys[i])
 			require.DeepEqual(t, false, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
 			if idx != proposerIndex {
-				require.Equal(t, uint64(31998548441), balances[idx])
+				require.Equal(t, uint64(31999963712), balances[idx]) // 31998548441
 			}
 		}
 	}
-	require.Equal(t, uint64(32051633881), balances[proposerIndex])
+	require.Equal(t, uint64(32001290816), balances[proposerIndex]) // 32051633881
 }
 
 func Test_VerifySyncCommitteeSig(t *testing.T) {
@@ -297,78 +297,78 @@ func Test_SyncRewards(t *testing.T) {
 		{
 			name:                  "epoch is 1 (year 1) ",
 			epoch:                 primitives.Epoch(0),
-			wantProposerReward:    207365,
-			wantParticipantReward: 1451559,
+			wantProposerReward:    5184,  // 207365,
+			wantParticipantReward: 36288, // 1451559,
 			errString:             "active balance can't be 0",
 		},
 		{
 			name:                  "epoch is 82126 (year 2)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear + 1),
-			wantProposerReward:    190776,
-			wantParticipantReward: 1335434,
+			wantProposerReward:    4769,  // 190776,
+			wantParticipantReward: 33385, // 1335434,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 164251 (year 3)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*2 + 1),
-			wantProposerReward:    174187,
-			wantParticipantReward: 1219309,
+			wantProposerReward:    4354,  // 174187,
+			wantParticipantReward: 30482, // 1219309,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 4)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*3 + 1),
-			wantProposerReward:    157597,
-			wantParticipantReward: 1103184,
+			wantProposerReward:    3939,  // 157597,
+			wantParticipantReward: 27579, // 1103184,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 5)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*4 + 1),
-			wantProposerReward:    141008,
-			wantParticipantReward: 987060,
+			wantProposerReward:    3525,  // 141008,
+			wantParticipantReward: 24676, // 987060,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 6)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*5 + 1),
-			wantProposerReward:    124419,
-			wantParticipantReward: 870935,
+			wantProposerReward:    3110,  // 124419,
+			wantParticipantReward: 21773, // 870935,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 7)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*6 + 1),
-			wantProposerReward:    107830,
-			wantParticipantReward: 754810,
+			wantProposerReward:    2695,  // 107830,
+			wantParticipantReward: 18870, // 754810,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 8)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*7 + 1),
-			wantProposerReward:    91240,
-			wantParticipantReward: 638685,
+			wantProposerReward:    2281,  // 91240,
+			wantParticipantReward: 15967, // 638685,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 9)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*8 + 1),
-			wantProposerReward:    74651,
-			wantParticipantReward: 522561,
+			wantProposerReward:    1866,  // 74651,
+			wantParticipantReward: 13064, // 522561,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 10)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*9 + 1),
-			wantProposerReward:    58062,
-			wantParticipantReward: 406436,
+			wantProposerReward:    1451,  // 58062,
+			wantParticipantReward: 10160, // 406436,
 			errString:             "",
 		},
 		{
 			name:                  "epoch is 82126 (year 11)",
 			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*10 + 1),
-			wantProposerReward:    49767,
-			wantParticipantReward: 348374,
+			wantProposerReward:    1244, // 49767,
+			wantParticipantReward: 8709, // 348374,
 			errString:             "",
 		},
 	}

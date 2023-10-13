@@ -480,7 +480,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
-			wantedBalance:       32132713965,
+			wantedBalance:       32003317840, // 32132713965,
 		},
 		{
 			name:    "all participated with some flags",
@@ -490,7 +490,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
-			wantedBalance:       32092899776,
+			wantedBalance:       32002322488, // 32092899776,
 		},
 		{
 			name:    "all participated with all flags",
@@ -500,7 +500,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   true,
 			},
 			wantedParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
-			wantedBalance:       32358327707,
+			wantedBalance:       32008958168, // 32358327707,
 		},
 	}
 	for _, test := range tests {
@@ -580,7 +580,7 @@ func TestEpochParticipation(t *testing.T) {
 				targetFlagIndex: true,
 				headFlagIndex:   false,
 			},
-			wantedNumerator:          59455856640,
+			wantedNumerator:          1486392320, // 59455856640,
 			wantedEpochParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
 		},
 		{
@@ -590,7 +590,7 @@ func TestEpochParticipation(t *testing.T) {
 				targetFlagIndex: false,
 				headFlagIndex:   false,
 			},
-			wantedNumerator:          41619099648,
+			wantedNumerator:          1040474624, // 41619099648,
 			wantedEpochParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
 		},
 		{
@@ -600,7 +600,7 @@ func TestEpochParticipation(t *testing.T) {
 				targetFlagIndex: true,
 				headFlagIndex:   true,
 			},
-			wantedNumerator:          160530812928,
+			wantedNumerator:          4013259264, // 160530812928,
 			wantedEpochParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
 		},
 	}

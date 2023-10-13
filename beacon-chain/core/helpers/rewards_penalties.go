@@ -186,5 +186,5 @@ func EpochIssuance(epoch primitives.Epoch) uint64 {
 	if issuanceRateIndex >= primitives.Epoch(len(cfg.IssuanceRate)) {
 		issuanceRateIndex = primitives.Epoch(len(cfg.IssuanceRate)) - 1
 	}
-	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100)
+	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100) / uint64(40) // TODO(Jay) : erase uint64(40) in mainnet
 }
