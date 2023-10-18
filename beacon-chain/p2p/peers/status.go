@@ -1102,3 +1102,16 @@ func indicesFromBitfield(bitV bitfield.Bitvector64) []uint64 {
 	}
 	return committeeIdxs
 }
+
+/// FOR DEBUGGING
+
+// Return All Detail info of peers **** for debugging
+func (p *Status) AllDetail() []*peerdata.PeerData {
+	p.store.RLock()
+	defer p.store.RUnlock()
+	peers := make([]*peerdata.PeerData, 0, len(p.store.Peers()))
+	for _, peerData := range p.store.Peers() {
+		peers = append(peers, peerData)
+	}
+	return peers
+}

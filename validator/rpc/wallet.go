@@ -26,28 +26,34 @@ func (s *Server) InitializeDerivedWallet(
 	ctx context.Context, req *pb.InitializeDerivedWalletRequest,
 ) (*pb.InitializeDerivedWalletResponse, error) {
 	if !s.isOverNode {
+		log.Debug("InitializeDerivedWallet was called when over node flag disabled")
 		return nil, status.Error(codes.NotFound, "Only available when over node flag enabled")
 	}
 	// initialize derived wallet can only be called once
 	if s.wallet != nil {
+		log.Debug("InitializeDerivedWallet was called when wallet is already opened")
 		return nil, status.Error(codes.AlreadyExists, "Wallet is Already Opened")
 	}
 
 	// check if wallet Initialized Event channel is Opened
 	if !s.validatorService.IsWaitingKeyManagerInitialization() {
+		log.Debug("InitializeDerivedWallet was called when wallet initialized event channel is not opened")
 		return nil, status.Error(codes.Unavailable, "Client is not ready to listen wallet initialized event")
 	}
 
 	exists, err := wallet.Exists(req.WalletDir)
 	if err != nil {
+		log.WithError(err).Error("Could not check for existing wallet")
 		return nil, status.Errorf(codes.Internal, "Could not check for existing wallet: %v", err)
 	}
 	password, err := hexutil.Decode(req.Password)
 	if err != nil {
+		log.WithError(err).Error("Could not decode password")
 		return nil, status.Error(codes.InvalidArgument, "Could not decode password")
 	}
 	decryptedPassword, err := aes.Decrypt(s.cipherKey, password)
 	if err != nil {
+		log.WithError(err).Error("Could not decrypt password")
 		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
 	}
 	if exists {
@@ -57,9 +63,11 @@ func (s *Server) InitializeDerivedWallet(
 			WalletPassword: string(decryptedPassword),
 		})
 		if err != nil {
+			log.WithError(err).Error("Could not open wallet")
 			return nil, status.Error(codes.Internal, "Could not open wallet")
 		}
 		if w.KeymanagerKind() != keymanager.Derived {
+			log.Error("Wallet is not a derived keymanager wallet")
 			return nil, status.Error(codes.Internal, "Wallet is not a derived keymanager wallet")
 		}
 		// check mnemonic, second check keystore
@@ -68,16 +76,19 @@ func (s *Server) InitializeDerivedWallet(
 			_, err = checkPasswordValid(filepath.Join(w.AccountsDir(), local.AccountsPath, local.AccountsKeystoreFileName), string(decryptedPassword))
 			if err != nil {
 				// keystore file exist and keystore file password incorrect
+				log.Error("Password is not correct")
 				return nil, status.Error(codes.InvalidArgument, "Password is not correct")
 			}
 			if !chk {
 				err = derived.GenerateAndSaveMnemonic(derived.DefaultMnemonicLanguage, string(decryptedPassword), w.AccountsDir())
 				if err != nil {
+					log.WithError(err).Error("Could not generate and save mnemonic")
 					return nil, status.Error(codes.Internal, "Could not generate and save mnemonic")
 				}
 			}
 		} else {
 			//  password incorrect
+			log.Error("Password is not correct")
 			return nil, status.Error(codes.InvalidArgument, "Password is not correct")
 		}
 		s.wallet = w
@@ -85,7 +96,8 @@ func (s *Server) InitializeDerivedWallet(
 		// Create wallet and open it
 		w, err := createDerivedKeymanagerWallet(ctx, req.WalletDir, string(decryptedPassword), req.MnemonicLang)
 		if err != nil {
-			return nil, err
+			log.WithError(err).Error("Could not create derived keymanager wallet")
+			return nil, status.Error(codes.Internal, "Could not create derived keymanager wallet")
 		}
 		s.wallet = w
 	}

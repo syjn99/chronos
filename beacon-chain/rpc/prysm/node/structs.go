@@ -1,5 +1,7 @@
 package node
 
+import "time"
+
 type AddrRequest struct {
 	Addr string `json:"addr"`
 }
@@ -14,4 +16,17 @@ type Peer struct {
 	LastSeenP2PAddress string `json:"last_seen_p2p_address"`
 	State              string `json:"state"`
 	Direction          string `json:"direction"`
+}
+
+type PeerDetailInfoResponse struct {
+	PeerID  string `json:"peer_id"`
+	Enr     string `json:"enr"`
+	Address string `json:"address"`
+	// Scorers internal Data
+	BadResponses         int       `json:"bad_responses"`
+	ProcessedBlocks      uint64    `json:"processed_blocks"`
+	BlockProviderUpdated time.Time `json:"block_provider_updated"`
+	// Gossip Scoring data.
+	GossipScore      string `json:"gossip_score"`
+	BehaviourPenalty string `json:"behaviour_penalty"`
 }

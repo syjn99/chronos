@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	corenet "github.com/libp2p/go-libp2p/core/network"
@@ -174,4 +175,33 @@ func httpPeerInfo(peerStatus *peers.Status, id peer.ID) (*Peer, error) {
 	}
 
 	return &p, nil
+}
+
+func (s *Server) ListPeerDetailInfo(w http.ResponseWriter, r *http.Request) {
+	segments := strings.Split(r.URL.Path, "/")
+	id := segments[len(segments)-1]
+
+	peerStatus := s.PeersFetcher.Peers()
+	peerDatas := peerStatus.AllDetail()
+
+	res := make([]*PeerDetailInfoResponse, 0, len(peerDatas))
+
+	for _, peerData := range peerDatas {
+		if peerData.ConnState == peers.PeerConnected {
+			if strings.Contains(peerData.Address.String(), id) {
+				peerInfo := &PeerDetailInfoResponse{
+					Address:              peerData.Address.String(),
+					Enr:                  peerData.Enr.IdentityScheme(),
+					BadResponses:         peerData.BadResponses,
+					ProcessedBlocks:      peerData.ProcessedBlocks,
+					BlockProviderUpdated: peerData.BlockProviderUpdated,
+					GossipScore:          strconv.FormatFloat(peerData.GossipScore, 'f', 6, 64),
+					BehaviourPenalty:     strconv.FormatFloat(peerData.BehaviourPenalty, 'f', 6, 64),
+				}
+				res = append(res, peerInfo)
+			}
+		}
+	}
+
+	network.WriteJson(w, res)
 }

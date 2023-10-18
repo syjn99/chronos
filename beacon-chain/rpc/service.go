@@ -329,6 +329,7 @@ func (s *Service) Start() {
 	s.cfg.Router.HandleFunc("/prysm/node/trusted_peers", nodeServerPrysm.ListTrustedPeer).Methods("GET")
 	s.cfg.Router.HandleFunc("/prysm/node/trusted_peers", nodeServerPrysm.AddTrustedPeer).Methods("POST")
 	s.cfg.Router.HandleFunc("/prysm/node/trusted_peers/{peer_id}", nodeServerPrysm.RemoveTrustedPeer).Methods("Delete")
+	s.cfg.Router.HandleFunc("/chronos/debug/peers/detail/{ip}", nodeServerPrysm.ListPeerDetailInfo).Methods("GET")
 
 	beaconChainServer := &beaconv1alpha1.Server{
 		Ctx:                         s.ctx,
