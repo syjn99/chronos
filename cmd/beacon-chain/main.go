@@ -131,6 +131,8 @@ var appFlags = []cli.Flag{
 	cmd.RestoreTargetDirFlag,
 	cmd.ValidatorMonitorIndicesFlag,
 	cmd.ApiTimeoutFlag,
+	cmd.ColocationLimitFlag,
+	cmd.IpTrackerBanTimeFlag,
 	checkpoint.BlockPath,
 	checkpoint.StatePath,
 	checkpoint.RemoteURL,

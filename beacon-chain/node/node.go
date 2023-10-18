@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gorilla/mux"
@@ -547,6 +548,9 @@ func (b *BeaconNode) registerP2P(cliCtx *cli.Context) error {
 		return err
 	}
 
+	colocationLimit := cliCtx.Uint64(cmd.ColocationLimitFlag.Name)
+	ipTrackerBanTime := time.Minute * cliCtx.Duration(cmd.IpTrackerBanTimeFlag.Name)
+
 	svc, err := p2p.NewService(b.ctx, &p2p.Config{
 		NoDiscovery:       cliCtx.Bool(cmd.NoDiscovery.Name),
 		StaticPeers:       slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.StaticPeers.Name)),
@@ -568,6 +572,8 @@ func (b *BeaconNode) registerP2P(cliCtx *cli.Context) error {
 		StateNotifier:     b,
 		DB:                b.db,
 		ClockWaiter:       b.clockWaiter,
+		ColocationLimit:   colocationLimit,
+		IpTrackerBanTime:  ipTrackerBanTime,
 	})
 	if err != nil {
 		return err

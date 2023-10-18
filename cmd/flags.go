@@ -292,6 +292,18 @@ var (
 		Usage:   "Target file path for outputting a generated JWT secret to be used for JSON-RPC authentication",
 		Aliases: []string{"o"},
 	}
+
+	// Scorer Flag
+	ColocationLimitFlag = &cli.IntFlag{
+		Name:  "p2p-colocation-limit",
+		Usage: "The maximum number of peers we can see from a single ip or ipv6 subnet",
+		Value: 5,
+	}
+	IpTrackerBanTimeFlag = &cli.IntFlag{
+		Name:  "p2p-ip-tracker-ban-time",
+		Usage: "The interval in minutes to prune the ip tracker, default is 120 minutes",
+		Value: 120,
+	}
 )
 
 // LoadFlagsFromConfig sets flags values from config file if ConfigFileFlag is set.
