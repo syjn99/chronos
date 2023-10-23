@@ -155,8 +155,9 @@ func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 			},
 		},
 		IpTrackerConfig: &peers.IpTrackerConfig{
-			ColocationLimit:  s.cfg.ColocationLimit,
-			IpTrackerBanTime: s.cfg.IpTrackerBanTime,
+			ColocationLimit:         s.cfg.ColocationLimit,
+			IpTrackerBanTime:        s.cfg.IpTrackerBanTime,
+			ColocationWhitelistCIDR: s.cfg.ColocationWhitelist,
 		},
 	})
 

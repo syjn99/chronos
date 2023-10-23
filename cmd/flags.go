@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/urfave/cli/v2"
@@ -177,6 +178,23 @@ var (
 			"192.168.0.0/16 would deny connections from peers on your local network only. The " +
 			"default is to accept all connections.",
 	}
+	// P2PColocationWhitelistFlag defines a whitelist of CIDR subnets that not scoring peer with IP-colocation factor.
+	P2PColocationWhitelistFlag = &cli.StringSliceFlag{
+		Name:  "p2p-colocation-whitelist",
+		Usage: "Whitelist of CIDR subnets that not scoring peer with IP-colocation factor.",
+	}
+	// P2PColocationLimitFlag defines the maximum number of peers we can see from a single ip or ipv6 subnet.
+	P2PColocationLimitFlag = &cli.Uint64Flag{
+		Name:  "p2p-colocation-limit",
+		Usage: "The maximum number of peers we can see from a single ip or ipv6 subnet.",
+		Value: 5,
+	}
+	// P2PIpTrackerBanTimeFlag defines the interval in minutes to prune the ip tracker.
+	P2PIpTrackerBanTimeFlag = &cli.DurationFlag{
+		Name:  "p2p-ip-tracker-ban-time",
+		Usage: "The interval in minutes to prune the ip tracker, default is 120m",
+		Value: 120 * time.Minute,
+	}
 	// ForceClearDB removes any previously stored data at the data directory.
 	ForceClearDB = &cli.BoolFlag{
 		Name:  "force-clear-db",
@@ -291,18 +309,6 @@ var (
 		Name:    "output-file",
 		Usage:   "Target file path for outputting a generated JWT secret to be used for JSON-RPC authentication",
 		Aliases: []string{"o"},
-	}
-
-	// Scorer Flag
-	ColocationLimitFlag = &cli.IntFlag{
-		Name:  "p2p-colocation-limit",
-		Usage: "The maximum number of peers we can see from a single ip or ipv6 subnet",
-		Value: 5,
-	}
-	IpTrackerBanTimeFlag = &cli.IntFlag{
-		Name:  "p2p-ip-tracker-ban-time",
-		Usage: "The interval in minutes to prune the ip tracker, default is 120 minutes",
-		Value: 120,
 	}
 )
 

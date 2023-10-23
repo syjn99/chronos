@@ -142,7 +142,10 @@ func (s *Service) pubsubOptions() []pubsub.Option {
 		pubsub.WithPeerOutboundQueueSize(pubsubQueueSize),
 		pubsub.WithMaxMessageSize(int(params.BeaconNetworkConfig().GossipMaxSizeBellatrix)),
 		pubsub.WithValidateQueueSize(pubsubQueueSize),
-		pubsub.WithPeerScore(peerScoringParams()),
+		pubsub.WithPeerScore(peerScoringParams(
+			int(s.cfg.ColocationLimit)*2,
+			s.cfg.ColocationWhitelist,
+		)),
 		pubsub.WithPeerScoreInspect(s.peerInspector, time.Minute),
 		pubsub.WithGossipSubParams(pubsubGossipParam()),
 		pubsub.WithRawTracer(gossipTracer{host: s.host}),

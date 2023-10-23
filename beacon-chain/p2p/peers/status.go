@@ -25,6 +25,7 @@ package peers
 import (
 	"context"
 	"math"
+	"net"
 	"sort"
 	"time"
 
@@ -91,8 +92,9 @@ type Status struct {
 }
 
 type IpTrackerConfig struct {
-	ColocationLimit  uint64
-	IpTrackerBanTime time.Duration
+	ColocationLimit         uint64
+	ColocationWhitelistCIDR []*net.IPNet
+	IpTrackerBanTime        time.Duration
 }
 
 // StatusConfig represents peer status service params.
@@ -124,6 +126,11 @@ func NewStatus(ctx context.Context, config *StatusConfig) *Status {
 	if config.IpTrackerConfig.IpTrackerBanTime == 0 {
 		config.IpTrackerConfig.IpTrackerBanTime = DefaultIpTrackerBanTime
 	}
+	log.WithFields(logrus.Fields{
+		"colocationWhitelist": config.IpTrackerConfig.ColocationWhitelistCIDR,
+		"colocationLimit":     config.IpTrackerConfig.ColocationLimit,
+		"banTime":             config.IpTrackerConfig.IpTrackerBanTime,
+	}).Info("IP tracker config")
 
 	return &Status{
 		ctx:       ctx,
@@ -1002,7 +1009,10 @@ func (p *Status) isfromBadIP(pid peer.ID) bool {
 	}
 	if val, ok := p.ipTracker[ip.String()]; ok {
 		if val > p.ColocationLimit() {
-			return true
+			// check is ip is whitelisted
+			if !p.isWhitelist(ip) {
+				return true
+			}
 		}
 	}
 	return false
@@ -1077,6 +1087,31 @@ func (p *Status) DecayBadIps() {
 	}
 }
 
+// Whitelist
+func (p *Status) isWhitelist(ip net.IP) bool {
+	whitelist := p.ipTrackerConfig.ColocationWhitelistCIDR
+	if len(whitelist) > 0 {
+		for _, ipnet := range whitelist {
+			if ipnet.Contains(ip) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (p *Status) GetIpTrackerBanCount(ip string) uint64 {
+	return p.ipTracker[ip]
+}
+
+func (p *Status) AvgBanCount() uint64 {
+	total := uint64(0)
+	for _, count := range p.ipTracker {
+		total += count
+	}
+	return total / uint64(len(p.ipTracker))
+}
+
 func sameIP(firstAddr, secondAddr ma.Multiaddr) bool {
 	// Exit early if we do get nil multiaddresses
 	if firstAddr == nil || secondAddr == nil {
@@ -1106,12 +1141,14 @@ func indicesFromBitfield(bitV bitfield.Bitvector64) []uint64 {
 /// FOR DEBUGGING
 
 // Return All Detail info of peers **** for debugging
-func (p *Status) AllDetail() []*peerdata.PeerData {
+func (p *Status) AllDetail() ([]peer.ID, []*peerdata.PeerData) {
 	p.store.RLock()
 	defer p.store.RUnlock()
 	peers := make([]*peerdata.PeerData, 0, len(p.store.Peers()))
-	for _, peerData := range p.store.Peers() {
+	ids := make([]peer.ID, 0, len(p.store.Peers()))
+	for id, peerData := range p.store.Peers() {
 		peers = append(peers, peerData)
+		ids = append(ids, id)
 	}
-	return peers
+	return ids, peers
 }

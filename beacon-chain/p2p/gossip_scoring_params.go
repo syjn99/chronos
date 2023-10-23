@@ -3,6 +3,7 @@ package p2p
 import (
 	"context"
 	"math"
+	"net"
 	"reflect"
 	"strings"
 	"time"
@@ -56,6 +57,9 @@ const (
 
 	// dampeningFactor reduces the amount by which the various thresholds and caps are created.
 	dampeningFactor = 90
+
+	// minIpColocationFactorThreshold specifies the minimum value for the ip colocation factor threshold.
+	minIpColocationFactorThreshold = 10
 )
 
 var (
@@ -69,7 +73,10 @@ var (
 	tenEpochs          = 10 * oneEpochDuration()
 )
 
-func peerScoringParams() (*pubsub.PeerScoreParams, *pubsub.PeerScoreThresholds) {
+func peerScoringParams(
+	ipColocationFactorThreshold int,
+	ipColocationWhitelist []*net.IPNet,
+) (*pubsub.PeerScoreParams, *pubsub.PeerScoreThresholds) {
 	thresholds := &pubsub.PeerScoreThresholds{
 		GossipThreshold:             -4000,
 		PublishThreshold:            -8000,
@@ -77,6 +84,16 @@ func peerScoringParams() (*pubsub.PeerScoreParams, *pubsub.PeerScoreThresholds) 
 		AcceptPXThreshold:           100,
 		OpportunisticGraftThreshold: 5,
 	}
+	if ipColocationFactorThreshold < minIpColocationFactorThreshold {
+		log.Warn("ipColocationFactorThreshold is less than the minimum value, setting to minimum value")
+		ipColocationFactorThreshold = minIpColocationFactorThreshold
+	}
+
+	log.WithFields(logrus.Fields{
+		"ipColocationFactorThreshold": ipColocationFactorThreshold,
+		"ipColocationWhitelist":       ipColocationWhitelist,
+	}).Info("Initializing peer scoring parameters")
+
 	scoreParams := &pubsub.PeerScoreParams{
 		Topics:        make(map[string]*pubsub.TopicScoreParams),
 		TopicScoreCap: 32.72,
@@ -85,8 +102,8 @@ func peerScoringParams() (*pubsub.PeerScoreParams, *pubsub.PeerScoreThresholds) 
 		},
 		AppSpecificWeight:           1,
 		IPColocationFactorWeight:    -35.11,
-		IPColocationFactorThreshold: 10,
-		IPColocationFactorWhitelist: nil,
+		IPColocationFactorThreshold: ipColocationFactorThreshold,
+		IPColocationFactorWhitelist: ipColocationWhitelist,
 		BehaviourPenaltyWeight:      -15.92,
 		BehaviourPenaltyThreshold:   6,
 		BehaviourPenaltyDecay:       scoreDecay(tenEpochs),

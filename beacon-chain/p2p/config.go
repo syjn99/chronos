@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"net"
 	"time"
 
 	statefeed "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/feed/state"
@@ -34,4 +35,5 @@ type Config struct {
 	ClockWaiter         startup.ClockWaiter
 	ColocationLimit     uint64
 	IpTrackerBanTime    time.Duration
+	ColocationWhitelist []*net.IPNet
 }

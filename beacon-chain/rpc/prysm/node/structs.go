@@ -19,9 +19,11 @@ type Peer struct {
 }
 
 type PeerDetailInfoResponse struct {
-	PeerID  string `json:"peer_id"`
-	Enr     string `json:"enr"`
-	Address string `json:"address"`
+	PeerID       string `json:"peer_id"`
+	Enr          string `json:"enr"`
+	Address      string `json:"address"`
+	IpTrackerCnt uint64 `json:"ip_tracker_cnt"`
+
 	// Scorers internal Data
 	BadResponses         int       `json:"bad_responses"`
 	ProcessedBlocks      uint64    `json:"processed_blocks"`

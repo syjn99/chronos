@@ -7,13 +7,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gorilla/mux"
@@ -548,32 +548,44 @@ func (b *BeaconNode) registerP2P(cliCtx *cli.Context) error {
 		return err
 	}
 
-	colocationLimit := cliCtx.Uint64(cmd.ColocationLimitFlag.Name)
-	ipTrackerBanTime := time.Minute * cliCtx.Duration(cmd.IpTrackerBanTimeFlag.Name)
+	colocationLimit := cliCtx.Uint64(cmd.P2PColocationLimitFlag.Name)
+
+	ipTrackerBanTime := cliCtx.Duration(cmd.P2PIpTrackerBanTimeFlag.Name)
+
+	wl := slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.P2PColocationWhitelistFlag.Name))
+	colocationWhitelist := make([]*net.IPNet, 0, len(wl))
+	for _, strIP := range wl {
+		_, ipNet, err := net.ParseCIDR(strIP)
+		if err != nil {
+			return err
+		}
+		colocationWhitelist = append(colocationWhitelist, ipNet)
+	}
 
 	svc, err := p2p.NewService(b.ctx, &p2p.Config{
-		NoDiscovery:       cliCtx.Bool(cmd.NoDiscovery.Name),
-		StaticPeers:       slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.StaticPeers.Name)),
-		BootstrapNodeAddr: bootstrapNodeAddrs,
-		RelayNodeAddr:     cliCtx.String(cmd.RelayNode.Name),
-		DataDir:           dataDir,
-		LocalIP:           cliCtx.String(cmd.P2PIP.Name),
-		HostAddress:       cliCtx.String(cmd.P2PHost.Name),
-		HostDNS:           cliCtx.String(cmd.P2PHostDNS.Name),
-		PrivateKey:        cliCtx.String(cmd.P2PPrivKey.Name),
-		StaticPeerID:      cliCtx.Bool(cmd.P2PStaticID.Name),
-		MetaDataDir:       cliCtx.String(cmd.P2PMetadata.Name),
-		TCPPort:           cliCtx.Uint(cmd.P2PTCPPort.Name),
-		UDPPort:           cliCtx.Uint(cmd.P2PUDPPort.Name),
-		MaxPeers:          cliCtx.Uint(cmd.P2PMaxPeers.Name),
-		AllowListCIDR:     cliCtx.String(cmd.P2PAllowList.Name),
-		DenyListCIDR:      slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.P2PDenyList.Name)),
-		EnableUPnP:        cliCtx.Bool(cmd.EnableUPnPFlag.Name),
-		StateNotifier:     b,
-		DB:                b.db,
-		ClockWaiter:       b.clockWaiter,
-		ColocationLimit:   colocationLimit,
-		IpTrackerBanTime:  ipTrackerBanTime,
+		NoDiscovery:         cliCtx.Bool(cmd.NoDiscovery.Name),
+		StaticPeers:         slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.StaticPeers.Name)),
+		BootstrapNodeAddr:   bootstrapNodeAddrs,
+		RelayNodeAddr:       cliCtx.String(cmd.RelayNode.Name),
+		DataDir:             dataDir,
+		LocalIP:             cliCtx.String(cmd.P2PIP.Name),
+		HostAddress:         cliCtx.String(cmd.P2PHost.Name),
+		HostDNS:             cliCtx.String(cmd.P2PHostDNS.Name),
+		PrivateKey:          cliCtx.String(cmd.P2PPrivKey.Name),
+		StaticPeerID:        cliCtx.Bool(cmd.P2PStaticID.Name),
+		MetaDataDir:         cliCtx.String(cmd.P2PMetadata.Name),
+		TCPPort:             cliCtx.Uint(cmd.P2PTCPPort.Name),
+		UDPPort:             cliCtx.Uint(cmd.P2PUDPPort.Name),
+		MaxPeers:            cliCtx.Uint(cmd.P2PMaxPeers.Name),
+		AllowListCIDR:       cliCtx.String(cmd.P2PAllowList.Name),
+		DenyListCIDR:        slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.P2PDenyList.Name)),
+		EnableUPnP:          cliCtx.Bool(cmd.EnableUPnPFlag.Name),
+		StateNotifier:       b,
+		DB:                  b.db,
+		ClockWaiter:         b.clockWaiter,
+		ColocationLimit:     colocationLimit,
+		IpTrackerBanTime:    ipTrackerBanTime,
+		ColocationWhitelist: colocationWhitelist,
 	})
 	if err != nil {
 		return err

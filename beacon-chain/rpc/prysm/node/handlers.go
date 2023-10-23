@@ -9,6 +9,7 @@ import (
 
 	corenet "github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	manet "github.com/multiformats/go-multiaddr/net"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/peers"
@@ -180,27 +181,43 @@ func httpPeerInfo(peerStatus *peers.Status, id peer.ID) (*Peer, error) {
 func (s *Server) ListPeerDetailInfo(w http.ResponseWriter, r *http.Request) {
 	segments := strings.Split(r.URL.Path, "/")
 	id := segments[len(segments)-1]
-
 	peerStatus := s.PeersFetcher.Peers()
-	peerDatas := peerStatus.AllDetail()
+	peerIds, peerDatas := peerStatus.AllDetail()
 
 	res := make([]*PeerDetailInfoResponse, 0, len(peerDatas))
 
-	for _, peerData := range peerDatas {
-		if peerData.ConnState == peers.PeerConnected {
-			if strings.Contains(peerData.Address.String(), id) {
-				peerInfo := &PeerDetailInfoResponse{
-					Address:              peerData.Address.String(),
-					Enr:                  peerData.Enr.IdentityScheme(),
-					BadResponses:         peerData.BadResponses,
-					ProcessedBlocks:      peerData.ProcessedBlocks,
-					BlockProviderUpdated: peerData.BlockProviderUpdated,
-					GossipScore:          strconv.FormatFloat(peerData.GossipScore, 'f', 6, 64),
-					BehaviourPenalty:     strconv.FormatFloat(peerData.BehaviourPenalty, 'f', 6, 64),
-				}
-				res = append(res, peerInfo)
+	for idx, peerData := range peerDatas {
+		if peerData.ConnState != peers.PeerConnected {
+			continue
+		}
+		if id != "all" && !strings.Contains(peerData.Address.String(), id) {
+			continue
+		}
+
+		serializedEnr, err := p2p.SerializeENR(peerData.Enr)
+		if err != nil {
+			serializedEnr = ""
+		}
+		cnt := uint64(0)
+		if peerData.Address != nil {
+			ip, err := manet.ToIP(peerData.Address)
+			if err == nil {
+				cnt = peerStatus.GetIpTrackerBanCount(ip.String())
 			}
 		}
+
+		peerInfo := &PeerDetailInfoResponse{
+			PeerID:               peerIds[idx].String(),
+			Address:              peerData.Address.String(),
+			IpTrackerCnt:         cnt,
+			Enr:                  serializedEnr,
+			BadResponses:         peerData.BadResponses,
+			ProcessedBlocks:      peerData.ProcessedBlocks,
+			BlockProviderUpdated: peerData.BlockProviderUpdated,
+			GossipScore:          strconv.FormatFloat(peerData.GossipScore, 'f', 6, 64),
+			BehaviourPenalty:     strconv.FormatFloat(peerData.BehaviourPenalty, 'f', 6, 64),
+		}
+		res = append(res, peerInfo)
 	}
 
 	network.WriteJson(w, res)
