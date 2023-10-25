@@ -137,10 +137,12 @@ var Buckets = [][]byte{
 func NewKVStore(ctx context.Context, dirPath string) (*Store, error) {
 	hasDir, err := file.HasDir(dirPath)
 	if err != nil {
+		log.WithError(err).Error("Error while checking if directory exists for Bolt DB")
 		return nil, err
 	}
 	if !hasDir {
 		if err := file.MkdirAll(dirPath); err != nil {
+			log.WithError(err).Error("Error while creating directory for Bolt DB")
 			return nil, err
 		}
 	}
@@ -156,8 +158,11 @@ func NewKVStore(ctx context.Context, dirPath string) (*Store, error) {
 	)
 	if err != nil {
 		if errors.Is(err, bolt.ErrTimeout) {
-			return nil, errors.New("cannot obtain database lock, database may be in use by another process")
+			err := errors.New("cannot obtain database lock, database may be in use by another process")
+			log.WithError(err)
+			return nil, err
 		}
+		log.WithError(err).Error("Error while opening Bolt DB")
 		return nil, err
 	}
 	boltDB.AllocSize = boltAllocSize
@@ -167,6 +172,7 @@ func NewKVStore(ctx context.Context, dirPath string) (*Store, error) {
 		BufferItems: 64,             // number of keys per Get buffer.
 	})
 	if err != nil {
+		log.WithError(err).Error("Error while creating block cache")
 		return nil, err
 	}
 
@@ -176,6 +182,7 @@ func NewKVStore(ctx context.Context, dirPath string) (*Store, error) {
 		BufferItems: 64,                    // number of keys per Get buffer.
 	})
 	if err != nil {
+		log.WithError(err).Error("Error while creating validator entry cache")
 		return nil, err
 	}
 
@@ -190,13 +197,16 @@ func NewKVStore(ctx context.Context, dirPath string) (*Store, error) {
 	if err := kv.db.Update(func(tx *bolt.Tx) error {
 		return createBuckets(tx, Buckets...)
 	}); err != nil {
+		log.WithError(err).Error("Error while creating buckets in Bolt DB")
 		return nil, err
 	}
 	if err = prometheus.Register(createBoltCollector(kv.db)); err != nil {
+		log.WithError(err).Error("Error while registering Bolt DB metrics")
 		return nil, err
 	}
 	// Setup the type of block storage used depending on whether or not this is a fresh database.
 	if err := kv.setupBlockStorageType(ctx); err != nil {
+		log.WithError(err).Error("Error while setting up block storage type")
 		return nil, err
 	}
 	return kv, nil
