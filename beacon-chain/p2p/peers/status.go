@@ -1072,8 +1072,13 @@ func (p *Status) tallyIPTracker() {
 func (p *Status) DecayBadIps() {
 	for ip, count := range p.ipTracker {
 		if _, ok := p.lastSeen[ip]; !ok {
+			log.WithFields(logrus.Fields{
+				"ip":    ip,
+				"count": count,
+			}).Debug("Something Wrong Decrease count from ipTracker")
 			continue
 		}
+
 		if count > 0 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
 			log.WithFields(logrus.Fields{
 				"ip":       ip,
