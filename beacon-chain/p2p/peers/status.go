@@ -1060,7 +1060,7 @@ func (p *Status) tallyIPTracker() {
 		stringIP := ip.String()
 		tracker[stringIP] += 1
 		// if lastSee is not empty then copy from p.lastSee
-		if _, ok := lastSeen[stringIP]; ok {
+		if _, ok := p.lastSeen[stringIP]; ok {
 			lastSeen[stringIP] = p.lastSeen[stringIP]
 		}
 	}
@@ -1071,6 +1071,9 @@ func (p *Status) tallyIPTracker() {
 // Decrease IpTracker count if ip is not seen for IpTrackerBanTime
 func (p *Status) DecayBadIps() {
 	for ip, count := range p.ipTracker {
+		if _, ok := p.lastSeen[ip]; !ok {
+			continue
+		}
 		if count > 0 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
 			log.WithFields(logrus.Fields{
 				"ip":       ip,
