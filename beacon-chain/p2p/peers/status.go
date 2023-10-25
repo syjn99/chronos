@@ -82,11 +82,11 @@ const (
 
 // Status is the structure holding the peer status information.
 type Status struct {
-	ctx             context.Context
-	scorers         *scorers.Service
-	store           *peerdata.Store
-	ipTracker       map[string]uint64
-	lastSeen        map[string]time.Time
+	ctx       context.Context
+	scorers   *scorers.Service
+	store     *peerdata.Store
+	ipTracker map[string]uint64
+	// lastSeen        map[string]time.Time
 	rand            *rand.Rand
 	ipTrackerConfig *IpTrackerConfig
 }
@@ -137,7 +137,7 @@ func NewStatus(ctx context.Context, config *StatusConfig) *Status {
 		store:     store,
 		scorers:   scorers.NewService(ctx, store, config.ScorerParams),
 		ipTracker: map[string]uint64{},
-		lastSeen:  map[string]time.Time{},
+		// lastSeen:  map[string]time.Time{},
 		// Random generator used to calculate dial backoff period.
 		// It is ok to use deterministic generator, no need for true entropy.
 		rand:            rand.NewDeterministicGenerator(),
@@ -1039,12 +1039,12 @@ func (p *Status) addIpToTracker(pid peer.ID) {
 	}
 	stringIP := ip.String()
 	p.ipTracker[stringIP] += 1
-	p.lastSeen[stringIP] = time.Now()
+	// p.lastSeen[stringIP] = time.Now()
 }
 
 func (p *Status) tallyIPTracker() {
 	tracker := map[string]uint64{}
-	lastSeen := map[string]time.Time{}
+	// lastSeen := map[string]time.Time{}
 	// Iterate through all peers.
 	for _, peerData := range p.store.Peers() {
 		if peerData.Address == nil {
@@ -1060,39 +1060,39 @@ func (p *Status) tallyIPTracker() {
 		stringIP := ip.String()
 		tracker[stringIP] += 1
 		// if lastSee is not empty then copy from p.lastSee
-		if _, ok := p.lastSeen[stringIP]; ok {
-			lastSeen[stringIP] = p.lastSeen[stringIP]
-		}
+		// if _, ok := p.lastSeen[stringIP]; ok {
+		// 	lastSeen[stringIP] = p.lastSeen[stringIP]
+		// }
 	}
 	p.ipTracker = tracker
-	p.lastSeen = lastSeen
+	// p.lastSeen = lastSeen
 }
 
 // Decrease IpTracker count if ip is not seen for IpTrackerBanTime
 func (p *Status) DecayBadIps() {
-	for ip, count := range p.ipTracker {
-		if _, ok := p.lastSeen[ip]; !ok {
-			log.WithFields(logrus.Fields{
-				"ip":    ip,
-				"count": count,
-			}).Debug("Something Wrong Decrease count from ipTracker")
-			continue
-		}
+	// for ip, count := range p.ipTracker {
+	// 	if _, ok := p.lastSeen[ip]; !ok {
+	// 		log.WithFields(logrus.Fields{
+	// 			"ip":    ip,
+	// 			"count": count,
+	// 		}).Debug("Something Wrong Decrease count from ipTracker")
+	// 		continue
+	// 	}
 
-		if count > 0 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
-			log.WithFields(logrus.Fields{
-				"ip":       ip,
-				"count":    count,
-				"lastSeen": p.lastSeen[ip],
-			}).Debug("Decrease count from ipTracker")
-			p.ipTracker[ip]--
-			if p.ipTracker[ip] == 0 {
-				delete(p.lastSeen, ip)
-			} else {
-				p.lastSeen[ip] = time.Now()
-			}
-		}
-	}
+	// 	if count > 0 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
+	// 		log.WithFields(logrus.Fields{
+	// 			"ip":       ip,
+	// 			"count":    count,
+	// 			"lastSeen": p.lastSeen[ip],
+	// 		}).Debug("Decrease count from ipTracker")
+	// 		p.ipTracker[ip]--
+	// 		if p.ipTracker[ip] == 0 {
+	// 			delete(p.lastSeen, ip)
+	// 		} else {
+	// 			p.lastSeen[ip] = time.Now()
+	// 		}
+	// 	}
+	// }
 }
 
 // Whitelist
