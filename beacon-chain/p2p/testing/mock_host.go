@@ -2,6 +2,7 @@ package testing
 
 import (
 	"context"
+	"net"
 
 	"github.com/libp2p/go-libp2p/core/connmgr"
 	"github.com/libp2p/go-libp2p/core/event"
@@ -75,4 +76,8 @@ func (_ *MockHost) ConnManager() connmgr.ConnManager {
 // EventBus --
 func (_ *MockHost) EventBus() event.Bus {
 	return nil
+}
+
+func (_ *MockHost) MapPort(protocol string, internalPort int) (net.Addr, int, error) {
+	return nil, 0, nil
 }
