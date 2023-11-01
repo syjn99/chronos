@@ -250,26 +250,28 @@ type SyncAggregate struct {
 }
 
 type ExecutionPayload struct {
-	ParentHash    string   `json:"parent_hash" validate:"required"`
-	FeeRecipient  string   `json:"fee_recipient" validate:"required"`
-	StateRoot     string   `json:"state_root" validate:"required"`
-	ReceiptsRoot  string   `json:"receipts_root" validate:"required"`
-	LogsBloom     string   `json:"logs_bloom" validate:"required"`
-	PrevRandao    string   `json:"prev_randao" validate:"required"`
-	BlockNumber   string   `json:"block_number" validate:"required"`
-	GasLimit      string   `json:"gas_limit" validate:"required"`
-	GasUsed       string   `json:"gas_used" validate:"required"`
-	Timestamp     string   `json:"timestamp" validate:"required"`
-	ExtraData     string   `json:"extra_data" validate:"required"`
-	BaseFeePerGas string   `json:"base_fee_per_gas" validate:"required"`
-	BlockHash     string   `json:"block_hash" validate:"required"`
-	Transactions  []string `json:"transactions" validate:"required"`
+	ParentHash     string   `json:"parent_hash" validate:"required"`
+	FeeRecipient   string   `json:"fee_recipient" validate:"required"`
+	StateRoot      string   `json:"state_root" validate:"required"`
+	CheckpointRoot string   `json:"checkpoint_root" validate:"required"`
+	ReceiptsRoot   string   `json:"receipts_root" validate:"required"`
+	LogsBloom      string   `json:"logs_bloom" validate:"required"`
+	PrevRandao     string   `json:"prev_randao" validate:"required"`
+	BlockNumber    string   `json:"block_number" validate:"required"`
+	GasLimit       string   `json:"gas_limit" validate:"required"`
+	GasUsed        string   `json:"gas_used" validate:"required"`
+	Timestamp      string   `json:"timestamp" validate:"required"`
+	ExtraData      string   `json:"extra_data" validate:"required"`
+	BaseFeePerGas  string   `json:"base_fee_per_gas" validate:"required"`
+	BlockHash      string   `json:"block_hash" validate:"required"`
+	Transactions   []string `json:"transactions" validate:"required"`
 }
 
 type ExecutionPayloadHeader struct {
 	ParentHash       string `json:"parent_hash" validate:"required"`
 	FeeRecipient     string `json:"fee_recipient" validate:"required"`
 	StateRoot        string `json:"state_root" validate:"required"`
+	CheckpointRoot   string `json:"checkpoint_root" validate:"required"`
 	ReceiptsRoot     string `json:"receipts_root" validate:"required"`
 	LogsBloom        string `json:"logs_bloom" validate:"required"`
 	PrevRandao       string `json:"prev_randao" validate:"required"`
@@ -284,27 +286,29 @@ type ExecutionPayloadHeader struct {
 }
 
 type ExecutionPayloadCapella struct {
-	ParentHash    string       `json:"parent_hash" validate:"required"`
-	FeeRecipient  string       `json:"fee_recipient" validate:"required"`
-	StateRoot     string       `json:"state_root" validate:"required"`
-	ReceiptsRoot  string       `json:"receipts_root" validate:"required"`
-	LogsBloom     string       `json:"logs_bloom" validate:"required"`
-	PrevRandao    string       `json:"prev_randao" validate:"required"`
-	BlockNumber   string       `json:"block_number" validate:"required"`
-	GasLimit      string       `json:"gas_limit" validate:"required"`
-	GasUsed       string       `json:"gas_used" validate:"required"`
-	Timestamp     string       `json:"timestamp" validate:"required"`
-	ExtraData     string       `json:"extra_data" validate:"required"`
-	BaseFeePerGas string       `json:"base_fee_per_gas" validate:"required"`
-	BlockHash     string       `json:"block_hash" validate:"required"`
-	Transactions  []string     `json:"transactions" validate:"required"`
-	Withdrawals   []Withdrawal `json:"withdrawals" validate:"required"`
+	ParentHash     string       `json:"parent_hash" validate:"required"`
+	FeeRecipient   string       `json:"fee_recipient" validate:"required"`
+	StateRoot      string       `json:"state_root" validate:"required"`
+	CheckpointRoot string       `json:"checkpoint_root" validate:"required"`
+	ReceiptsRoot   string       `json:"receipts_root" validate:"required"`
+	LogsBloom      string       `json:"logs_bloom" validate:"required"`
+	PrevRandao     string       `json:"prev_randao" validate:"required"`
+	BlockNumber    string       `json:"block_number" validate:"required"`
+	GasLimit       string       `json:"gas_limit" validate:"required"`
+	GasUsed        string       `json:"gas_used" validate:"required"`
+	Timestamp      string       `json:"timestamp" validate:"required"`
+	ExtraData      string       `json:"extra_data" validate:"required"`
+	BaseFeePerGas  string       `json:"base_fee_per_gas" validate:"required"`
+	BlockHash      string       `json:"block_hash" validate:"required"`
+	Transactions   []string     `json:"transactions" validate:"required"`
+	Withdrawals    []Withdrawal `json:"withdrawals" validate:"required"`
 }
 
 type ExecutionPayloadHeaderCapella struct {
 	ParentHash       string `json:"parent_hash" validate:"required"`
 	FeeRecipient     string `json:"fee_recipient" validate:"required"`
 	StateRoot        string `json:"state_root" validate:"required"`
+	CheckpointRoot   string `json:"checkpoint_root" validate:"required"`
 	ReceiptsRoot     string `json:"receipts_root" validate:"required"`
 	LogsBloom        string `json:"logs_bloom" validate:"required"`
 	PrevRandao       string `json:"prev_randao" validate:"required"`
@@ -606,6 +610,10 @@ func (b *SignedBeaconBlockBellatrix) ToGeneric() (*eth.GenericSignedBeaconBlock,
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayload.StateRoot")
 	}
+	payloadCheckpointRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayload.CheckpointRoot)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayload.CheckpointRoot")
+	}
 	payloadReceiptsRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayload.ReceiptsRoot)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayload.ReceiptsRoot")
@@ -678,20 +686,21 @@ func (b *SignedBeaconBlockBellatrix) ToGeneric() (*eth.GenericSignedBeaconBlock,
 					SyncCommitteeSignature: syncCommitteeSig,
 				},
 				ExecutionPayload: &enginev1.ExecutionPayload{
-					ParentHash:    payloadParentHash,
-					FeeRecipient:  payloadFeeRecipient,
-					StateRoot:     payloadStateRoot,
-					ReceiptsRoot:  payloadReceiptsRoot,
-					LogsBloom:     payloadLogsBloom,
-					PrevRandao:    payloadPrevRandao,
-					BlockNumber:   payloadBlockNumber,
-					GasLimit:      payloadGasLimit,
-					GasUsed:       payloadGasUsed,
-					Timestamp:     payloadTimestamp,
-					ExtraData:     payloadExtraData,
-					BaseFeePerGas: payloadBaseFeePerGas,
-					BlockHash:     payloadBlockHash,
-					Transactions:  payloadTxs,
+					ParentHash:     payloadParentHash,
+					FeeRecipient:   payloadFeeRecipient,
+					StateRoot:      payloadStateRoot,
+					CheckpointRoot: payloadCheckpointRoot,
+					ReceiptsRoot:   payloadReceiptsRoot,
+					LogsBloom:      payloadLogsBloom,
+					PrevRandao:     payloadPrevRandao,
+					BlockNumber:    payloadBlockNumber,
+					GasLimit:       payloadGasLimit,
+					GasUsed:        payloadGasUsed,
+					Timestamp:      payloadTimestamp,
+					ExtraData:      payloadExtraData,
+					BaseFeePerGas:  payloadBaseFeePerGas,
+					BlockHash:      payloadBlockHash,
+					Transactions:   payloadTxs,
 				},
 			},
 		},
@@ -781,6 +790,10 @@ func (b *SignedBlindedBeaconBlockBellatrix) ToGeneric() (*eth.GenericSignedBeaco
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayloadHeader.StateRoot")
 	}
+	payloadCheckpointRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayloadHeader.CheckpointRoot)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayloadHeader.CheckpointRoot")
+	}
 	payloadReceiptsRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayloadHeader.ReceiptsRoot)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayloadHeader.ReceiptsRoot")
@@ -853,6 +866,7 @@ func (b *SignedBlindedBeaconBlockBellatrix) ToGeneric() (*eth.GenericSignedBeaco
 					ParentHash:       payloadParentHash,
 					FeeRecipient:     payloadFeeRecipient,
 					StateRoot:        payloadStateRoot,
+					CheckpointRoot:   payloadCheckpointRoot,
 					ReceiptsRoot:     payloadReceiptsRoot,
 					LogsBloom:        payloadLogsBloom,
 					PrevRandao:       payloadPrevRandao,
@@ -952,6 +966,10 @@ func (b *SignedBeaconBlockCapella) ToGeneric() (*eth.GenericSignedBeaconBlock, e
 	payloadStateRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayload.StateRoot)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayload.StateRoot")
+	}
+	payloadCheckpointRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayload.CheckpointRoot)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayload.CheckpointRoot")
 	}
 	payloadReceiptsRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayload.ReceiptsRoot)
 	if err != nil {
@@ -1054,21 +1072,22 @@ func (b *SignedBeaconBlockCapella) ToGeneric() (*eth.GenericSignedBeaconBlock, e
 					SyncCommitteeSignature: syncCommitteeSig,
 				},
 				ExecutionPayload: &enginev1.ExecutionPayloadCapella{
-					ParentHash:    payloadParentHash,
-					FeeRecipient:  payloadFeeRecipient,
-					StateRoot:     payloadStateRoot,
-					ReceiptsRoot:  payloadReceiptsRoot,
-					LogsBloom:     payloadLogsBloom,
-					PrevRandao:    payloadPrevRandao,
-					BlockNumber:   payloadBlockNumber,
-					GasLimit:      payloadGasLimit,
-					GasUsed:       payloadGasUsed,
-					Timestamp:     payloadTimestamp,
-					ExtraData:     payloadExtraData,
-					BaseFeePerGas: payloadBaseFeePerGas,
-					BlockHash:     payloadBlockHash,
-					Transactions:  txs,
-					Withdrawals:   withdrawals,
+					ParentHash:     payloadParentHash,
+					FeeRecipient:   payloadFeeRecipient,
+					StateRoot:      payloadStateRoot,
+					CheckpointRoot: payloadCheckpointRoot,
+					ReceiptsRoot:   payloadReceiptsRoot,
+					LogsBloom:      payloadLogsBloom,
+					PrevRandao:     payloadPrevRandao,
+					BlockNumber:    payloadBlockNumber,
+					GasLimit:       payloadGasLimit,
+					GasUsed:        payloadGasUsed,
+					Timestamp:      payloadTimestamp,
+					ExtraData:      payloadExtraData,
+					BaseFeePerGas:  payloadBaseFeePerGas,
+					BlockHash:      payloadBlockHash,
+					Transactions:   txs,
+					Withdrawals:    withdrawals,
 				},
 				BlsToExecutionChanges: blsChanges,
 			},
@@ -1159,6 +1178,10 @@ func (b *SignedBlindedBeaconBlockCapella) ToGeneric() (*eth.GenericSignedBeaconB
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayloadHeader.StateRoot")
 	}
+	payloadCheckpointRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayloadHeader.CheckpointRoot)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayloadHeader.CheckpointRoot")
+	}
 	payloadReceiptsRoot, err := hexutil.Decode(b.Message.Body.ExecutionPayloadHeader.ReceiptsRoot)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode b.Message.Body.ExecutionPayloadHeader.ReceiptsRoot")
@@ -1239,6 +1262,7 @@ func (b *SignedBlindedBeaconBlockCapella) ToGeneric() (*eth.GenericSignedBeaconB
 					ParentHash:       payloadParentHash,
 					FeeRecipient:     payloadFeeRecipient,
 					StateRoot:        payloadStateRoot,
+					CheckpointRoot:   payloadCheckpointRoot,
 					ReceiptsRoot:     payloadReceiptsRoot,
 					LogsBloom:        payloadLogsBloom,
 					PrevRandao:       payloadPrevRandao,
