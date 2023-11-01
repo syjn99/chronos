@@ -28,6 +28,12 @@ jobs:
       - name: Run build
         run: |
           sh dist/build_${{ inputs.build_type }}.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-${{ inputs.build_type }}
+          path: dist/bin
           
       - name: Upload to AWS S3
         run: |

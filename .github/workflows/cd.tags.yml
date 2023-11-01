@@ -6,6 +6,9 @@ on:
         # parse names from tags {name}_v{version}
       - '*_v*'
 
+env:
+  S3_BUCKET_NAME: over-protocol-dist
+
 jobs:
   extract_name:
     runs-on: [self-hosted, linux, x64]
@@ -35,9 +38,62 @@ jobs:
       build_type: ${{ matrix.symbol-list }}
       tag_name: ${{ needs.extract_name.outputs.tag_name }}
       version_name: ${{ needs.extract_name.outputs.version_name }}
-
-  notification:
+  
+  node-pack-lipo:
     needs: [extract_name, build]
+    runs-on: [self-hosted, macmini-local]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download osx amd64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_osx_amd64
+          path: dist/bin
+      - name: Download osx arm64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_osx_arm64
+          path: dist/bin
+      - run: lipo -create -output dist/bin/mac/chronos dist/bin/mac/amd64/chronos dist/bin/mac/arm64/chronos
+      - run: lipo -create -output dist/bin/mac/validator dist/bin/mac/amd64/chronos dist/bin/mac/arm64/validator
+      - run: rm -r -f dist/bin/mac/amd64 dist/bin/mac/arm64
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_osx
+          path: dist/bin
+
+  node-pack:
+    needs: [extract_name, build, node-pack-lipo]
     runs-on: [self-hosted, linux, x64]
     steps:
+      - uses: actions/checkout@v3
+      - name: Download windows artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_windows
+          path: dist/bin
+      - run: gzip dist/bin/win/chronos.exe
+      - run: gzip dist/bin/win/validator.exe
+      - name: Download osx artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_osx
+          path: dist/bin
+      - run: gzip dist/bin/mac/chronos
+      - run: gzip dist/bin/mac/validator
+      - run: zip -r dist/over-node-chronos.zip dist/bin
+      - name: Upload to AWS S3
+        run: |
+          aws s3 cp ./dist/over-node-chronos.zip \
+          ${{ format('s3://{0}/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.tag_name, needs.extract_name.outputs.version_name ) }} \
+          --acl public-read --profile over-dist
+
+  notification:
+    needs: [extract_name, build, node-pack]
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Drop metadata
+        run: |
+          echo "<${{ format('https://{0}.s3.ap-northeast-2.amazonaws.com/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.tag_name, needs.extract_name.outputs.version_name ) }}|over-node-chronos.zip>" >> /usr/local/share/notification/chronos/${{ env.S3_BUCKET_NAME }}
       - run: sh /usr/local/share/notification/chronos/over_dist_notification.sh ${{ needs.extract_name.outputs.tag_name }} ${{ needs.extract_name.outputs.version_name }}
