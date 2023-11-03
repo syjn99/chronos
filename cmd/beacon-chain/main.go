@@ -163,56 +163,12 @@ func main() {
 	}
 
 	app.Flags = appFlags
-
 	app.Before = func(ctx *cli.Context) error {
 		// Load flags from config file, if specified.
 		if err := cmd.LoadFlagsFromConfig(ctx, app.Flags); err != nil {
 			return err
 		}
 
-		format := ctx.String(cmd.LogFormat.Name)
-		switch format {
-		case "text":
-			formatter := new(prefixed.TextFormatter)
-			formatter.TimestampFormat = "2006-01-02 15:04:05"
-			formatter.FullTimestamp = true
-			// If persistent log files are written - we disable the log messages coloring because
-			// the colors are ANSI codes and seen as gibberish in the log files.
-			formatter.DisableColors = ctx.String(cmd.LogFileName.Name) != ""
-			logrus.SetFormatter(formatter)
-		case "fluentd":
-			f := joonix.NewFormatter()
-			if err := joonix.DisableTimestampFormat(f); err != nil {
-				panic(err)
-			}
-			logrus.SetFormatter(f)
-		case "json":
-			logrus.SetFormatter(&logrus.JSONFormatter{})
-		case "journald":
-			if err := journald.Enable(); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("unknown log format %s", format)
-		}
-
-		logFileName := ctx.String(cmd.LogFileName.Name)
-		rotation := ctx.Bool(cmd.LogRotateFlag.Name)
-		if logFileName != "" {
-			if rotation {
-				lumberjackLogger := &lumberjack.Logger{
-					Filename:   logFileName,
-					MaxSize:    ctx.Int(cmd.LogMaxSizeMBsFlag.Name), // MB
-					MaxBackups: ctx.Int(cmd.LogMaxBackupsFlag.Name),
-					MaxAge:     ctx.Int(cmd.LogMaxAgeFlag.Name), // days
-					Compress:   ctx.Bool(cmd.LogCompressFlag.Name),
-				}
-				logs.AddLogWriter(io.MultiWriter(logrus.StandardLogger().Out, lumberjackLogger))
-				log.Info("Log rotation activated. path=", logFileName, ", MaxSize=", lumberjackLogger.MaxSize, ", MaxBackups=", lumberjackLogger.MaxBackups, ", MaxAge=", lumberjackLogger.MaxAge, ", Compress=", lumberjackLogger.Compress)
-			} else if err := logs.ConfigurePersistentLogging(logFileName); err != nil {
-				log.WithError(err).Error("Failed to configuring logging to disk.")
-			}
-		}
 		if err := cmd.ExpandSingleEndpointIfFile(ctx, flags.ExecutionEngineEndpoint); err != nil {
 			return err
 		}
@@ -273,6 +229,52 @@ func startNode(ctx *cli.Context) error {
 		glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
 		glogger.Verbosity(gethlog.LvlTrace)
 		gethlog.Root().SetHandler(glogger)
+	}
+
+	format := ctx.String(cmd.LogFormat.Name)
+	switch format {
+	case "text":
+		formatter := new(prefixed.TextFormatter)
+		formatter.TimestampFormat = "2006-01-02 15:04:05"
+		formatter.FullTimestamp = true
+		// If persistent log files are written - we disable the log messages coloring because
+		// the colors are ANSI codes and seen as gibberish in the log files.
+		formatter.DisableColors = ctx.String(cmd.LogFileName.Name) != ""
+		logrus.SetFormatter(formatter)
+	case "fluentd":
+		f := joonix.NewFormatter()
+		if err := joonix.DisableTimestampFormat(f); err != nil {
+			panic(err)
+		}
+		logrus.SetFormatter(f)
+	case "json":
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	case "journald":
+		if err := journald.Enable(); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown log format %s", format)
+	}
+
+	// Set log rotation if log file name is specified.
+	logFileName := ctx.String(cmd.LogFileName.Name)
+	rotation := ctx.Bool(cmd.LogRotateFlag.Name)
+	if logFileName != "" {
+		logrus.SetOutput(os.Stdout) // Set default output to stdout for log separation
+		if rotation {
+			lumberjackLogger := &lumberjack.Logger{
+				Filename:   logFileName,
+				MaxSize:    ctx.Int(cmd.LogMaxSizeMBsFlag.Name), // MB
+				MaxBackups: ctx.Int(cmd.LogMaxBackupsFlag.Name),
+				MaxAge:     ctx.Int(cmd.LogMaxAgeFlag.Name), // days
+				Compress:   ctx.Bool(cmd.LogCompressFlag.Name),
+			}
+			logs.AddLogWriter(io.MultiWriter(logrus.StandardLogger().Out, lumberjackLogger))
+			log.Info("Log rotation activated. path=", logFileName, ", MaxSize=", lumberjackLogger.MaxSize, ", MaxBackups=", lumberjackLogger.MaxBackups, ", MaxAge=", lumberjackLogger.MaxAge, ", Compress=", lumberjackLogger.Compress)
+		} else if err := logs.ConfigurePersistentLogging(logFileName); err != nil {
+			log.WithError(err).Error("Failed to configuring logging to disk.")
+		}
 	}
 
 	blockchainFlagOpts, err := blockchaincmd.FlagOptions(ctx)
