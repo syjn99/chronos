@@ -1062,6 +1062,11 @@ func (p *Status) tallyIPTracker() {
 		// if lastSee is not empty then copy from p.lastSee
 		if _, ok := p.lastSeen[stringIP]; ok {
 			lastSeen[stringIP] = p.lastSeen[stringIP]
+		} else {
+			log.WithFields(logrus.Fields{
+				"ip":    stringIP,
+				"count": tracker[stringIP],
+			}).Debug("Something Wrong tallyIPTracker")
 		}
 	}
 	p.ipTracker = tracker
@@ -1080,19 +1085,15 @@ func (p *Status) DecayBadIps() {
 			}).Debug("Something Wrong Decrease count from ipTracker")
 			continue
 		}
-
-		if count > 0 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
+		// Decay Bad Ip only when count is > 1
+		if count > 1 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
 			log.WithFields(logrus.Fields{
 				"ip":       ip,
 				"count":    count,
 				"lastSeen": p.lastSeen[ip],
 			}).Debug("Decrease count from ipTracker")
 			p.ipTracker[ip]--
-			if p.ipTracker[ip] == 0 {
-				delete(p.lastSeen, ip)
-			} else {
-				p.lastSeen[ip] = time.Now()
-			}
+			p.lastSeen[ip] = time.Now()
 		}
 	}
 }

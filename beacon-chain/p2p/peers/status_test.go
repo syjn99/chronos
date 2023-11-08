@@ -23,6 +23,7 @@ import (
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v4/testing/assert"
 	"github.com/prysmaticlabs/prysm/v4/testing/require"
+	logTest "github.com/sirupsen/logrus/hooks/test"
 )
 
 func TestStatus(t *testing.T) {
@@ -634,6 +635,70 @@ func TestPeerIPTrackerPrune(t *testing.T) {
 		assert.Equal(t, false, p.IsBad(pr), "peer with bad ip is not bad")
 	}
 
+}
+
+func TestDecayBadIps(t *testing.T) {
+	hook := logTest.NewGlobal()
+	resetCfg := features.InitWithReset(&features.Flags{
+		EnablePeerScorer: true,
+	})
+	defer resetCfg()
+	maxBadResponses := 2
+	p := peers.NewStatus(context.Background(), &peers.StatusConfig{
+		PeerLimit: 1,
+		ScorerParams: &scorers.Config{
+			BadResponsesScorerConfig: &scorers.BadResponsesScorerConfig{
+				Threshold: maxBadResponses,
+			},
+		},
+		IpTrackerConfig: &peers.IpTrackerConfig{
+			IpTrackerBanTime: 2 * time.Second,
+			ColocationLimit:  5,
+		},
+	})
+	// Add Peers
+	normalIP := "211.227.218.115"
+	var normalPeers []peer.ID
+
+	for i := 0; i < 151; i++ {
+		//for i := 0; i < 2; i++ {
+		port := strconv.Itoa(3000 + i)
+		addr, err := ma.NewMultiaddr("/ip4/" + normalIP + "/tcp/" + port)
+		if err != nil {
+			t.Fatal(err)
+		}
+		normalPeers = append(normalPeers, createPeer(t, p, addr, network.DirUnknown, peerdata.PeerConnectionState(ethpb.ConnectionState_CONNECTED)))
+	}
+
+	smallCntIP := "211.227.218.116"
+	var smallCntPeers []peer.ID
+
+	for i := 0; i < 1; i++ {
+		//for i := 0; i < 2; i++ {
+		port := strconv.Itoa(3000 + i)
+		addr, err := ma.NewMultiaddr("/ip4/" + smallCntIP + "/tcp/" + port)
+		if err != nil {
+			t.Fatal(err)
+		}
+		smallCntPeers = append(smallCntPeers, createPeer(t, p, addr, network.DirUnknown, peerdata.PeerConnectionState(ethpb.ConnectionState_CONNECTED)))
+	}
+	// wait 5 seconds
+	time.Sleep(2 * time.Second)
+
+	p.DecayBadIps()
+	time.Sleep(2 * time.Second)
+
+	p.DecayBadIps()
+	time.Sleep(2 * time.Second)
+
+	p.Prune()
+
+	time.Sleep(2 * time.Second)
+
+	p.DecayBadIps()
+
+	// check log not include "Something wrong"
+	assert.LogsDoNotContain(t, hook, "Something Wrong")
 }
 
 func TestTrimmedOrderedPeers(t *testing.T) {
