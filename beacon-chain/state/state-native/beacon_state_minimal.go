@@ -50,6 +50,7 @@ type BeaconState struct {
 	latestExecutionPayloadHeaderCapella *enginev1.ExecutionPayloadHeaderCapella
 	nextWithdrawalIndex                 uint64
 	nextWithdrawalValidatorIndex        primitives.ValidatorIndex
+	bailoutScores                       []uint64
 
 	lock                  sync.RWMutex
 	dirtyFields           map[types.FieldIndex]bool

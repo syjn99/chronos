@@ -26,6 +26,8 @@ type Validator struct {
 	IsPrevEpochTargetAttester bool
 	// IsHeadAttester is true if the validator attested head.
 	IsPrevEpochHeadAttester bool
+	// IsWaitingForExit is true if the validator is waiting for exit epoch.
+	IsWaitingForExit bool
 
 	// CurrentEpochEffectiveBalance is how much effective balance this validator has current epoch.
 	CurrentEpochEffectiveBalance uint64
@@ -42,6 +44,8 @@ type Validator struct {
 
 	// InactivityScore of the validator. [New in Altair]
 	InactivityScore uint64
+	// BailOutScore of the validator. [New in Altair]
+	BailOutScore uint64
 }
 
 // Balance stores the pre computation of the total participated balances for a given epoch

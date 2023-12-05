@@ -299,6 +299,10 @@ func (b *BeaconBlockBody) SetBLSToExecutionChanges([]*eth.SignedBLSToExecutionCh
 	panic("implement me")
 }
 
+func (b *BeaconBlockBody) BailOuts() ([]*eth.BailOut, error) {
+	panic("implement me")
+}
+
 var _ interfaces.ReadOnlySignedBeaconBlock = &SignedBeaconBlock{}
 var _ interfaces.ReadOnlyBeaconBlock = &BeaconBlock{}
 var _ interfaces.ReadOnlyBeaconBlockBody = &BeaconBlockBody{}

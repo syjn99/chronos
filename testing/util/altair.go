@@ -130,6 +130,10 @@ func buildGenesisBeaconState(genesisTime uint64, preState state.BeaconState, eth
 	if err != nil {
 		return nil, err
 	}
+	bscores, err := preState.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
 	st := &ethpb.BeaconStateAltair{
 		// Misc fields.
 		Slot:                  0,
@@ -148,6 +152,7 @@ func buildGenesisBeaconState(genesisTime uint64, preState state.BeaconState, eth
 		PreviousEpochParticipation: prevEpochParticipation,
 		CurrentEpochParticipation:  currEpochParticipation,
 		InactivityScores:           scores,
+		BailOutScores:              bscores,
 
 		// Randomness and committees.
 		RandaoMixes: randaoMixes,
@@ -230,6 +235,7 @@ func emptyGenesisState() (state.BeaconState, error) {
 		Validators:       []*ethpb.Validator{},
 		Balances:         []uint64{},
 		InactivityScores: []uint64{},
+		BailOutScores:    []uint64{},
 
 		JustificationBits:          []byte{0},
 		HistoricalRoots:            [][]byte{},
@@ -267,6 +273,7 @@ func NewBeaconBlockAltair() *ethpb.SignedBeaconBlockAltair {
 					SyncCommitteeBits:      scBits[:],
 					SyncCommitteeSignature: make([]byte, 96),
 				},
+				BailOuts: []*ethpb.BailOut{},
 			},
 		},
 		Signature: make([]byte, 96),
@@ -375,6 +382,15 @@ func GenerateFullBlockAltair(
 	if numToGen > 0 {
 		exits, err = generateVoluntaryExits(bState, privs, numToGen)
 		if err != nil {
+			return nil, errors.Wrapf(err, "failed generating %d voluntary exits:", numToGen)
+		}
+	}
+
+	numToGen = conf.NumBailOuts
+	var bailouts []*ethpb.BailOut
+	if numToGen > 0 {
+		bailouts, err = generateBailOuts(bState, numToGen)
+		if err != nil {
 			return nil, errors.Wrapf(err, "failed generating %d attester slashings:", numToGen)
 		}
 	}
@@ -446,6 +462,7 @@ func GenerateFullBlockAltair(
 			Deposits:          newDeposits,
 			Graffiti:          make([]byte, fieldparams.RootLength),
 			SyncAggregate:     newSyncAggregate,
+			BailOuts:          bailouts,
 		},
 	}
 

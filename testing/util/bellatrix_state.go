@@ -70,6 +70,7 @@ func emptyGenesisStateBellatrix() (state.BeaconState, error) {
 		Validators:       []*ethpb.Validator{},
 		Balances:         []uint64{},
 		InactivityScores: []uint64{},
+		BailOutScores:    []uint64{},
 
 		JustificationBits:          []byte{0},
 		HistoricalRoots:            [][]byte{},
@@ -134,6 +135,10 @@ func buildGenesisBeaconStateBellatrix(genesisTime uint64, preState state.BeaconS
 	if err != nil {
 		return nil, err
 	}
+	bscores, err := preState.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
 	scoresMissing := len(preState.Validators()) - len(scores)
 	if scoresMissing > 0 {
 		for i := 0; i < scoresMissing; i++ {
@@ -158,6 +163,7 @@ func buildGenesisBeaconStateBellatrix(genesisTime uint64, preState state.BeaconS
 		PreviousEpochParticipation: prevEpochParticipation,
 		CurrentEpochParticipation:  currEpochParticipation,
 		InactivityScores:           scores,
+		BailOutScores:              bscores,
 
 		// Randomness and committees.
 		RandaoMixes: randaoMixes,

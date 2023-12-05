@@ -139,6 +139,9 @@ func (vs *Server) GetBeaconBlock(ctx context.Context, req *ethpb.BlockRequest) (
 		// Set sync aggregate. New in Altair.
 		vs.setSyncAggregate(ctx, sBlk)
 
+		// Set bail out. New in Altair.
+		vs.SetBailouts(ctx, head, sBlk)
+
 		// Get local and builder (if enabled) payloads. Set execution data. New in Bellatrix.
 		localPayload, err := vs.getLocalPayload(ctx, sBlk.Block(), head)
 		if err != nil {
@@ -173,6 +176,7 @@ func (vs *Server) GetBeaconBlock(ctx context.Context, req *ethpb.BlockRequest) (
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not convert block to proto: %v", err)
 	}
+
 	if slots.ToEpoch(req.Slot) >= params.BeaconConfig().CapellaForkEpoch {
 		if sBlk.IsBlinded() {
 			return &ethpb.GenericBeaconBlock{Block: &ethpb.GenericBeaconBlock_BlindedCapella{BlindedCapella: pb.(*ethpb.BlindedBeaconBlockCapella)}}, nil
@@ -227,6 +231,9 @@ func (vs *Server) BuildBlockParallel(ctx context.Context, sBlk interfaces.Signed
 
 		// Set sync aggregate. New in Altair.
 		vs.setSyncAggregate(ctx, sBlk)
+
+		// Set bail out. New in Altair.
+		vs.SetBailouts(ctx, head, sBlk)
 
 		// Set bls to execution change. New in Capella.
 		vs.setBlsToExecData(sBlk, head)

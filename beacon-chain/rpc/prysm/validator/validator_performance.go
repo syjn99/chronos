@@ -25,6 +25,7 @@ type ValidatorPerformanceResponse struct {
 	BalancesAfterEpochTransition  []uint64 `json:"balances_after_epoch_transition,omitempty"`
 	MissingValidators             [][]byte `json:"missing_validators,omitempty"`
 	InactivityScores              []uint64 `json:"inactivity_scores,omitempty"`
+	BailOutScores                 []uint64 `json:"bail_out_scores,omitempty"`
 }
 
 // GetValidatorPerformance is an HTTP handler for GetValidatorPerformance.
@@ -65,6 +66,7 @@ func (vs *Server) GetValidatorPerformance(w http.ResponseWriter, r *http.Request
 		BalancesAfterEpochTransition:  computed.BalancesAfterEpochTransition,
 		MissingValidators:             computed.MissingValidators,
 		InactivityScores:              computed.InactivityScores, // Only populated in Altair
+		BailOutScores:                 computed.BailOutScores,    // Only populated in Altair
 	}
 	network.WriteJson(w, response)
 }

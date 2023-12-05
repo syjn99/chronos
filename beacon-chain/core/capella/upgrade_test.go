@@ -63,6 +63,9 @@ func TestUpgradeToCapella(t *testing.T) {
 	psc, err = preForkState.NextSyncCommittee()
 	require.NoError(t, err)
 	require.DeepSSZEqual(t, psc, nsc)
+	bo, err := mSt.BailOutScores()
+	require.NoError(t, err)
+	require.DeepSSZEqual(t, make([]uint64, numValidators), bo)
 
 	header, err := mSt.LatestExecutionPayloadHeader()
 	require.NoError(t, err)
@@ -77,7 +80,7 @@ func TestUpgradeToCapella(t *testing.T) {
 		ParentHash:       prevHeader.ParentHash(),
 		FeeRecipient:     prevHeader.FeeRecipient(),
 		StateRoot:        prevHeader.StateRoot(),
-		CheckpointRoot:  prevHeader.CheckpointRoot(),
+		CheckpointRoot:   prevHeader.CheckpointRoot(),
 		ReceiptsRoot:     prevHeader.ReceiptsRoot(),
 		LogsBloom:        prevHeader.LogsBloom(),
 		PrevRandao:       prevHeader.PrevRandao(),

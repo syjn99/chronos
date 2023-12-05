@@ -198,9 +198,9 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	ConfigName:                     MainnetName,
 	PresetBase:                     "mainnet",
 	BeaconStateFieldCount:          21,
-	BeaconStateAltairFieldCount:    24,
-	BeaconStateBellatrixFieldCount: 25,
-	BeaconStateCapellaFieldCount:   28,
+	BeaconStateAltairFieldCount:    25,
+	BeaconStateBellatrixFieldCount: 26,
+	BeaconStateCapellaFieldCount:   29,
 
 	// Slasher related values.
 	WeakSubjectivityPeriod:          54000,
@@ -242,6 +242,8 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	SyncCommitteeSize:            512,
 	InactivityScoreBias:          4,
 	InactivityScoreRecoveryRate:  16,
+	BailOutScoreBias:             1000000000000000,
+	BailOutScoreThreshold:        1575000000000000000,
 	EpochsPerSyncCommitteePeriod: 256,
 
 	// Updated penalty values.

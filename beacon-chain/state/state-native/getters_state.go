@@ -68,6 +68,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:            b.inactivityScores,
 			CurrentSyncCommittee:        b.currentSyncCommittee,
 			NextSyncCommittee:           b.nextSyncCommittee,
+			BailOutScores:               b.bailoutScores,
 		}
 	case version.Bellatrix:
 		return &ethpb.BeaconStateBellatrix{
@@ -95,6 +96,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:             b.inactivityScores,
 			CurrentSyncCommittee:         b.currentSyncCommittee,
 			NextSyncCommittee:            b.nextSyncCommittee,
+			BailOutScores:                b.bailoutScores,
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeader,
 		}
 	case version.Capella:
@@ -123,6 +125,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:             b.inactivityScores,
 			CurrentSyncCommittee:         b.currentSyncCommittee,
 			NextSyncCommittee:            b.nextSyncCommittee,
+			BailOutScores:                b.bailoutScores,
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderCapella,
 			NextWithdrawalIndex:          b.nextWithdrawalIndex,
 			NextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,
@@ -195,6 +198,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:            b.inactivityScoresVal(),
 			CurrentSyncCommittee:        b.currentSyncCommitteeVal(),
 			NextSyncCommittee:           b.nextSyncCommitteeVal(),
+			BailOutScores:               b.bailoutScoresVal(),
 		}
 	case version.Bellatrix:
 		return &ethpb.BeaconStateBellatrix{
@@ -222,6 +226,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:             b.inactivityScoresVal(),
 			CurrentSyncCommittee:         b.currentSyncCommitteeVal(),
 			NextSyncCommittee:            b.nextSyncCommitteeVal(),
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderVal(),
 		}
 	case version.Capella:
@@ -250,6 +255,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:             b.inactivityScoresVal(),
 			CurrentSyncCommittee:         b.currentSyncCommitteeVal(),
 			NextSyncCommittee:            b.nextSyncCommitteeVal(),
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderCapellaVal(),
 			NextWithdrawalIndex:          b.nextWithdrawalIndex,
 			NextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,

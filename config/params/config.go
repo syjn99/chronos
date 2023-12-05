@@ -187,6 +187,8 @@ type BeaconChainConfig struct {
 	SyncCommitteeSize            uint64           `yaml:"SYNC_COMMITTEE_SIZE" spec:"true"`              // SyncCommitteeSize for light client sync committee size.
 	InactivityScoreBias          uint64           `yaml:"INACTIVITY_SCORE_BIAS" spec:"true"`            // InactivityScoreBias for calculating score bias penalties during inactivity
 	InactivityScoreRecoveryRate  uint64           `yaml:"INACTIVITY_SCORE_RECOVERY_RATE" spec:"true"`   // InactivityScoreRecoveryRate for recovering score bias penalties during inactivity.
+	BailOutScoreBias             uint64           `yaml:"BAILOUT_SCORE_BIAS" spec:"true"`               // BailOutScoreBias for calculating score bias penalties in bail out
+	BailOutScoreThreshold        uint64           `yaml:"BAILOUT_SCORE_THRESHOLD" spec:"true"`          // BailOutScoreThreshold is the threshold used to determine which validator should be triggered for bail out.
 	EpochsPerSyncCommitteePeriod primitives.Epoch `yaml:"EPOCHS_PER_SYNC_COMMITTEE_PERIOD" spec:"true"` // EpochsPerSyncCommitteePeriod defines how many epochs per sync committee period.
 
 	// Updated penalty values. This moves penalty parameters toward their final, maximum security values.

@@ -46,6 +46,7 @@ type BeaconState struct {
 	inactivityScores                    []uint64
 	currentSyncCommittee                *ethpb.SyncCommittee
 	nextSyncCommittee                   *ethpb.SyncCommittee
+	bailoutScores                       []uint64
 	latestExecutionPayloadHeader        *enginev1.ExecutionPayloadHeader
 	latestExecutionPayloadHeaderCapella *enginev1.ExecutionPayloadHeaderCapella
 	nextWithdrawalIndex                 uint64

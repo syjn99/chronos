@@ -48,7 +48,7 @@ func TestInitiateValidatorExit_AlreadyExited(t *testing.T) {
 	}}
 	state, err := state_native.InitializeFromProtoPhase0(base)
 	require.NoError(t, err)
-	newState, err := InitiateValidatorExit(context.Background(), state, 0)
+	newState, err := InitiateValidatorExit(context.Background(), state, 0, false)
 	require.NoError(t, err)
 	v, err := newState.ValidatorAtIndex(0)
 	require.NoError(t, err)
@@ -58,34 +58,41 @@ func TestInitiateValidatorExit_AlreadyExited(t *testing.T) {
 func TestInitiateValidatorExit_ProperExit(t *testing.T) {
 	exitedEpoch := primitives.Epoch(100)
 	idx := primitives.ValidatorIndex(3)
-	base := &ethpb.BeaconState{Validators: []*ethpb.Validator{
+	base := &ethpb.BeaconStateAltair{Validators: []*ethpb.Validator{
 		{ExitEpoch: exitedEpoch},
 		{ExitEpoch: exitedEpoch + 1},
 		{ExitEpoch: exitedEpoch + 2},
 		{ExitEpoch: params.BeaconConfig().FarFutureEpoch},
-	}}
-	state, err := state_native.InitializeFromProtoPhase0(base)
+	},
+		BailOutScores: []uint64{100, 100, 100, 100},
+	}
+	state, err := state_native.InitializeFromProtoAltair(base)
 	require.NoError(t, err)
-	newState, err := InitiateValidatorExit(context.Background(), state, idx)
+	newState, err := InitiateValidatorExit(context.Background(), state, idx, false)
 	require.NoError(t, err)
 	v, err := newState.ValidatorAtIndex(idx)
 	require.NoError(t, err)
 	assert.Equal(t, exitedEpoch+2, v.ExitEpoch, "Exit epoch was not the highest")
+	bscores, err := newState.BailOutScores()
+	require.NoError(t, err)
+	assert.Equal(t, uint64(0), bscores[idx], "Bailout score should be 0 in voluntary exit")
 }
 
 func TestInitiateValidatorExit_ChurnOverflow(t *testing.T) {
 	exitedEpoch := primitives.Epoch(100)
 	idx := primitives.ValidatorIndex(4)
-	base := &ethpb.BeaconState{Validators: []*ethpb.Validator{
+	base := &ethpb.BeaconStateAltair{Validators: []*ethpb.Validator{
 		{ExitEpoch: exitedEpoch + 2},
 		{ExitEpoch: exitedEpoch + 2},
 		{ExitEpoch: exitedEpoch + 2},
 		{ExitEpoch: exitedEpoch + 2}, // overflow here
 		{ExitEpoch: params.BeaconConfig().FarFutureEpoch},
-	}}
-	state, err := state_native.InitializeFromProtoPhase0(base)
+	},
+		BailOutScores: []uint64{100, 100, 100, 100, 100},
+	}
+	state, err := state_native.InitializeFromProtoAltair(base)
 	require.NoError(t, err)
-	newState, err := InitiateValidatorExit(context.Background(), state, idx)
+	newState, err := InitiateValidatorExit(context.Background(), state, idx, false)
 	require.NoError(t, err)
 
 	// Because of exit queue overflow,
@@ -97,6 +104,9 @@ func TestInitiateValidatorExit_ChurnOverflow(t *testing.T) {
 	v, err = newState.ValidatorAtIndex(idx)
 	require.NoError(t, err)
 	assert.Equal(t, wantedEpoch, v.ExitEpoch, "Exit epoch did not cover overflow case")
+	bscores, err := newState.BailOutScores()
+	require.NoError(t, err)
+	assert.Equal(t, uint64(0), bscores[idx], "Bailout score should be 0 in voluntary exit")
 }
 
 func TestInitiateValidatorExit_WithdrawalOverflows(t *testing.T) {
@@ -106,7 +116,7 @@ func TestInitiateValidatorExit_WithdrawalOverflows(t *testing.T) {
 	}}
 	state, err := state_native.InitializeFromProtoPhase0(base)
 	require.NoError(t, err)
-	_, err = InitiateValidatorExit(context.Background(), state, 1)
+	_, err = InitiateValidatorExit(context.Background(), state, 1, false)
 	require.ErrorContains(t, "addition overflows", err)
 }
 

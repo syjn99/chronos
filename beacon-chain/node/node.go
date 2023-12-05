@@ -35,6 +35,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/monitor"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/node/registration"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/attestations"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/bailout"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/blstoexec"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/slashings"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/synccommittee"
@@ -93,6 +94,7 @@ type BeaconNode struct {
 	slasherDB               db.SlasherDatabase
 	attestationPool         attestations.Pool
 	exitPool                voluntaryexits.PoolManager
+	bailoutPool             bailout.PoolManager
 	slashingsPool           slashings.PoolManager
 	syncCommitteePool       synccommittee.Pool
 	blsToExecPool           blstoexec.PoolManager
@@ -174,6 +176,7 @@ func New(cliCtx *cli.Context, opts ...Option) (*BeaconNode, error) {
 		opFeed:                  new(event.Feed),
 		attestationPool:         attestations.NewPool(),
 		exitPool:                voluntaryexits.NewPool(),
+		bailoutPool:             bailout.NewPool(),
 		slashingsPool:           slashings.NewPool(),
 		syncCommitteePool:       synccommittee.NewPool(),
 		blsToExecPool:           blstoexec.NewPool(),
@@ -641,6 +644,7 @@ func (b *BeaconNode) registerBlockchainService(fc forkchoice.ForkChoicer, gs *st
 		blockchain.WithExecutionEngineCaller(web3Service),
 		blockchain.WithAttestationPool(b.attestationPool),
 		blockchain.WithExitPool(b.exitPool),
+		blockchain.WithBailoutPool(b.bailoutPool),
 		blockchain.WithSlashingPool(b.slashingsPool),
 		blockchain.WithBLSToExecPool(b.blsToExecPool),
 		blockchain.WithP2PBroadcaster(b.fetchP2P()),
@@ -860,6 +864,7 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 		OptimisticModeFetcher:         chainService,
 		AttestationsPool:              b.attestationPool,
 		ExitPool:                      b.exitPool,
+		BailoutPool:                   b.bailoutPool,
 		SlashingsPool:                 b.slashingsPool,
 		BLSChangesPool:                b.blsToExecPool,
 		SlashingChecker:               slasherService,

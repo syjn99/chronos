@@ -15,6 +15,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
 	mathutil "github.com/prysmaticlabs/prysm/v4/math"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
+	"github.com/prysmaticlabs/prysm/v4/runtime/version"
 	"github.com/prysmaticlabs/prysm/v4/time/slots"
 )
 
@@ -42,7 +43,7 @@ import (
 //	  # Set validator exit epoch and withdrawable epoch
 //	  validator.exit_epoch = exit_queue_epoch
 //	  validator.withdrawable_epoch = Epoch(validator.exit_epoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
-func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primitives.ValidatorIndex) (state.BeaconState, error) {
+func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primitives.ValidatorIndex, isBailOut bool) (state.BeaconState, error) {
 	validator, err := s.ValidatorAtIndex(idx)
 	if err != nil {
 		return nil, err
@@ -108,6 +109,22 @@ func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primiti
 	if err := s.UpdateValidatorAtIndex(idx, validator); err != nil {
 		return nil, err
 	}
+
+	if s.Version() >= version.Altair {
+		bailoutScores, err := s.BailOutScores()
+		if err != nil {
+			return nil, err
+		}
+		if isBailOut {
+			bailoutScores[idx] = mathutil.MaxUint64
+		} else {
+			bailoutScores[idx] = 0
+		}
+
+		if err := s.SetBailOutScores(bailoutScores); err != nil {
+			return nil, err
+		}
+	}
 	return s, nil
 }
 
@@ -144,7 +161,7 @@ func SlashValidator(
 	slashedIdx primitives.ValidatorIndex,
 	penaltyQuotient uint64,
 	proposerRewardQuotient uint64) (state.BeaconState, error) {
-	s, err := InitiateValidatorExit(ctx, s, slashedIdx)
+	s, err := InitiateValidatorExit(ctx, s, slashedIdx, false)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not initiate validator %d exit", slashedIdx)
 	}

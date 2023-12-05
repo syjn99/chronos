@@ -108,6 +108,10 @@ func (u *unblinder) unblindBuilderBlock(ctx context.Context) (interfaces.SignedB
 }
 
 func copyBlockData(src interfaces.SignedBeaconBlock, dst interfaces.SignedBeaconBlock) error {
+	bo, err := src.Block().Body().BailOuts()
+	if err != nil {
+		return errors.Wrap(err, "could not get bail out")
+	}
 	agg, err := src.Block().Body().SyncAggregate()
 	if err != nil {
 		return errors.Wrap(err, "could not get sync aggregate")
@@ -136,6 +140,9 @@ func copyBlockData(src interfaces.SignedBeaconBlock, dst interfaces.SignedBeacon
 	dst.SetVoluntaryExits(src.Block().Body().VoluntaryExits())
 	if err = dst.SetSyncAggregate(agg); err != nil {
 		return errors.Wrap(err, "could not set sync aggregate")
+	}
+	if err = dst.SetBailOuts(bo); err != nil {
+		return errors.Wrap(err, "could not set bail out")
 	}
 	dst.SetSignature(sig[:])
 	if err = dst.SetBLSToExecutionChanges(blsToExecChanges); err != nil && !errors.Is(err, consensus_types.ErrUnsupportedField) {

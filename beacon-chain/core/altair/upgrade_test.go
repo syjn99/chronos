@@ -120,4 +120,7 @@ func TestUpgradeToAltair(t *testing.T) {
 	nsc, err := aState.NextSyncCommittee()
 	require.NoError(t, err)
 	require.DeepSSZEqual(t, nsc, csc)
+	ob, err := aState.InactivityScores()
+	require.NoError(t, err)
+	require.DeepSSZEqual(t, make([]uint64, numValidators), ob)
 }

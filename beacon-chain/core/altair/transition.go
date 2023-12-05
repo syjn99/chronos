@@ -52,9 +52,9 @@ func ProcessEpoch(ctx context.Context, state state.BeaconState) (state.BeaconSta
 	}
 
 	// New in Altair.
-	state, vp, err = ProcessInactivityScores(ctx, state, vp)
+	state, vp, err = ProcessInactivityAndBailOutScores(ctx, state, vp)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not process inactivity updates")
+		return nil, errors.Wrap(err, "could not process inactivity/bail out updates")
 	}
 
 	// New in Altair.

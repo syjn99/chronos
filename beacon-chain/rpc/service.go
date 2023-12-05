@@ -24,6 +24,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/db"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/execution"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/attestations"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/bailout"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/blstoexec"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/slashings"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/synccommittee"
@@ -104,6 +105,7 @@ type Config struct {
 	MockEth1Votes                 bool
 	AttestationsPool              attestations.Pool
 	ExitPool                      voluntaryexits.PoolManager
+	BailoutPool                   bailout.PoolManager
 	SlashingsPool                 slashings.PoolManager
 	SlashingChecker               slasherservice.SlashingChecker
 	SyncCommitteeObjectPool       synccommittee.Pool
@@ -237,6 +239,7 @@ func (s *Service) Start() {
 		AttestationCache:       cache.NewAttestationCache(),
 		AttPool:                s.cfg.AttestationsPool,
 		ExitPool:               s.cfg.ExitPool,
+		BailoutPool:            s.cfg.BailoutPool,
 		HeadFetcher:            s.cfg.HeadFetcher,
 		ForkFetcher:            s.cfg.ForkFetcher,
 		ForkchoiceFetcher:      s.cfg.ForkchoiceFetcher,

@@ -34,6 +34,7 @@ type BlockGenConfig struct {
 	NumAttestations      uint64
 	NumDeposits          uint64
 	NumVoluntaryExits    uint64
+	NumBailOuts          uint64 // Only for post Altair blocks
 	NumTransactions      uint64 // Only for post Bellatrix blocks
 	FullSyncAggregate    bool
 	NumBLSChanges        uint64 // Only for post Capella blocks
@@ -48,6 +49,7 @@ func DefaultBlockGenConfig() *BlockGenConfig {
 		NumAttestations:      1,
 		NumDeposits:          0,
 		NumVoluntaryExits:    0,
+		NumBailOuts:          0,
 		NumTransactions:      0,
 		NumBLSChanges:        0,
 	}
@@ -403,6 +405,24 @@ func generateVoluntaryExits(
 		voluntaryExits[i] = exit
 	}
 	return voluntaryExits, nil
+}
+
+func generateBailOuts(
+	bState state.BeaconState,
+	numBailouts uint64,
+) ([]*ethpb.BailOut, error) {
+	bailOuts := make([]*ethpb.BailOut, numBailouts)
+	for i := 0; i < len(bailOuts); i++ {
+		valIndex, err := randValIndex(bState)
+		if err != nil {
+			return nil, err
+		}
+		bailout := &ethpb.BailOut{
+			ValidatorIndex: valIndex,
+		}
+		bailOuts[i] = bailout
+	}
+	return bailOuts, nil
 }
 
 func randValIndex(bState state.BeaconState) (primitives.ValidatorIndex, error) {

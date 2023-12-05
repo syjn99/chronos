@@ -240,3 +240,42 @@ func (b *BeaconState) SetInactivityScores(val []uint64) error {
 	b.markFieldAsDirty(types.InactivityScores)
 	return nil
 }
+
+// AppendBailOutScore for the beacon state.
+func (b *BeaconState) AppendBailOutScore(s uint64) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	if b.version == version.Phase0 {
+		return errNotSupported("AppendBailOutScore", b.version)
+	}
+
+	scores := b.bailoutScores
+	if b.sharedFieldReferences[types.BailOutScores].Refs() > 1 {
+		scores = b.bailoutScoresVal()
+		b.sharedFieldReferences[types.BailOutScores].MinusRef()
+		b.sharedFieldReferences[types.BailOutScores] = stateutil.NewRef(1)
+	}
+
+	b.bailoutScores = append(scores, s)
+	b.markFieldAsDirty(types.BailOutScores)
+	return nil
+}
+
+// SetBailOutScores for the beacon state. Updates the entire
+// list to a new value by overwriting the previous one.
+func (b *BeaconState) SetBailOutScores(val []uint64) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	if b.version == version.Phase0 {
+		return errNotSupported("SetBailOutScores", b.version)
+	}
+
+	b.sharedFieldReferences[types.BailOutScores].MinusRef()
+	b.sharedFieldReferences[types.BailOutScores] = stateutil.NewRef(1)
+
+	b.bailoutScores = val
+	b.markFieldAsDirty(types.BailOutScores)
+	return nil
+}

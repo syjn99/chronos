@@ -383,6 +383,14 @@ func altairOperations(
 	if err != nil {
 		return nil, errors.Wrap(err, "could not process voluntary exits")
 	}
+	bailouts, err := signedBeaconBlock.Block().Body().BailOuts()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get bailouts from block body")
+	}
+	st, err = b.ProcessBailOuts(ctx, st, bailouts)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not process bailouts")
+	}
 	return b.ProcessBLSToExecutionChanges(st, signedBeaconBlock)
 }
 

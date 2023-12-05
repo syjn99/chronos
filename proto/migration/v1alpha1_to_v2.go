@@ -564,6 +564,10 @@ func BeaconStateAltairToProto(altairState state.BeaconState) (*ethpbv2.BeaconSta
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get next sync committee")
 	}
+	sourceBailOutScores, err := altairState.BailOutScores()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get ejection scores")
+	}
 
 	hrs, err := altairState.HistoricalRoots()
 	if err != nil {
@@ -624,6 +628,7 @@ func BeaconStateAltairToProto(altairState state.BeaconState) (*ethpbv2.BeaconSta
 			Pubkeys:         bytesutil.SafeCopy2dBytes(sourceNextSyncCommittee.Pubkeys),
 			AggregatePubkey: bytesutil.SafeCopyBytes(sourceNextSyncCommittee.AggregatePubkey),
 		},
+		BailOutScores: sourceBailOutScores,
 	}
 
 	return result, nil
@@ -682,6 +687,10 @@ func BeaconStateBellatrixToProto(st state.BeaconState) (*ethpbv2.BeaconStateBell
 	sourceNextSyncCommittee, err := st.NextSyncCommittee()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get next sync committee")
+	}
+	sourceBailOutScores, err := st.BailOutScores()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get ejection scores")
 	}
 	executionPayloadHeaderInterface, err := st.LatestExecutionPayloadHeader()
 	if err != nil {
@@ -751,6 +760,7 @@ func BeaconStateBellatrixToProto(st state.BeaconState) (*ethpbv2.BeaconStateBell
 			Pubkeys:         bytesutil.SafeCopy2dBytes(sourceNextSyncCommittee.Pubkeys),
 			AggregatePubkey: bytesutil.SafeCopyBytes(sourceNextSyncCommittee.AggregatePubkey),
 		},
+		BailOutScores: sourceBailOutScores,
 		LatestExecutionPayloadHeader: &enginev1.ExecutionPayloadHeader{
 			ParentHash:       bytesutil.SafeCopyBytes(sourceLatestExecutionPayloadHeader.ParentHash),
 			FeeRecipient:     bytesutil.SafeCopyBytes(sourceLatestExecutionPayloadHeader.FeeRecipient),
@@ -826,6 +836,10 @@ func BeaconStateCapellaToProto(st state.BeaconState) (*ethpbv2.BeaconStateCapell
 	sourceNextSyncCommittee, err := st.NextSyncCommittee()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get next sync committee")
+	}
+	sourceBailOutScores, err := st.BailOutScores()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get ejection scores")
 	}
 	executionPayloadHeaderInterface, err := st.LatestExecutionPayloadHeader()
 	if err != nil {
@@ -908,6 +922,7 @@ func BeaconStateCapellaToProto(st state.BeaconState) (*ethpbv2.BeaconStateCapell
 			Pubkeys:         bytesutil.SafeCopy2dBytes(sourceNextSyncCommittee.Pubkeys),
 			AggregatePubkey: bytesutil.SafeCopyBytes(sourceNextSyncCommittee.AggregatePubkey),
 		},
+		BailOutScores: sourceBailOutScores,
 		LatestExecutionPayloadHeader: &enginev1.ExecutionPayloadHeaderCapella{
 			ParentHash:       bytesutil.SafeCopyBytes(sourceLatestExecutionPayloadHeader.ParentHash),
 			FeeRecipient:     bytesutil.SafeCopyBytes(sourceLatestExecutionPayloadHeader.FeeRecipient),

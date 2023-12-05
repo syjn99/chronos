@@ -71,6 +71,7 @@ var altairFields = []types.FieldIndex{
 	types.InactivityScores,
 	types.CurrentSyncCommittee,
 	types.NextSyncCommittee,
+	types.BailOutScores,
 }
 
 var bellatrixFields = append(altairFields, types.LatestExecutionPayloadHeader)
@@ -85,9 +86,9 @@ var capellaFields = append(
 
 const (
 	phase0SharedFieldRefCount    = 10
-	altairSharedFieldRefCount    = 11
-	bellatrixSharedFieldRefCount = 12
-	capellaSharedFieldRefCount   = 14
+	altairSharedFieldRefCount    = 12
+	bellatrixSharedFieldRefCount = 13
+	capellaSharedFieldRefCount   = 15
 )
 
 // InitializeFromProtoPhase0 the beacon state from a protobuf representation.
@@ -247,6 +248,7 @@ func InitializeFromProtoUnsafeAltair(st *ethpb.BeaconStateAltair) (state.BeaconS
 		inactivityScores:            st.InactivityScores,
 		currentSyncCommittee:        st.CurrentSyncCommittee,
 		nextSyncCommittee:           st.NextSyncCommittee,
+		bailoutScores:               st.BailOutScores,
 
 		dirtyFields:           make(map[types.FieldIndex]bool, fieldCount),
 		dirtyIndices:          make(map[types.FieldIndex][]uint64, fieldCount),
@@ -279,6 +281,7 @@ func InitializeFromProtoUnsafeAltair(st *ethpb.BeaconStateAltair) (state.BeaconS
 	b.sharedFieldReferences[types.PreviousEpochParticipationBits] = stateutil.NewRef(1) // New in Altair.
 	b.sharedFieldReferences[types.CurrentEpochParticipationBits] = stateutil.NewRef(1)  // New in Altair.
 	b.sharedFieldReferences[types.InactivityScores] = stateutil.NewRef(1)               // New in Altair.
+	b.sharedFieldReferences[types.BailOutScores] = stateutil.NewRef(1)                  // New in Altair.
 
 	state.StateCount.Inc()
 	// Finalizer runs when dst is being destroyed in garbage collection.
@@ -337,6 +340,7 @@ func InitializeFromProtoUnsafeBellatrix(st *ethpb.BeaconStateBellatrix) (state.B
 		inactivityScores:             st.InactivityScores,
 		currentSyncCommittee:         st.CurrentSyncCommittee,
 		nextSyncCommittee:            st.NextSyncCommittee,
+		bailoutScores:                st.BailOutScores,
 		latestExecutionPayloadHeader: st.LatestExecutionPayloadHeader,
 
 		dirtyFields:           make(map[types.FieldIndex]bool, fieldCount),
@@ -370,6 +374,7 @@ func InitializeFromProtoUnsafeBellatrix(st *ethpb.BeaconStateBellatrix) (state.B
 	b.sharedFieldReferences[types.PreviousEpochParticipationBits] = stateutil.NewRef(1)
 	b.sharedFieldReferences[types.CurrentEpochParticipationBits] = stateutil.NewRef(1)
 	b.sharedFieldReferences[types.InactivityScores] = stateutil.NewRef(1)
+	b.sharedFieldReferences[types.BailOutScores] = stateutil.NewRef(1)
 	b.sharedFieldReferences[types.LatestExecutionPayloadHeader] = stateutil.NewRef(1) // New in Bellatrix.
 
 	state.StateCount.Inc()
@@ -429,6 +434,7 @@ func InitializeFromProtoUnsafeCapella(st *ethpb.BeaconStateCapella) (state.Beaco
 		inactivityScores:                    st.InactivityScores,
 		currentSyncCommittee:                st.CurrentSyncCommittee,
 		nextSyncCommittee:                   st.NextSyncCommittee,
+		bailoutScores:                       st.BailOutScores,
 		latestExecutionPayloadHeaderCapella: st.LatestExecutionPayloadHeader,
 		nextWithdrawalIndex:                 st.NextWithdrawalIndex,
 		nextWithdrawalValidatorIndex:        st.NextWithdrawalValidatorIndex,
@@ -465,6 +471,7 @@ func InitializeFromProtoUnsafeCapella(st *ethpb.BeaconStateCapella) (state.Beaco
 	b.sharedFieldReferences[types.PreviousEpochParticipationBits] = stateutil.NewRef(1)
 	b.sharedFieldReferences[types.CurrentEpochParticipationBits] = stateutil.NewRef(1)
 	b.sharedFieldReferences[types.InactivityScores] = stateutil.NewRef(1)
+	b.sharedFieldReferences[types.BailOutScores] = stateutil.NewRef(1)
 	b.sharedFieldReferences[types.LatestExecutionPayloadHeaderCapella] = stateutil.NewRef(1) // New in Capella.
 	b.sharedFieldReferences[types.HistoricalSummaries] = stateutil.NewRef(1)                 // New in Capella.
 
@@ -518,6 +525,7 @@ func (b *BeaconState) Copy() state.BeaconState {
 		previousEpochParticipation: b.previousEpochParticipation,
 		currentEpochParticipation:  b.currentEpochParticipation,
 		inactivityScores:           b.inactivityScores,
+		bailoutScores:              b.bailoutScores,
 
 		// Everything else, too small to be concerned about, constant size.
 		genesisValidatorsRoot:               b.genesisValidatorsRoot,
@@ -826,6 +834,8 @@ func (b *BeaconState) rootSelector(ctx context.Context, field types.FieldIndex) 
 		return stateutil.SyncCommitteeRoot(b.currentSyncCommittee)
 	case types.NextSyncCommittee:
 		return stateutil.SyncCommitteeRoot(b.nextSyncCommittee)
+	case types.BailOutScores:
+		return stateutil.Uint64ListRootWithRegistryLimit(b.bailoutScores)
 	case types.LatestExecutionPayloadHeader:
 		return b.latestExecutionPayloadHeader.HashTreeRoot()
 	case types.LatestExecutionPayloadHeaderCapella:

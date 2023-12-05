@@ -1065,6 +1065,7 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 	res, err := bs.ListValidators(context.Background(), req)
 	require.NoError(t, err)
 	assert.Equal(t, epochs, len(res.ValidatorList))
+	t.Log(res)
 
 	vals := st.Validators()
 	want := make([]*ethpb.Validators_ValidatorContainer, 0)
@@ -1073,6 +1074,7 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 			Index:     primitives.ValidatorIndex(i),
 			Validator: v,
 		})
+		t.Log(v)
 	}
 	req = &ethpb.ListValidatorsRequest{
 		QueryFilter: &ethpb.ListValidatorsRequest_Epoch{
@@ -1081,6 +1083,7 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 	}
 	res, err = bs.ListValidators(context.Background(), req)
 	require.NoError(t, err)
+	t.Log(res)
 
 	require.Equal(t, len(want), len(res.ValidatorList), "incorrect number of validators")
 	assert.DeepSSZEqual(t, want, res.ValidatorList, "mismatch in validator values")
@@ -1872,6 +1875,7 @@ func TestGetValidatorPerformance_OK(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{101, 102},
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
+		BailOutScores:                 []uint64{0},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -1941,6 +1945,7 @@ func TestGetValidatorPerformance_Indices(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{extraBal, extraBal + params.BeaconConfig().GweiPerEth},
 		BalancesAfterEpochTransition:  []uint64{vp[1].AfterEpochTransitionBalance, vp[2].AfterEpochTransitionBalance},
 		MissingValidators:             [][]byte{publicKey1[:]},
+		BailOutScores:                 []uint64{0},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -2011,6 +2016,7 @@ func TestGetValidatorPerformance_IndicesPubkeys(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{extraBal, extraBal + params.BeaconConfig().GweiPerEth},
 		BalancesAfterEpochTransition:  []uint64{vp[1].AfterEpochTransitionBalance, vp[2].AfterEpochTransitionBalance},
 		MissingValidators:             [][]byte{publicKey1[:]},
+		BailOutScores:                 []uint64{0},
 	}
 	// Index 2 and publicKey3 points to the same validator.
 	// Should not return duplicates.
@@ -2062,6 +2068,7 @@ func TestGetValidatorPerformanceAltair_OK(t *testing.T) {
 	require.NoError(t, headState.SetValidators(validators))
 	require.NoError(t, headState.SetInactivityScores([]uint64{0, 0, 0}))
 	require.NoError(t, headState.SetBalances([]uint64{100, 101, 102}))
+	require.NoError(t, headState.SetBailOutScores([]uint64{0, 0, 0}))
 	offset := int64(headState.Slot().Mul(params.BeaconConfig().SecondsPerSlot))
 	bs := &Server{
 		HeadFetcher: &mock.ChainService{
@@ -2079,7 +2086,7 @@ func TestGetValidatorPerformanceAltair_OK(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{101, 102},
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
-		InactivityScores:              []uint64{0, 0},
+		InactivityScores:              []uint64{1000000000000000, 1000000000000000},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -2130,6 +2137,7 @@ func TestGetValidatorPerformanceBellatrix_OK(t *testing.T) {
 	require.NoError(t, headState.SetValidators(validators))
 	require.NoError(t, headState.SetInactivityScores([]uint64{0, 0, 0}))
 	require.NoError(t, headState.SetBalances([]uint64{100, 101, 102}))
+	require.NoError(t, headState.SetBailOutScores([]uint64{0, 0, 0}))
 	offset := int64(headState.Slot().Mul(params.BeaconConfig().SecondsPerSlot))
 	bs := &Server{
 		HeadFetcher: &mock.ChainService{
@@ -2148,6 +2156,7 @@ func TestGetValidatorPerformanceBellatrix_OK(t *testing.T) {
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
 		InactivityScores:              []uint64{0, 0},
+		BailOutScores:                 []uint64{0, 1000000000000000, 1000000000000000},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -2198,6 +2207,7 @@ func TestGetValidatorPerformanceCapella_OK(t *testing.T) {
 	require.NoError(t, headState.SetValidators(validators))
 	require.NoError(t, headState.SetInactivityScores([]uint64{0, 0, 0}))
 	require.NoError(t, headState.SetBalances([]uint64{100, 101, 102}))
+	require.NoError(t, headState.SetBailOutScores([]uint64{0, 0, 0}))
 	offset := int64(headState.Slot().Mul(params.BeaconConfig().SecondsPerSlot))
 	bs := &Server{
 		HeadFetcher: &mock.ChainService{
@@ -2216,6 +2226,7 @@ func TestGetValidatorPerformanceCapella_OK(t *testing.T) {
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
 		InactivityScores:              []uint64{0, 0},
+		BailOutScores:                 []uint64{0, 1000000000000000, 1000000000000000},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{

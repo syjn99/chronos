@@ -819,6 +819,14 @@ func (b *BeaconBlockBody) SyncAggregate() (*eth.SyncAggregate, error) {
 	return b.syncAggregate, nil
 }
 
+// BailOuts returns the voluntary exits in the block.
+func (b *BeaconBlockBody) BailOuts() ([]*eth.BailOut, error) {
+	if b.version == version.Phase0 {
+		return nil, consensus_types.ErrNotSupported("BailOuts", b.version)
+	}
+	return b.bailOuts, nil
+}
+
 // Execution returns the execution payload of the block body.
 func (b *BeaconBlockBody) Execution() (interfaces.ExecutionData, error) {
 	switch b.version {

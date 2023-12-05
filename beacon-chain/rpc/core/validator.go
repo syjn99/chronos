@@ -61,7 +61,7 @@ func ComputeValidatorPerformance(
 		if err != nil {
 			return nil, &RpcError{Err: err, Reason: Internal}
 		}
-		headState, vp, err = altair.ProcessInactivityScores(ctx, headState, vp)
+		headState, vp, err = altair.ProcessInactivityAndBailOutScores(ctx, headState, vp)
 		if err != nil {
 			return nil, &RpcError{Err: err, Reason: Internal}
 		}
@@ -119,6 +119,7 @@ func ComputeValidatorPerformance(
 	correctlyVotedTarget := make([]bool, 0, responseCap)
 	correctlyVotedHead := make([]bool, 0, responseCap)
 	inactivityScores := make([]uint64, 0, responseCap)
+	bailoutScores := make([]uint64, 0, responseCap)
 	// Append performance summaries.
 	// Also track missing validators using public keys.
 	for _, idx := range validatorIndices {
@@ -135,6 +136,7 @@ func ComputeValidatorPerformance(
 		if !helpers.IsActiveValidatorUsingTrie(val, currentEpoch) {
 			// Inactive validator; treat it as missing.
 			missingValidators = append(missingValidators, pubKey[:])
+			bailoutScores = append(bailoutScores, validatorSummary[idx].BailOutScore)
 			continue
 		}
 
@@ -151,6 +153,7 @@ func ComputeValidatorPerformance(
 		} else {
 			correctlyVotedSource = append(correctlyVotedSource, summary.IsPrevEpochSourceAttester)
 			inactivityScores = append(inactivityScores, summary.InactivityScore)
+			bailoutScores = append(bailoutScores, summary.BailOutScore)
 		}
 	}
 
@@ -164,5 +167,6 @@ func ComputeValidatorPerformance(
 		BalancesAfterEpochTransition:  afterTransitionBalances,
 		MissingValidators:             missingValidators,
 		InactivityScores:              inactivityScores, // Only populated in Altair
+		BailOutScores:                 bailoutScores,    // Only populated in Altair
 	}, nil
 }

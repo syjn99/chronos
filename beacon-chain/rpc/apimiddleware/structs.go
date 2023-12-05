@@ -820,6 +820,7 @@ type BeaconStateAltairJson struct {
 	InactivityScores            []string               `json:"inactivity_scores"`
 	CurrentSyncCommittee        *SyncCommitteeJson     `json:"current_sync_committee"`
 	NextSyncCommittee           *SyncCommitteeJson     `json:"next_sync_committee"`
+	BailOutScores               []string               `json:"bail_out_scores"`
 }
 
 type BeaconStateBellatrixJson struct {
@@ -847,6 +848,7 @@ type BeaconStateBellatrixJson struct {
 	InactivityScores             []string                    `json:"inactivity_scores"`
 	CurrentSyncCommittee         *SyncCommitteeJson          `json:"current_sync_committee"`
 	NextSyncCommittee            *SyncCommitteeJson          `json:"next_sync_committee"`
+	BailOutScores                []string                    `json:"bail_out_scores"`
 	LatestExecutionPayloadHeader *ExecutionPayloadHeaderJson `json:"latest_execution_payload_header"`
 }
 
@@ -875,6 +877,7 @@ type BeaconStateCapellaJson struct {
 	InactivityScores             []string                           `json:"inactivity_scores"`
 	CurrentSyncCommittee         *SyncCommitteeJson                 `json:"current_sync_committee"`
 	NextSyncCommittee            *SyncCommitteeJson                 `json:"next_sync_committee"`
+	BailOutScores                []string                           `json:"bail_out_scores"`
 	LatestExecutionPayloadHeader *ExecutionPayloadHeaderCapellaJson `json:"latest_execution_payload_header"`
 	NextWithdrawalIndex          string                             `json:"next_withdrawal_index"`
 	NextWithdrawalValidatorIndex string                             `json:"next_withdrawal_validator_index"`

@@ -98,6 +98,7 @@ func UpgradeToAltair(ctx context.Context, state state.BeaconState) (state.Beacon
 		CurrentJustifiedCheckpoint:  state.CurrentJustifiedCheckpoint(),
 		FinalizedCheckpoint:         state.FinalizedCheckpoint(),
 		InactivityScores:            make([]uint64, numValidators),
+		BailOutScores:               make([]uint64, numValidators),
 	}
 
 	newState, err := state_native.InitializeFromProtoUnsafeAltair(s)

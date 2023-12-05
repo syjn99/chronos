@@ -278,3 +278,31 @@ func (b *BeaconState) inactivityScoresVal() []uint64 {
 	copy(res, b.inactivityScores)
 	return res
 }
+
+// BailOutScores of validators participating in consensus on the beacon chain.
+func (b *BeaconState) BailOutScores() ([]uint64, error) {
+	if b.version == version.Phase0 {
+		return nil, errNotSupported("BailOutScores", b.version)
+	}
+
+	if b.bailoutScores == nil {
+		return nil, nil
+	}
+
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.bailoutScoresVal(), nil
+}
+
+// ejectionScoresVal of validators participating in consensus on the beacon chain.
+// This assumes that a lock is already held on BeaconState.
+func (b *BeaconState) bailoutScoresVal() []uint64 {
+	if b.bailoutScores == nil {
+		return nil
+	}
+
+	res := make([]uint64, len(b.bailoutScores))
+	copy(res, b.bailoutScores)
+	return res
+}

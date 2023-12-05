@@ -21,6 +21,8 @@ func init() {
 	}
 }
 
+const MaxUint64 = stdmath.MaxUint64
+
 // ErrOverflow occurs when an operation exceeds max or minimum values.
 var (
 	ErrOverflow     = errors.New("integer overflow")

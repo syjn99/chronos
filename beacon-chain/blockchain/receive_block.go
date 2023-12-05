@@ -8,6 +8,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/feed"
 	statefeed "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/feed/state"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
+	ctime "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/transition"
 	forkchoicetypes "github.com/prysmaticlabs/prysm/v4/beacon-chain/forkchoice/types"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
@@ -70,6 +71,13 @@ func (s *Service) ReceiveBlock(ctx context.Context, block interfaces.ReadOnlySig
 	postState, err := s.validateStateTransition(ctx, preState, blockCopy)
 	if err != nil {
 		return errors.Wrap(err, "failed to validate consensus state transition function")
+	}
+	// If received block is last block of the epoch, update the bailout pool.
+	if ctime.CanProcessEpoch(preState) {
+		err = s.updateBailoutPool(postState)
+		if err != nil {
+			return errors.Wrap(err, "failed to update bailout pool")
+		}
 	}
 	isValidPayload, err := s.validateExecutionOnBlock(ctx, preStateVersion, preStateHeader, blockCopy, blockRoot)
 	if err != nil {
@@ -390,4 +398,18 @@ func (s *Service) validateExecutionOnBlock(ctx context.Context, ver int, header 
 		}
 	}
 	return isValidPayload, nil
+}
+
+// validateExecutionOnBlock notifies the engine of the incoming block execution payload and returns true if the payload is valid
+func (s *Service) updateBailoutPool(postState state.BeaconState) error {
+	if postState.Version() < version.Altair {
+		return nil
+	}
+
+	if !s.cfg.BailoutPool.IsInitialized() {
+		s.cfg.BailoutPool.Initialize(postState)
+	} else {
+		s.cfg.BailoutPool.UpdateBailOuts(postState)
+	}
+	return nil
 }
