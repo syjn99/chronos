@@ -149,11 +149,11 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 
 // SyncRewards returns the proposer reward and the sync participant reward given the total active balance in state.
 func SyncRewards(epoch primitives.Epoch) (proposerReward, participantReward uint64, err error) {
-	cfg := params.BeaconConfig()
-
-	totalBaseRewards := helpers.EpochIssuance(epoch)
-	maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
-	participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
-	proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)
-	return
+	//cfg := params.BeaconConfig()
+	//
+	//totalBaseRewards := helpers.EpochIssuance(epoch)
+	//maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
+	//participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
+	//proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)
+	return 0, 0, nil
 }
