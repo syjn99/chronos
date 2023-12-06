@@ -1,4 +1,4 @@
-bazel build --config=windows_amd64 //cmd/beacon-chain //cmd/validator //cmd/prysmctl //tools/enr-calculator //tools/bootnode
+bazel build --config=release --config=windows_amd64 //cmd/beacon-chain //cmd/validator //cmd/prysmctl //tools/enr-calculator //tools/bootnode
 if [ $? -ne 0 ]; then
     echo "Bazel build failed."
     exit 1

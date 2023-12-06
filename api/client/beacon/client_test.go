@@ -66,6 +66,15 @@ func TestParseNodeVersion(t *testing.T) {
 				systemInfo:     "x86_64-linux",
 			},
 		},
+		{
+			name: "chronos version",
+			v:    "Chronos/v0.2.11_develop (linux amd64)",
+			nv: &NodeVersion{
+				implementation: "Chronos",
+				semver:         "v0.2.11_develop",
+				systemInfo:     "(linux amd64)",
+			},
+		},
 	}
 
 	for _, c := range cases {

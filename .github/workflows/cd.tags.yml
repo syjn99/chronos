@@ -3,8 +3,8 @@ name: Deploy triggered with tags
 on:
   push:
     tags:
-        # parse names from tags {name}_v{version}
-      - '*_v*'
+      # parse names from tags v{version}_{name}
+      - 'v*_*'
 
 env:
   S3_BUCKET_NAME: over-protocol-dist
@@ -20,12 +20,13 @@ jobs:
       - name: Extract tag name, version
         id: extract
         run: |
-          tag_name="${{ github.ref_name }}"
-          tag_name="${tag_name%%_v*}"
-          version_name="${{ github.ref_name }}"
-          version_name="v${version_name#*_v}"
+          full_tag="${{ github.ref_name }}"
+          version_name="${full_tag%%_*}"
+          tag_name="${full_tag#*_}"
           echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
           echo "version_name=$version_name" >> $GITHUB_OUTPUT
+          
+          
 
   build:
     needs: extract_name
@@ -86,7 +87,7 @@ jobs:
       - name: Upload to AWS S3
         run: |
           aws s3 cp ./dist/over-node-chronos.zip \
-          ${{ format('s3://{0}/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.tag_name, needs.extract_name.outputs.version_name ) }} \
+          ${{ format('s3://{0}/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.version_name, needs.extract_name.outputs.tag_name ) }} \
           --acl public-read --profile over-dist
 
   notification:
@@ -95,5 +96,5 @@ jobs:
     steps:
       - name: Drop metadata
         run: |
-          echo "<${{ format('https://{0}.s3.ap-northeast-2.amazonaws.com/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.tag_name, needs.extract_name.outputs.version_name ) }}|over-node-chronos.zip>" >> /usr/local/share/notification/chronos/${{ env.S3_BUCKET_NAME }}
-      - run: sh /usr/local/share/notification/chronos/over_dist_notification.sh ${{ needs.extract_name.outputs.tag_name }} ${{ needs.extract_name.outputs.version_name }}
+          echo "<${{ format('https://{0}.s3.ap-northeast-2.amazonaws.com/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.version_name, needs.extract_name.outputs.tag_name ) }}|over-node-chronos.zip>" >> /usr/local/share/notification/chronos/${{ env.S3_BUCKET_NAME }}
+      - run: sh /usr/local/share/notification/chronos/over_dist_notification.sh ${{ needs.extract_name.outputs.version_name }} ${{ needs.extract_name.outputs.tag_name }}

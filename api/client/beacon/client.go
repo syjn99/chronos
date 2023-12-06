@@ -196,7 +196,7 @@ type NodeVersion struct {
 	systemInfo     string
 }
 
-var versionRE = regexp.MustCompile(`^(\w+)/(v\d+\.\d+\.\d+[-a-zA-Z0-9]*)\s*/?(.*)$`)
+var versionRE = regexp.MustCompile(`^(\w+)/(v\d+\.\d+\.\d+[-a-zA-Z0-9_]*)\s*/?(.*)$`)
 
 func parseNodeVersion(v string) (*NodeVersion, error) {
 	groups := versionRE.FindStringSubmatch(v)
