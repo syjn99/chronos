@@ -23,10 +23,10 @@ func UnderDevnetSpecConfig() *BeaconChainConfig {
 	// underConfig.TargetAggregatorsPerCommittee = 2
 
 	// Gwei values
-	underConfig.MinDepositAmount = 1e9
-	underConfig.MaxEffectiveBalance = 32e9
-	underConfig.EjectionBalance = 16e9
-	underConfig.EffectiveBalanceIncrement = 1e9
+	//underConfig.MinDepositAmount = 1e9
+	//underConfig.MaxEffectiveBalance = 32e9
+	//underConfig.EjectionBalance = 16e9
+	//underConfig.EffectiveBalanceIncrement = 1e9
 
 	// Initial values
 	// underConfig.BLSWithdrawalPrefixByte = byte(0)
