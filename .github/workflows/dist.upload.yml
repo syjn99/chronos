@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build-ubuntu:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [arc-runner-set]
     name: Build bazel & upload
     steps:
       - uses: actions/checkout@v3
@@ -41,6 +41,10 @@ jobs:
           ${{ format('s3://{0}/{1}/{2}/{3}.zip',  env.S3_BUCKET_NAME, inputs.version_name, inputs.tag_name, inputs.build_type ) }} \
           --acl public-read --profile over-dist
       
+  drop-metadata:
+    needs: [build-ubuntu]
+    runs-on: [self-hosted, linux, x64]
+    steps:
       - name: Drop metadata
         run: |
           echo "<${{ format('https://{0}.s3.ap-northeast-2.amazonaws.com/{1}/{2}/{3}.zip',  env.S3_BUCKET_NAME, inputs.version_name, inputs.tag_name, inputs.build_type ) }}|${{ inputs.build_type }}>" >> /usr/local/share/notification/chronos/${{ env.S3_BUCKET_NAME }}

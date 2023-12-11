@@ -1,4 +1,4 @@
-bazel build --config=release --config=osx_arm64 //cmd/beacon-chain //cmd/validator //cmd/prysmctl //tools/enr-calculator
+bazel build --remote_cache=http://192.168.2.200:9090 --config=release --config=osx_arm64 //cmd/beacon-chain //cmd/validator //cmd/prysmctl //tools/enr-calculator
 if [ $? -ne 0 ]; then
     echo "Bazel build failed."
     exit 1

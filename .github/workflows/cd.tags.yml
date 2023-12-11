@@ -11,7 +11,7 @@ env:
 
 jobs:
   extract_name:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [arc-runner-set]
     outputs:
       tag_name: ${{ steps.extract.outputs.tag_name }}
       version_name: ${{ steps.extract.outputs.version_name }}
@@ -25,8 +25,6 @@ jobs:
           tag_name="${full_tag#*_}"
           echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
           echo "version_name=$version_name" >> $GITHUB_OUTPUT
-          
-          
 
   build:
     needs: extract_name
@@ -66,7 +64,7 @@ jobs:
 
   node-pack:
     needs: [extract_name, build, node-pack-lipo]
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [arc-runner-set]
     steps:
       - uses: actions/checkout@v3
       - name: Download windows artifact
