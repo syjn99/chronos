@@ -369,8 +369,8 @@ func idealAttRewards(
 	bal *precompute.Balance,
 	vals []*precompute.Validator,
 ) ([]IdealAttestationReward, bool) {
-	idealValsCount := uint64(16)
-	minIdealBalance := uint64(17)
+	idealValsCount := (params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EjectionBalance) / 1e9
+	minIdealBalance := params.BeaconConfig().EjectionBalance/1e9 + 1
 	maxIdealBalance := minIdealBalance + idealValsCount - 1
 	idealRewards := make([]IdealAttestationReward, 0, idealValsCount)
 	idealVals := make([]*precompute.Validator, 0, idealValsCount)
