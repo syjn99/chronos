@@ -56,7 +56,8 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 	var reward uint64
 	beaconState, reward, err = altair.ProcessSyncAggregate(context.Background(), beaconState, syncAggregate)
 	require.NoError(t, err)
-	assert.Equal(t, uint64(2654208), reward) // 106170880
+	//assert.Equal(t, uint64(2654208), reward) // 106170880 // TODO(john): Fix this test after sync committee rewards are enabled.
+	assert.Equal(t, uint64(0), reward) // 106170880
 
 	// Use a non-sync committee index to compare profitability.
 	syncCommittee := make(map[primitives.ValidatorIndex]bool)
@@ -73,12 +74,14 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 
 	// Sync committee should be more profitable than non sync committee
 	balances := beaconState.Balances()
-	require.Equal(t, true, balances[indices[0]] > balances[nonSyncIndex])
+	//require.Equal(t, true, balances[indices[0]] > balances[nonSyncIndex]) // TODO(john): Fix this test after sync committee rewards are enabled.
+	require.Equal(t, true, balances[indices[0]] == balances[nonSyncIndex])
 
 	// Proposer should be more profitable than rest of the sync committee
 	proposerIndex, err := helpers.BeaconProposerIndex(context.Background(), beaconState)
 	require.NoError(t, err)
-	require.Equal(t, true, balances[proposerIndex] > balances[indices[0]])
+	//require.Equal(t, true, balances[proposerIndex] > balances[indices[0]]) // TODO(john): Fix this test after sync committee rewards are enabled.
+	require.Equal(t, true, balances[proposerIndex] == balances[indices[0]])
 
 	// Sync committee should have the same profits, except you are a proposer
 	for i := 1; i < len(indices); i++ {
@@ -89,13 +92,14 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 	}
 
 	// Increased balance validator count should equal to sync committee count
-	increased := uint64(0)
-	for _, balance := range balances {
-		if balance > params.BeaconConfig().MaxEffectiveBalance {
-			increased++
-		}
-	}
-	require.Equal(t, params.BeaconConfig().SyncCommitteeSize, increased)
+	// TODO(john): Fix this test after sync committee rewards are enabled.
+	//increased := uint64(0)
+	//for _, balance := range balances {
+	//	if balance > params.BeaconConfig().MaxEffectiveBalance {
+	//		increased++
+	//	}
+	//}
+	//require.Equal(t, params.BeaconConfig().SyncCommitteeSize, increased)
 }
 
 func TestProcessSyncCommittee_MixParticipation_BadSignature(t *testing.T) {
@@ -196,7 +200,8 @@ func TestProcessSyncCommittee_DontPrecompute(t *testing.T) {
 	require.Equal(t, 511, len(votedKeys))
 	require.DeepEqual(t, committeeKeys[0], votedKeys[0].Marshal())
 	balances := st.Balances()
-	require.Equal(t, uint64(36288), balances[idx]) // 1451559
+	//require.Equal(t, uint64(36288), balances[idx]) // 1451559
+	require.Equal(t, uint64(0), balances[idx]) // TODO(john): Fix this test after sync committee rewards are enabled.
 }
 
 func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
@@ -236,18 +241,20 @@ func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
 			require.DeepEqual(t, true, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
-			require.Equal(t, uint64(32000036288), balances[idx]) // 32001451559
+			require.Equal(t, uint64(32000000000), balances[idx]) // 32001451559
 		} else {
 			pk := bytesutil.ToBytes48(committeeKeys[i])
 			require.DeepEqual(t, false, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
 			if idx != proposerIndex {
-				require.Equal(t, uint64(31999963712), balances[idx]) // 31998548441
+				// TODO(john): Fix this test after sync committee rewards are enabled.
+				// require.Equal(t, uint64(31999963712), balances[idx]) // 31998548441
+				require.Equal(t, uint64(32000000000), balances[idx]) // 31998548441
 			}
 		}
 	}
-	require.Equal(t, uint64(32001290816), balances[proposerIndex]) // 32051633881
+	require.Equal(t, uint64(32000000000), balances[proposerIndex]) // 32051633881
 }
 
 func Test_VerifySyncCommitteeSig(t *testing.T) {

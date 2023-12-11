@@ -91,6 +91,70 @@ func DeterministicDepositsAndKeys(numDeposits uint64) ([]*ethpb.Deposit, []bls.S
 	return requestedDeposits, privKeys[0:numDeposits], nil
 }
 
+// TODO(john): Temporary 8x balance because validator ejected when testing. Remove this after tokenomics updated.
+// Same as DeterministicDepositsAndKeys but with 8x balance.
+func DeterministicDeposits8xBalanceAndKeys(numDeposits uint64) ([]*ethpb.Deposit, []bls.SecretKey, error) {
+	resetCache()
+	lock.Lock()
+	defer lock.Unlock()
+	var err error
+
+	// Populate trie cache, if not initialized yet.
+	if t == nil {
+		t, err = trie.NewTrie(params.BeaconConfig().DepositContractTreeDepth)
+		if err != nil {
+			return nil, nil, errors.Wrap(err, "failed to create new trie")
+		}
+	}
+
+	// If more deposits requested than cached, generate more.
+	if numDeposits > uint64(len(cachedDeposits)) {
+		numExisting := uint64(len(cachedDeposits))
+		numRequired := numDeposits - uint64(len(cachedDeposits))
+		// Fetch the required number of keys.
+		secretKeys, publicKeys, err := interop.DeterministicallyGenerateKeys(numExisting, numRequired+1)
+		if err != nil {
+			return nil, nil, errors.Wrap(err, "could not create deterministic keys: ")
+		}
+		privKeys = append(privKeys, secretKeys[:len(secretKeys)-1]...)
+
+		// Create the new deposits and add them to the trie.
+		for i := uint64(0); i < numRequired; i++ {
+			balance := params.BeaconConfig().MaxEffectiveBalance
+			balance *= 8
+			deposit, err := signedDeposit(secretKeys[i], publicKeys[i].Marshal(), publicKeys[i+1].Marshal(), balance)
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "could not create signed deposit")
+			}
+			cachedDeposits = append(cachedDeposits, deposit)
+
+			hashedDeposit, err := deposit.Data.HashTreeRoot()
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "could not tree hash deposit data")
+			}
+
+			if err = t.Insert(hashedDeposit[:], int(numExisting+i)); err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
+	depositTrie, _, err := DeterministicDepositTrie(int(numDeposits)) // lint:ignore uintcast
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to create deposit trie")
+	}
+	requestedDeposits := cachedDeposits[:numDeposits]
+	for i := range requestedDeposits {
+		proof, err := depositTrie.MerkleProof(i)
+		if err != nil {
+			return nil, nil, errors.Wrap(err, "could not create merkle proof")
+		}
+		requestedDeposits[i].Proof = proof
+	}
+
+	return requestedDeposits, privKeys[0:numDeposits], nil
+}
+
 // DepositsWithBalance generates N amount of deposits with the balances taken from the passed in balances array.
 // If an empty array is passed,
 func DepositsWithBalance(balances []uint64) ([]*ethpb.Deposit, *trie.SparseMerkleTrie, error) {

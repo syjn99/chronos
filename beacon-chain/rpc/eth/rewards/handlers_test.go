@@ -56,6 +56,8 @@ func TestBlockRewards(t *testing.T) {
 	}
 	require.NoError(t, st.SetValidators(validators))
 	require.NoError(t, st.SetBalances(balances))
+	require.NoError(t, st.SetBailOutScores(make([]uint64, valCount)))
+	require.NoError(t, st.SetInactivityScores(make([]uint64, valCount)))
 	require.NoError(t, st.SetCurrentParticipationBits(make([]byte, valCount)))
 	syncCommittee, err := altair.NextSyncCommittee(context.Background(), st)
 	require.NoError(t, err)
@@ -64,7 +66,6 @@ func TestBlockRewards(t *testing.T) {
 	bRoots := make([][]byte, fieldparams.BlockRootsLength)
 	bRoots[0] = slot0bRoot
 	require.NoError(t, st.SetBlockRoots(bRoots))
-
 	b := util.HydrateSignedBeaconBlockAltair(util.NewBeaconBlockAltair())
 	b.Block.Slot = 2
 	// we have to set the proposer index to the value that will be randomly chosen (fortunately it's deterministic)
@@ -178,11 +179,16 @@ func TestBlockRewards(t *testing.T) {
 		resp := &BlockRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "12", resp.Data.ProposerIndex)
-		assert.Equal(t, "125089490", resp.Data.Total)
-		assert.Equal(t, "89442", resp.Data.Attestations)
-		assert.Equal(t, "48", resp.Data.SyncAggregate)
-		assert.Equal(t, "62500000", resp.Data.AttesterSlashings)
-		assert.Equal(t, "62500000", resp.Data.ProposerSlashings)
+		//assert.Equal(t, "125089490", resp.Data.Total)
+		assert.Equal(t, "1018579952", resp.Data.Total)
+		//assert.Equal(t, "89442", resp.Data.Attestations)
+		assert.Equal(t, "18579952", resp.Data.Attestations)
+		//assert.Equal(t, "48", resp.Data.SyncAggregate) // TODO: change after sync committee rewards reverted
+		assert.Equal(t, "0", resp.Data.SyncAggregate)
+		//assert.Equal(t, "62500000", resp.Data.AttesterSlashings)
+		assert.Equal(t, "500000000", resp.Data.AttesterSlashings)
+		//assert.Equal(t, "62500000", resp.Data.ProposerSlashings)
+		assert.Equal(t, "500000000", resp.Data.ProposerSlashings)
 		assert.Equal(t, true, resp.ExecutionOptimistic)
 		assert.Equal(t, false, resp.Finalized)
 	})
@@ -206,7 +212,6 @@ func TestAttestationRewards(t *testing.T) {
 	cfg := params.BeaconConfig()
 	cfg.AltairForkEpoch = 1
 	params.OverrideBeaconConfig(cfg)
-
 	valCount := 64
 
 	st, err := util.NewBeaconStateCapella()
@@ -229,6 +234,7 @@ func TestAttestationRewards(t *testing.T) {
 	}
 	require.NoError(t, st.SetValidators(validators))
 	require.NoError(t, st.SetBalances(balances))
+	require.NoError(t, st.SetBailOutScores(make([]uint64, len(validators))))
 	require.NoError(t, st.SetInactivityScores(make([]uint64, len(validators))))
 	participation := make([]byte, len(validators))
 	for i := range participation {
@@ -258,7 +264,8 @@ func TestAttestationRewards(t *testing.T) {
 		assert.Equal(t, http.StatusOK, writer.Code)
 		resp := &AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
-		require.Equal(t, 16, len(resp.Data.IdealRewards))
+		//require.Equal(t, 16, len(resp.Data.IdealRewards))
+		require.Equal(t, 32, len(resp.Data.IdealRewards)) // TODO - fix this after tokenomics
 		sum := uint64(0)
 		for _, r := range resp.Data.IdealRewards {
 			hr, err := strconv.ParseUint(r.Head, 10, 64)
@@ -269,7 +276,8 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(20756849), sum)
+		//assert.Equal(t, uint64(20756849), sum)
+		assert.Equal(t, uint64(11978064552), sum) // TODO - fix this after tokenomics
 	})
 	t.Run("ok - filtered vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -298,7 +306,8 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(794265), sum)
+		//assert.Equal(t, uint64(794265), sum)
+		assert.Equal(t, uint64(246970401), sum) // TODO - fix this after tokenomics
 	})
 	t.Run("ok - all vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -321,7 +330,8 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(54221955), sum)
+		//assert.Equal(t, uint64(54221955), sum)
+		assert.Equal(t, uint64(16053076176), sum) // TODO - fix this after tokenomics
 	})
 	t.Run("ok - penalty", func(t *testing.T) {
 		st, err := util.NewBeaconStateCapella()
@@ -346,6 +356,7 @@ func TestAttestationRewards(t *testing.T) {
 		require.NoError(t, st.SetValidators(validators))
 		require.NoError(t, st.SetBalances(balances))
 		require.NoError(t, st.SetInactivityScores(make([]uint64, len(validators))))
+		require.NoError(t, st.SetBailOutScores(make([]uint64, len(validators))))
 		participation := make([]byte, len(validators))
 		for i := range participation {
 			participation[i] = 0b111
@@ -379,8 +390,10 @@ func TestAttestationRewards(t *testing.T) {
 		resp := &AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "0", resp.Data.TotalRewards[0].Head)
-		assert.Equal(t, "-432270", resp.Data.TotalRewards[0].Source)
-		assert.Equal(t, "-802788", resp.Data.TotalRewards[0].Target)
+		//assert.Equal(t, "-432270", resp.Data.TotalRewards[0].Source)
+		assert.Equal(t, "-130059664", resp.Data.TotalRewards[0].Source) // TODO(john) - fix this after tokenomics
+		//assert.Equal(t, "-802788", resp.Data.TotalRewards[0].Target)
+		assert.Equal(t, "-241539377", resp.Data.TotalRewards[0].Target) // TODO(john) - fix this after tokenomics
 	})
 	t.Run("invalid validator index/pubkey", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"

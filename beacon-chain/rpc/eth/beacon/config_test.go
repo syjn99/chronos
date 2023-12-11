@@ -136,7 +136,7 @@ func TestGetSpec(t *testing.T) {
 	resp, err := server.GetSpec(context.Background(), &emptypb.Empty{})
 	require.NoError(t, err)
 
-	assert.Equal(t, 108, len(resp.Data))
+	assert.Equal(t, 112, len(resp.Data))
 	for k, v := range resp.Data {
 		switch k {
 		case "CONFIG_NAME":
@@ -367,6 +367,14 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "20", v)
 		case "REORG_PARENT_WEIGHT_THRESHOLD":
 			assert.Equal(t, "160", v)
+		case "MAX_TOKEN_SUPPLY":
+			assert.Equal(t, "1000000000000000000", v)
+		case "BAILOUT_SCORE_BIAS":
+			assert.Equal(t, "1000000000000000", v)
+		case "BAILOUT_SCORE_THRESHOLD":
+			assert.Equal(t, "1575000000000000000", v)
+		case "EPOCHS_PER_YEAR":
+			assert.Equal(t, "82125", v)
 		case "SAFE_SLOTS_TO_IMPORT_OPTIMISTICALLY":
 		default:
 			t.Errorf("Incorrect key: %s", k)

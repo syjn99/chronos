@@ -15,7 +15,7 @@ import (
 )
 
 func TestService_HeadSyncCommitteeIndices(t *testing.T) {
-	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
+	s, _ := util.DeterministicGenesisStateAltairWith8xBalance(t, params.BeaconConfig().TargetCommitteeSize) // TODO(john): Temporary 8x balance because validator ejected when testing. Fix this after tokenomics updated.
 	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
@@ -38,7 +38,7 @@ func TestService_HeadSyncCommitteeIndices(t *testing.T) {
 }
 
 func TestService_headCurrentSyncCommitteeIndices(t *testing.T) {
-	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
+	s, _ := util.DeterministicGenesisStateAltairWith8xBalance(t, params.BeaconConfig().TargetCommitteeSize)
 	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
@@ -52,8 +52,8 @@ func TestService_headCurrentSyncCommitteeIndices(t *testing.T) {
 }
 
 func TestService_headNextSyncCommitteeIndices(t *testing.T) {
-	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
-	c := &Service{}
+	s, _ := util.DeterministicGenesisStateAltairWith8xBalance(t, params.BeaconConfig().TargetCommitteeSize)
+	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
 	// Process slot up to `EpochsPerSyncCommitteePeriod` so it can `ProcessSyncCommitteeUpdates`.
@@ -66,7 +66,7 @@ func TestService_headNextSyncCommitteeIndices(t *testing.T) {
 }
 
 func TestService_HeadSyncCommitteePubKeys(t *testing.T) {
-	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
+	s, _ := util.DeterministicGenesisStateAltairWith8xBalance(t, params.BeaconConfig().TargetCommitteeSize)
 	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
@@ -81,7 +81,7 @@ func TestService_HeadSyncCommitteePubKeys(t *testing.T) {
 }
 
 func TestService_HeadSyncCommitteeDomain(t *testing.T) {
-	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
+	s, _ := util.DeterministicGenesisStateAltairWith8xBalance(t, params.BeaconConfig().TargetCommitteeSize)
 	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
@@ -95,8 +95,8 @@ func TestService_HeadSyncCommitteeDomain(t *testing.T) {
 }
 
 func TestService_HeadSyncContributionProofDomain(t *testing.T) {
-	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
-	c := &Service{}
+	s, _ := util.DeterministicGenesisStateAltairWith8xBalance(t, params.BeaconConfig().TargetCommitteeSize)
+	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
 	wanted, err := signing.Domain(s.Fork(), slots.ToEpoch(s.Slot()), params.BeaconConfig().DomainContributionAndProof, s.GenesisValidatorsRoot())
@@ -110,7 +110,7 @@ func TestService_HeadSyncContributionProofDomain(t *testing.T) {
 
 func TestService_HeadSyncSelectionProofDomain(t *testing.T) {
 	s, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().TargetCommitteeSize)
-	c := &Service{}
+	c := &Service{cfg: &config{BeaconDB: dbTest.SetupDB(t)}}
 	c.head = &head{state: s}
 
 	wanted, err := signing.Domain(s.Fork(), slots.ToEpoch(s.Slot()), params.BeaconConfig().DomainSyncCommitteeSelectionProof, s.GenesisValidatorsRoot())

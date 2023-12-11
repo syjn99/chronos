@@ -1070,11 +1070,11 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 	vals := st.Validators()
 	want := make([]*ethpb.Validators_ValidatorContainer, 0)
 	for i, v := range vals {
+		v.EffectiveBalance = 0x6c088e200
 		want = append(want, &ethpb.Validators_ValidatorContainer{
 			Index:     primitives.ValidatorIndex(i),
 			Validator: v,
 		})
-		t.Log(v)
 	}
 	req = &ethpb.ListValidatorsRequest{
 		QueryFilter: &ethpb.ListValidatorsRequest_Epoch{
@@ -1083,7 +1083,6 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 	}
 	res, err = bs.ListValidators(context.Background(), req)
 	require.NoError(t, err)
-	t.Log(res)
 
 	require.Equal(t, len(want), len(res.ValidatorList), "incorrect number of validators")
 	assert.DeepSSZEqual(t, want, res.ValidatorList, "mismatch in validator values")
@@ -2086,7 +2085,8 @@ func TestGetValidatorPerformanceAltair_OK(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{101, 102},
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
-		InactivityScores:              []uint64{1000000000000000, 1000000000000000},
+		InactivityScores:              []uint64{0, 0},
+		BailOutScores:                 []uint64{0, params.BeaconConfig().BailOutScoreBias, params.BeaconConfig().BailOutScoreBias},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
