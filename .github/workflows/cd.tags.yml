@@ -54,7 +54,7 @@ jobs:
           name: chronos-dist-${{ github.sha }}-chronos_osx_arm64
           path: dist/bin
       - run: lipo -create -output dist/bin/mac/chronos dist/bin/mac/amd64/chronos dist/bin/mac/arm64/chronos
-      - run: lipo -create -output dist/bin/mac/validator dist/bin/mac/amd64/chronos dist/bin/mac/arm64/validator
+      - run: lipo -create -output dist/bin/mac/validator dist/bin/mac/amd64/validator dist/bin/mac/arm64/validator
       - run: rm -r -f dist/bin/mac/amd64 dist/bin/mac/arm64
       - name: Upload artifact
         uses: actions/upload-artifact@v3
