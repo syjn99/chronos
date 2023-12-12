@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -99,6 +100,7 @@ type Server struct {
 	beaconApiEndpoint         string
 	beaconApiTimeout          time.Duration
 	cipherKey                 []byte
+	rpcMutex                  sync.Mutex
 }
 
 // NewServer instantiates a new gRPC server.

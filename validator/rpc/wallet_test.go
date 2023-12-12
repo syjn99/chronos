@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	rd "crypto/rand"
+	"sync"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -427,6 +428,63 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	}
 	_, err4 := s.InitializeDerivedWallet(ctx, req4)
 	require.ErrorContains(t, "Could not decrypt password", err4)
+}
+
+func TestInitializeDerivedWallet_ThreadSafe(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.MockValidator{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		isOverNode:            true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+	}
+
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+
+	require.NoError(t, err)
+
+	// Test case 1. Working case.
+	testPath := "./testpath"
+	// new path
+	req := &pb.InitializeDerivedWalletRequest{
+		WalletDir:    testPath,
+		Password:     hexutil.Encode(encryptedPassword),
+		MnemonicLang: "english",
+	}
+
+	// Create a WaitGroup to wait for all goroutines to finish
+	var wg sync.WaitGroup
+
+	// Create a number of goroutines that will call InitializeDerivedWallet concurrently
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := s.InitializeDerivedWallet(context.Background(), req)
+			if err != nil {
+				assert.ErrorContains(t, "Wallet is Already Opened", err)
+			}
+		}()
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	// Check if the wallet, walletInitialized, and walletDir fields have the expected values
+	assert.Equal(t, true, s.walletInitialized)
+	assert.Equal(t, testPath, s.walletDir)
 }
 
 func generateRandomKey() ([]byte, error) {

@@ -25,6 +25,8 @@ import (
 func (s *Server) InitializeDerivedWallet(
 	ctx context.Context, req *pb.InitializeDerivedWalletRequest,
 ) (*pb.InitializeDerivedWalletResponse, error) {
+	s.rpcMutex.Lock()
+	defer s.rpcMutex.Unlock()
 	if !s.isOverNode {
 		log.Debug("InitializeDerivedWallet was called when over node flag disabled")
 		return nil, status.Error(codes.NotFound, "Only available when over node flag enabled")
@@ -80,6 +82,7 @@ func (s *Server) InitializeDerivedWallet(
 				return nil, status.Error(codes.InvalidArgument, "Password is not correct")
 			}
 			if !chk {
+				// mnemonic file not exist so create it
 				err = derived.GenerateAndSaveMnemonic(derived.DefaultMnemonicLanguage, string(decryptedPassword), w.AccountsDir())
 				if err != nil {
 					log.WithError(err).Error("Could not generate and save mnemonic")
@@ -146,6 +149,7 @@ type KeyStoreRepresent struct {
 	Crypto map[string]interface{} `json:"crypto"`
 }
 
+// checkPasswordValid check password valid
 func checkPasswordValid(path string, password string) (bool, error) {
 	if !file.FileExists(path) {
 		return false, nil
