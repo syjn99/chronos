@@ -264,11 +264,17 @@ func (v *ValidatorService) InteropKeysConfig() *local.InteropKeymanagerConfig {
 
 // Keymanager returns the underlying keymanager in the validator
 func (v *ValidatorService) Keymanager() (keymanager.IKeymanager, error) {
+	if v.validator == nil {
+		return nil, errors.New("validator not initialized")
+	}
 	return v.validator.Keymanager()
 }
 
 // ProposerSettings returns a deep copy of the underlying proposer settings in the validator
 func (v *ValidatorService) ProposerSettings() *validatorserviceconfig.ProposerSettings {
+	if v.validator == nil {
+		return nil
+	}
 	settings := v.validator.ProposerSettings()
 	if settings != nil {
 		return settings.Clone()
@@ -278,6 +284,9 @@ func (v *ValidatorService) ProposerSettings() *validatorserviceconfig.ProposerSe
 
 // SetProposerSettings sets the proposer settings on the validator service as well as the underlying validator
 func (v *ValidatorService) SetProposerSettings(ctx context.Context, settings *validatorserviceconfig.ProposerSettings) error {
+	if v.validator == nil {
+		return errors.New("validator not initialized")
+	}
 	// validator service proposer settings is only used for pass through from node -> validator service -> validator.
 	// in memory use of proposer settings happens on validator.
 	v.proposerSettings = settings
@@ -359,5 +368,8 @@ func (v *ValidatorService) GenesisInfo(ctx context.Context) (*ethpb.Genesis, err
 }
 
 func (v *ValidatorService) IsWaitingKeyManagerInitialization() bool {
+	if v.validator == nil {
+		return false
+	}
 	return v.validator.IsWaitingForKeymanagerInitialization()
 }

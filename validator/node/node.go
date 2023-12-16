@@ -616,7 +616,8 @@ func proposerSettings(cliCtx *cli.Context, db iface.ValidatorDB) (*validatorServ
 
 func handleNoProposerSettingsFlagsProvided(cliCtx *cli.Context,
 	db iface.ValidatorDB,
-	builderConfigFromFlag *validatorServiceConfig.BuilderConfig) (*validatorServiceConfig.ProposerSettings, error) {
+	builderConfigFromFlag *validatorServiceConfig.BuilderConfig,
+) (*validatorServiceConfig.ProposerSettings, error) {
 	log.Info("no proposer settings files have been provided, attempting to load from db.")
 	// checks db if proposer settings exist if none is provided.
 	settings, err := db.ProposerSettings(cliCtx.Context)
