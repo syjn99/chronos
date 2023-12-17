@@ -225,6 +225,10 @@ func BuildSignedBeaconBlockFromExecutionPayload(
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get sync aggregate from block body")
 	}
+	bailOuts, err := b.Body().BailOuts()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get bail outs from block body")
+	}
 	parentRoot := b.ParentRoot()
 	stateRoot := b.StateRoot()
 	randaoReveal := b.Body().RandaoReveal()
@@ -250,6 +254,7 @@ func BuildSignedBeaconBlockFromExecutionPayload(
 					Deposits:          b.Body().Deposits(),
 					VoluntaryExits:    b.Body().VoluntaryExits(),
 					SyncAggregate:     syncAgg,
+					BailOuts:          bailOuts,
 					ExecutionPayload:  p,
 				},
 			},
@@ -276,6 +281,7 @@ func BuildSignedBeaconBlockFromExecutionPayload(
 					Deposits:              b.Body().Deposits(),
 					VoluntaryExits:        b.Body().VoluntaryExits(),
 					SyncAggregate:         syncAgg,
+					BailOuts:              bailOuts,
 					ExecutionPayload:      p,
 					BlsToExecutionChanges: blsToExecutionChanges,
 				},

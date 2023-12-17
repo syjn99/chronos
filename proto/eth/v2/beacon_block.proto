@@ -248,7 +248,7 @@ message BeaconBlockBodyBellatrix {
   // Sync aggregate object to track sync committee votes for light client support. 
   v1.SyncAggregate sync_aggregate = 9;
 
-  // At most MAX_VOLUNTARY_EXITS. New in Altair network upgrade.
+  // At most Bail Out. [New in Altair network upgrade.]
   repeated v1.BailOut bail_outs = 10 [(ethereum.eth.ext.ssz_max) = "16"];
 
   // Execution payload: the embedded execution payload of the block [New in Bellatrix]
@@ -287,7 +287,7 @@ message BlindedBeaconBlockBodyBellatrix {
   // Sync aggregate object to track sync committee votes for light client support.
   v1.SyncAggregate sync_aggregate = 9;
 
-  // At most MAX_VOLUNTARY_EXITS. New in Altair network upgrade.
+  // At most Bail Out. [New in Altair network upgrade.]
   repeated v1.BailOut bail_outs = 10 [(ethereum.eth.ext.ssz_max) = "16"];
 
   // Execution payload header: the embedded execution payload of the block [New in Bellatrix]
@@ -326,7 +326,7 @@ message BeaconBlockBodyCapella {
   // Sync aggregate object to track sync committee votes for light client support.
   v1.SyncAggregate sync_aggregate = 9;
 
-  // At most MAX_VOLUNTARY_EXITS. New in Altair network upgrade.
+  // At most Bail Out. [New in Altair network upgrade.]
   repeated v1.BailOut bail_outs = 10 [(ethereum.eth.ext.ssz_max) = "16"];
 
   // Execution payload: the embedded execution payload of the block [Modified in Capella]
@@ -368,7 +368,7 @@ message BlindedBeaconBlockBodyCapella {
   // Sync aggregate object to track sync committee votes for light client support.
   v1.SyncAggregate sync_aggregate = 9;
 
-  // At most MAX_VOLUNTARY_EXITS. New in Altair network upgrade.
+  // At most Bail Out. [New in Altair network upgrade.]
   repeated v1.BailOut bail_outs = 10 [(ethereum.eth.ext.ssz_max) = "16"];
 
   // Execution payload header: the embedded execution payload of the block [Modified in Capella]
@@ -410,6 +410,6 @@ message BeaconBlockBodyAltair {
   // Sync aggregate object to track sync committee votes for light client support. [New in Altair network upgrade.]
   v1.SyncAggregate sync_aggregate = 9;
 
-  // At most MAX_VOLUNTARY_EXITS. New in Altair network upgrade.
+  // At most Bail Out. [New in Altair network upgrade.]
   repeated v1.BailOut bail_outs = 10 [(ethereum.eth.ext.ssz_max) = "16"];
 }

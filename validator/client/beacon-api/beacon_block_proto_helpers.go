@@ -349,6 +349,27 @@ func convertVoluntaryExitsToProto(jsonVoluntaryExits []*apimiddleware.SignedVolu
 	return attestingIndices, nil
 }
 
+func convertBailOutsToProto(jsonBailouts []*apimiddleware.BailOutJson) ([]*ethpb.BailOut, error) {
+	bailouts := make([]*ethpb.BailOut, len(jsonBailouts))
+
+	for BailOutIndex, jsonBailOut := range jsonBailouts {
+		if jsonBailOut == nil {
+			return nil, errors.Errorf("bailout at index `%d` is nil", BailOutIndex)
+		}
+
+		validatorIndex, err := strconv.ParseUint(jsonBailOut.ValidatorIndex, 10, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse bail out validator index `%s`", jsonBailOut.ValidatorIndex)
+		}
+
+		bailouts[BailOutIndex] = &ethpb.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(validatorIndex),
+		}
+	}
+
+	return bailouts, nil
+}
+
 func convertTransactionsToProto(jsonTransactions []string) ([][]byte, error) {
 	transactions := make([][]byte, len(jsonTransactions))
 

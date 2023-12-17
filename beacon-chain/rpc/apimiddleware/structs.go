@@ -495,6 +495,7 @@ type BeaconBlockBodyAltairJson struct {
 	Deposits          []*DepositJson             `json:"deposits"`
 	VoluntaryExits    []*SignedVoluntaryExitJson `json:"voluntary_exits"`
 	SyncAggregate     *SyncAggregateJson         `json:"sync_aggregate"`
+	BailOuts          []*BailOutJson             `json:"bail_outs"`
 }
 
 type BeaconBlockBodyBellatrixJson struct {
@@ -507,6 +508,7 @@ type BeaconBlockBodyBellatrixJson struct {
 	Deposits          []*DepositJson             `json:"deposits"`
 	VoluntaryExits    []*SignedVoluntaryExitJson `json:"voluntary_exits"`
 	SyncAggregate     *SyncAggregateJson         `json:"sync_aggregate"`
+	BailOuts          []*BailOutJson             `json:"bail_outs"`
 	ExecutionPayload  *ExecutionPayloadJson      `json:"execution_payload"`
 }
 
@@ -520,6 +522,7 @@ type BeaconBlockBodyCapellaJson struct {
 	Deposits              []*DepositJson                    `json:"deposits"`
 	VoluntaryExits        []*SignedVoluntaryExitJson        `json:"voluntary_exits"`
 	SyncAggregate         *SyncAggregateJson                `json:"sync_aggregate"`
+	BailOuts              []*BailOutJson                    `json:"bail_outs"`
 	ExecutionPayload      *ExecutionPayloadCapellaJson      `json:"execution_payload"`
 	BLSToExecutionChanges []*SignedBLSToExecutionChangeJson `json:"bls_to_execution_changes"`
 }
@@ -534,6 +537,7 @@ type BlindedBeaconBlockBodyBellatrixJson struct {
 	Deposits               []*DepositJson              `json:"deposits"`
 	VoluntaryExits         []*SignedVoluntaryExitJson  `json:"voluntary_exits"`
 	SyncAggregate          *SyncAggregateJson          `json:"sync_aggregate"`
+	BailOuts               []*BailOutJson              `json:"bail_outs"`
 	ExecutionPayloadHeader *ExecutionPayloadHeaderJson `json:"execution_payload_header"`
 }
 
@@ -547,6 +551,7 @@ type BlindedBeaconBlockBodyCapellaJson struct {
 	Deposits               []*DepositJson                     `json:"deposits"`
 	VoluntaryExits         []*SignedVoluntaryExitJson         `json:"voluntary_exits"`
 	SyncAggregate          *SyncAggregateJson                 `json:"sync_aggregate"`
+	BailOuts               []*BailOutJson                     `json:"bail_outs"`
 	ExecutionPayloadHeader *ExecutionPayloadHeaderCapellaJson `json:"execution_payload_header"`
 	BLSToExecutionChanges  []*SignedBLSToExecutionChangeJson  `json:"bls_to_execution_changes"`
 }
@@ -737,6 +742,10 @@ type SyncCommitteeMessageJson struct {
 	BeaconBlockRoot string `json:"beacon_block_root" hex:"true"`
 	ValidatorIndex  string `json:"validator_index"`
 	Signature       string `json:"signature" hex:"true"`
+}
+
+type BailOutJson struct {
+	ValidatorIndex string `json:"validator_index"`
 }
 
 type IdentityJson struct {

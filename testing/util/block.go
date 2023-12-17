@@ -846,6 +846,12 @@ func HydrateBlindedBeaconBlockBodyBellatrix(b *ethpb.BlindedBeaconBlockBodyBella
 			SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 		}
 	}
+	if b.BailOuts == nil {
+		b.BailOuts = make([]*ethpb.BailOut, 0)
+		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(999),
+		})
+	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeader{
 			ParentHash:       make([]byte, 32),
