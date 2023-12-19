@@ -131,68 +131,6 @@ func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 		return nil, err
 	}
 
-	if cfg.EnableUPnP {
-		go func() {
-			externalAddr, externalPort, err := h.MapPort("udp", int(cfg.UDPPort))
-			if err != nil {
-				log.WithError(err).Error("Failed to create port mapping")
-				return
-			}
-			log.WithField("externalPort", externalPort).Info("Added port mapping")
-			addr, err := net.ResolveUDPAddr(externalAddr.Network(), externalAddr.String())
-			if err != nil {
-				log.WithError(err).Error("Failed to resolve udp address")
-				return
-			}
-			localNode := s.dv5Listener.LocalNode()
-			// localNode.Set(enr.UDP(externalPort))
-			localNode.SetFallbackUDP(externalPort)
-
-			if !addr.IP.Equal(net.IPv4zero) {
-				// localNode.Set(enr.IP(addr.IP))
-				localNode.SetStaticIP(addr.IP)
-			}
-		}()
-
-		go func() {
-			for {
-				addrs := h.Addrs()
-				for len(addrs) < 2 {
-					time.Sleep(checkExternalAddressPeriod)
-					addrs = h.Addrs()
-				}
-				for _, addr := range addrs {
-					log.WithField("address", addr.String()).Info("Host address")
-					ad, err := manet.ToNetAddr(addr)
-					if err != nil {
-						log.WithError(err).Error("Failed to convert multiaddr to net address")
-						continue
-					}
-					ps := addr.Protocols()
-					for _, p := range ps {
-						if p.Code == multiaddr.P_TCP {
-							addr, err := net.ResolveTCPAddr(ad.Network(), ad.String())
-							if err != nil {
-								log.WithError(err).Error("Failed to resolve tcp address")
-								continue
-							}
-							if uint(addr.Port) != cfg.TCPPort {
-								localNode := s.dv5Listener.LocalNode()
-								localNode.Set(enr.TCP(addr.Port))
-
-								if !addr.IP.Equal(net.IPv4zero) {
-									localNode.Set(enr.IP(addr.IP))
-									localNode.SetStaticIP(addr.IP)
-								}
-							}
-						}
-					}
-				}
-				time.Sleep(10 * time.Second)
-			}
-		}()
-	}
-
 	s.host = h
 	// Gossipsub registration is done before we add in any new peers
 	// due to libp2p's gossipsub implementation not taking into
@@ -275,7 +213,10 @@ func (s *Service) Start() {
 	}
 
 	s.started = true
-
+	if s.cfg.EnableUPnP {
+		go s.setUDPPortMapping()
+		go s.setTCPPortMapping()
+	}
 	if len(s.cfg.StaticPeers) > 0 {
 		addrs, err := PeersFromStringAddrs(s.cfg.StaticPeers)
 		if err != nil {
@@ -558,5 +499,65 @@ func (s *Service) increaseMaxMessageSizesForBellatrix() {
 	if currentEpoch >= params.BeaconConfig().BellatrixForkEpoch {
 		encoder.SetMaxGossipSizeForBellatrix()
 		encoder.SetMaxChunkSizeForBellatrix()
+	}
+}
+
+func (s *Service) setUDPPortMapping() {
+	externalAddr, externalPort, err := s.host.MapPort("udp", int(s.cfg.UDPPort))
+	if err != nil {
+		log.WithError(err).Error("Failed to create port mapping")
+		return
+	}
+	log.WithField("externalPort", externalPort).Info("Added port mapping")
+	addr, err := net.ResolveUDPAddr(externalAddr.Network(), externalAddr.String())
+	if err != nil {
+		log.WithError(err).Error("Failed to resolve udp address")
+		return
+	}
+	localNode := s.dv5Listener.LocalNode()
+	// localNode.Set(enr.UDP(externalPort))
+	localNode.SetFallbackUDP(externalPort)
+
+	if !addr.IP.Equal(net.IPv4zero) {
+		// localNode.Set(enr.IP(addr.IP))
+		localNode.SetStaticIP(addr.IP)
+	}
+}
+
+func (s *Service) setTCPPortMapping() {
+	for {
+		addrs := s.host.Addrs()
+		for len(addrs) < 2 {
+			time.Sleep(checkExternalAddressPeriod)
+			addrs = s.host.Addrs()
+		}
+		for _, addr := range addrs {
+			log.WithField("address", addr.String()).Info("Host address")
+			ad, err := manet.ToNetAddr(addr)
+			if err != nil {
+				log.WithError(err).Error("Failed to convert multiaddr to net address")
+				continue
+			}
+			ps := addr.Protocols()
+			for _, p := range ps {
+				if p.Code == multiaddr.P_TCP {
+					addr, err := net.ResolveTCPAddr(ad.Network(), ad.String())
+					if err != nil {
+						log.WithError(err).Error("Failed to resolve tcp address")
+						continue
+					}
+					if uint(addr.Port) != s.cfg.TCPPort {
+						localNode := s.dv5Listener.LocalNode()
+						localNode.Set(enr.TCP(addr.Port))
+
+						if !addr.IP.Equal(net.IPv4zero) {
+							localNode.Set(enr.IP(addr.IP))
+							localNode.SetStaticIP(addr.IP)
+						}
+					}
+				}
+			}
+		}
+		time.Sleep(10 * time.Second)
 	}
 }
