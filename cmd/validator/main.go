@@ -28,8 +28,8 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/runtime/version"
 	"github.com/prysmaticlabs/prysm/v4/validator/node"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
-	"gopkg.in/natefinch/lumberjack.v2"
+	cli "github.com/urfave/cli/v2"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 func startNode(ctx *cli.Context) error {
@@ -176,6 +176,7 @@ func main() {
 		logFileName := ctx.String(cmd.LogFileName.Name)
 		rotation := ctx.Bool(cmd.LogRotateFlag.Name)
 		if logFileName != "" {
+			logrus.SetOutput(os.Stdout) // Set default output to stdout for log separation
 			if rotation {
 				lumberjackLogger := &lumberjack.Logger{
 					Filename:   logFileName,

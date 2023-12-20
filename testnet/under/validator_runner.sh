@@ -56,7 +56,7 @@ elif [ "$1" = "run" ]; then
 
     for num in $(seq $start $end)
     do
-        nohup $BASEDIR/validator-$num/run_validator.sh > logs/vali-$num.out &
+        nohup $BASEDIR/validator-$num/run_validator.sh >/dev/null 2>$BASEDIR/logs/vali-$num.err.out &
     done
     exit 0
 
@@ -132,6 +132,7 @@ bazel run $minimal//cmd/validator:validator -- \\
 --rpc-port=${rpcport} \\
 --slasher-rpc-provider=127.0.0.1:${slasherrpc} \\
 --accept-terms-of-use \\
+--log-file="${BASEDIR}/logs/vali-${i}.log" \\
 --force-clear-db
 EOF
 

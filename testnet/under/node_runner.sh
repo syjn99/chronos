@@ -72,7 +72,7 @@ elif [ "$1" = "run" ]; then
 
     for num in $(seq $start $end)
     do
-        nohup $BASEDIR/node-$num/run_node.sh > logs/chronos-$num.out &
+        nohup $BASEDIR/node-$num/run_node.sh >/dev/null 2>$BASEDIR/logs/chronos-$num.err.out &
     done
     exit 0
 
@@ -153,24 +153,26 @@ for i in $(seq $start $end); do
 KAIROS_PATH=$KAIROS_PATH/testnet/under/node-$i/geth
 
 bazel run $minimal//cmd/beacon-chain:beacon-chain -- \\
--datadir=$BASEDIR/node-$i \\
--genesis-state=$BASEDIR/artifacts/genesis$minimal_suffix.ssz \\
--chain-config-file=$BASEDIR/artifacts/config$minimal_suffix.yml \\
--config-file=$BASEDIR/artifacts/config$minimal_suffix.yml \\
--min-sync-peers=0 \\
--execution-endpoint=http://localhost:${authport} \\
--accept-terms-of-use \\
--jwt-secret=\$KAIROS_PATH/jwtsecret \\
--contract-deployment-block=0 \\
--p2p-udp-port"=${udpport}" \\
--p2p-tcp-port"=${tcpport}" \\
--rpc-port"=${rpcport}" \\
--monitoring-port"=${monitorport}" \\
--grpc-gateway-port"=${rpcgatewayport}" \\
--p2p-local-ip 127.0.0.1 \\
--bootstrap-node=$BASEDIR/artifacts/bootnode.yaml \\
--subscribe-all-subnets \\
--verbosity=debug
+--datadir=$BASEDIR/node-$i \\
+--genesis-state=$BASEDIR/artifacts/genesis$minimal_suffix.ssz \\
+--chain-config-file=$BASEDIR/artifacts/config$minimal_suffix.yml \\
+--config-file=$BASEDIR/artifacts/config$minimal_suffix.yml \\
+--min-sync-peers=0 \\
+--execution-endpoint=http://localhost:${authport} \\
+--accept-terms-of-use \\
+--jwt-secret=\$KAIROS_PATH/jwtsecret \\
+--contract-deployment-block=0 \\
+--p2p-udp-port"=${udpport}" \\
+--p2p-tcp-port"=${tcpport}" \\
+--rpc-port"=${rpcport}" \\
+--monitoring-port"=${monitorport}" \\
+--grpc-gateway-port"=${rpcgatewayport}" \\
+--p2p-local-ip 127.0.0.1 \\
+--bootstrap-node=$BASEDIR/artifacts/bootnode.yaml \\
+--subscribe-all-subnets \\
+--log-file "${BASEDIR}/logs/chronos-${i}.log" \\
+--log-rotate=true \\
+--verbosity=debug
 EOF
 
     # Make the new shell script executable
