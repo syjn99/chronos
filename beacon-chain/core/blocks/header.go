@@ -3,7 +3,11 @@ package blocks
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"fmt"
+
+	cTime "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
+	"github.com/sirupsen/logrus"
 
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
@@ -109,6 +113,60 @@ func ProcessBlockHeaderNoVerify(
 		return nil, err
 	}
 	if proposerIndex != idx {
+		currentEpoch := cTime.CurrentEpoch(beaconState)
+		lookAheadEpoch := currentEpoch + params.BeaconConfig().EpochsPerHistoricalVector - params.BeaconConfig().MinSeedLookahead - 1
+		randaoMix, err := beaconState.RandaoMixAtIndex(uint64(lookAheadEpoch % params.BeaconConfig().EpochsPerHistoricalVector))
+		if err != nil {
+			return nil, fmt.Errorf("proposer index: %d is different than calculated: %d", proposerIndex, idx)
+		}
+
+		p := logrus.Fields{
+			"genesisTime":           beaconState.GenesisTime(),
+			"genesisValidatorsRoot": hex.EncodeToString(beaconState.GenesisValidatorsRoot()),
+			"slot":                  beaconState.Slot(),
+			"fork": logrus.Fields{
+				"previousVersion": hex.EncodeToString(beaconState.Fork().PreviousVersion),
+				"currentVersion":  hex.EncodeToString(beaconState.Fork().CurrentVersion),
+				"epoch":           beaconState.Fork().Epoch,
+			},
+			"latestBlockHeader": logrus.Fields{
+				"slot":          beaconState.LatestBlockHeader().Slot,
+				"proposerIndex": beaconState.LatestBlockHeader().ProposerIndex,
+				"parentRoot":    hex.EncodeToString(beaconState.LatestBlockHeader().ParentRoot),
+				"stateRoot":     hex.EncodeToString(beaconState.LatestBlockHeader().StateRoot),
+				"bodyRoot":      hex.EncodeToString(beaconState.LatestBlockHeader().BodyRoot),
+			},
+			"eth1Data": logrus.Fields{
+				"depositRoot":  hex.EncodeToString(beaconState.Eth1Data().DepositRoot),
+				"depositCount": beaconState.Eth1Data().DepositCount,
+				"blockHash":    hex.EncodeToString(beaconState.Eth1Data().BlockHash),
+			},
+			"eth1DepositIndex":  beaconState.Eth1DepositIndex(),
+			"validatorSize":     len(beaconState.Validators()),
+			"justificationBits": beaconState.JustificationBits(),
+			"prevJustifiedCheckpoint": logrus.Fields{
+				"epoch": beaconState.PreviousJustifiedCheckpoint().Epoch,
+				"root":  hex.EncodeToString(beaconState.PreviousJustifiedCheckpoint().Root),
+			},
+			"currentJustifiedCheckpoint": logrus.Fields{
+				"epoch": beaconState.CurrentJustifiedCheckpoint().Epoch,
+				"root":  hex.EncodeToString(beaconState.CurrentJustifiedCheckpoint().Root),
+			},
+			"finalizedCheckpoint": logrus.Fields{
+				"epoch": beaconState.FinalizedCheckpoint().Epoch,
+				"root":  hex.EncodeToString(beaconState.FinalizedCheckpoint().Root),
+			},
+		}
+
+		log.WithFields(p).Error("incorrect proposer index parent state info")
+
+		l := logrus.Fields{
+			"currentEpoch":   currentEpoch,
+			"lookAheadEpoch": lookAheadEpoch,
+			"randaoMix":      hex.EncodeToString(randaoMix),
+		}
+
+		log.WithFields(l).Error("incorrect proposer index randaoMix info")
 		return nil, fmt.Errorf("proposer index: %d is different than calculated: %d", proposerIndex, idx)
 	}
 	parentHeader := beaconState.LatestBlockHeader()
