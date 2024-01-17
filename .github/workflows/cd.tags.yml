@@ -30,7 +30,7 @@ jobs:
     needs: extract_name
     strategy:
       matrix:
-        symbol-list: [chronos_osx_amd64, chronos_osx_arm64, chronos_windows, chronos_osx_amd64_minimal, chronos_osx_arm64_minimal, chronos_windows_minimal, chronos_linux_amd64, chronos_linux_amd64_minimal, chronos_linux_arm64, chronos_linux_arm64_minimal]
+        symbol-list:  [chronos_osx_amd64, chronos_osx_arm64, chronos_windows, chronos_linux_amd64,chronos_linux_arm64]
     uses: ./.github/workflows/dist.upload.yml
     name: build
     with:
@@ -72,15 +72,19 @@ jobs:
         with:
           name: chronos-dist-${{ github.sha }}-chronos_windows
           path: dist/bin
-      - run: gzip dist/bin/win/chronos.exe
-      - run: gzip dist/bin/win/validator.exe
+      - name: Download linux artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_linux_amd64
+          path: dist/bin
       - name: Download osx artifact
         uses: actions/download-artifact@v3
         with:
           name: chronos-dist-${{ github.sha }}-chronos_osx
           path: dist/bin
-      - run: gzip dist/bin/mac/chronos
-      - run: gzip dist/bin/mac/validator
+      - run: mv dist/bin/linux/amd64/chronos dist/bin/linux/chronos
+      - run: mv dist/bin/linux/amd64/validator dist/bin/linux/validator
+      - run: rm -rf dist/bin/linux/amd64
       - run: zip -r dist/over-node-chronos.zip dist/bin
       - name: Upload to AWS S3
         run: |
