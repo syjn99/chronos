@@ -19,9 +19,12 @@ import (
 	iface "github.com/prysmaticlabs/prysm/v4/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/derived"
+	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+var tempPassword = "temp-password"
 
 // ListAccounts allows retrieval of validating keys and their petnames
 // for a user's wallet via RPC.
@@ -192,6 +195,104 @@ func (s *Server) CreateDepositDataList(ctx context.Context, req *pb.ListDepositD
 
 	return &pb.ListDepositDataResponse{
 		DepositDataList: datas,
+	}, nil
+}
+
+func (s *Server) ImportAccounts(ctx context.Context, req *pb.ImportAccountsRequest) (*pb.ImportAccountsResponse, error) {
+	s.rpcMutex.Lock()
+	defer s.rpcMutex.Unlock()
+	if !s.isOverNode {
+		log.Debug("ImportAccounts was called when over node flag disabled")
+		return nil, status.Error(codes.NotFound, "Only available in over node flag enabled")
+	}
+	if s.validatorService == nil {
+		log.Debug("ImportAccounts was called when validator service is not opened")
+		return nil, status.Error(codes.Unavailable, "Validator Service is Not Opened")
+	}
+	if s.wallet == nil {
+		log.Debug("ImportAccounts was called when wallet is not opened")
+		return nil, status.Error(codes.Unavailable, "Wallet is Not Opened")
+	}
+	if !s.walletInitialized {
+		return nil, status.Error(codes.FailedPrecondition, "Wallet not yet initialized")
+	}
+	if len(req.PrivateKeys) == 0 {
+		log.Debug("ImportAccounts was called with empty Deposit Data")
+		return nil, status.Error(codes.InvalidArgument, "Deposit Data Keys is Empty")
+	}
+	km, err := s.validatorService.Keymanager()
+	if err != nil {
+		log.WithError(err).Error("Could not get keymanager")
+		return nil, status.Error(codes.Internal, "Could not get keymanager")
+	}
+
+	importer, ok := km.(keymanager.Importer)
+	if !ok {
+		log.WithError(err).Error("Keymanager cannot import local keys")
+		return nil, status.Error(codes.Internal, "Keymanager cannot import local keys")
+	}
+
+	// Decrypt PrivateKeys with cipherKey
+	secretKeys := make([]bls.SecretKey, 0)
+	for _, encodedPrivateKey := range req.PrivateKeys {
+		privateKey, err := hexutil.Decode(encodedPrivateKey)
+		if err != nil {
+			log.Debug("Could not decrypt private key", err)
+			return nil, status.Error(codes.InvalidArgument, "Could not decrypt private key")
+		}
+		decryptedPrivateKey, err := aes.Decrypt(s.cipherKey, privateKey)
+		if err != nil {
+			log.Debug("Could not decrypt private key", err)
+			return nil, status.Error(codes.InvalidArgument, "Could not decrypt private key")
+		}
+
+		secretKey, err := bls.SecretKeyFromBytes(decryptedPrivateKey)
+		if err != nil {
+			log.Debug("Could not decrypt private key", err)
+			return nil, status.Error(codes.InvalidArgument, "Could not decrypt private key")
+		}
+		secretKeys = append(secretKeys, secretKey)
+	}
+
+	// Make keystore for each secret key
+	keystores := make([]*keymanager.Keystore, len(secretKeys))
+	passwords := make([]string, len(secretKeys))
+	encryptor := keystorev4.New()
+	for i := 0; i < len(secretKeys); i++ {
+		pubkey := secretKeys[i].PublicKey()
+		cryptoFields, err := encryptor.Encrypt(secretKeys[i].Marshal(), tempPassword)
+		if err != nil {
+			log.WithError(err).Error("Could not encrypt secret key when wrapping it in a keystore")
+			return nil, status.Error(codes.Internal, "Could not encrypt secret key when wrapping it in a keystore")
+		}
+		k := &keymanager.Keystore{
+			Crypto:      cryptoFields,
+			ID:          fmt.Sprint(i), // temporary keystore ID
+			Pubkey:      fmt.Sprintf("%x", pubkey.Marshal()),
+			Version:     encryptor.Version(),
+			Description: encryptor.Name(),
+		}
+		keystores[i] = k
+		passwords[i] = tempPassword
+	}
+
+	statuses, err := importer.ImportKeystores(ctx, keystores, passwords)
+	if err != nil {
+		log.WithError(err).Error("Could not import keys", err)
+		return nil, status.Error(codes.Internal, "Could not import keys")
+	}
+
+	// Map the statuses to the response
+	importedStatuses := make([]*pb.ImportKeystoreStatus, len(statuses))
+	for i, status := range statuses {
+		importedStatuses[i] = &pb.ImportKeystoreStatus{
+			PublicKey: "0x" + keystores[i].Pubkey,
+			Status:    status,
+		}
+	}
+
+	return &pb.ImportAccountsResponse{
+		Data: importedStatuses,
 	}, nil
 }
 

@@ -1,6 +1,7 @@
 syntax = "proto3";
 package ethereum.validator.accounts.v2;
 
+import "proto/eth/service/key_management.proto";
 import "proto/prysm/v1alpha1/health.proto";
 import "proto/prysm/v1alpha1/beacon_chain.proto";
 import "proto/prysm/v1alpha1/node.proto";
@@ -19,33 +20,6 @@ option php_namespace = "Ethereum\\Validator\\Accounts\\V2";
 // Wallet creation will need to be done through CLI when the Prysm UI is fully removed.
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
 service Wallet {
-//    rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {
-//        option deprecated = true;
-//        option (google.api.http) = {
-//            post: "/v2/validator/wallet/create",
-//            body: "*"
-//        };
-//    }
-//    rpc WalletConfig(google.protobuf.Empty) returns (WalletResponse) {
-//        option deprecated = true;
-//        option (google.api.http) = {
-//            get: "/v2/validator/wallet"
-//        };
-//    }
-//    rpc ValidateKeystores(ValidateKeystoresRequest) returns (google.protobuf.Empty) {
-//        option deprecated = true;
-//        option (google.api.http) = {
-//            post: "/v2/validator/wallet/keystores/validate",
-//            body: "*"
-//        };
-//    }
-//    rpc RecoverWallet(RecoverWalletRequest) returns (CreateWalletResponse) {
-//        option deprecated = true;
-//        option (google.api.http) = {
-//            post: "/v2/validator/wallet/recover"
-//            body: "*"
-//        };
-//    }
     // OverNode
     rpc InitializeDerivedWallet(InitializeDerivedWalletRequest) returns (InitializeDerivedWalletResponse) {
         option deprecated = true;
@@ -54,6 +28,7 @@ service Wallet {
             body: "*"
         };
     }
+
 }
 
 message InitializeDerivedWalletRequest {
@@ -76,21 +51,6 @@ service Accounts {
             get: "/v2/validator/accounts"
         };
     }
-//    rpc BackupAccounts(BackupAccountsRequest) returns (BackupAccountsResponse) {
-//        option deprecated = true;
-//        option (google.api.http) = {
-//            post: "/v2/validator/accounts/backup",
-//            body: "*"
-//        };
-//    }
-//    rpc VoluntaryExit(VoluntaryExitRequest) returns (VoluntaryExitResponse) {
-//        option deprecated = true;
-//        option (google.api.http) = {
-//            post: "/v2/validator/accounts/voluntary-exit",
-//            body: "*"
-//        };
-//    }
-
     // OVER-NODE
     rpc CreateAccountsAndDepositData(CreateAccountsRequest) returns (ListDepositDataResponse) {
       option deprecated = false;
@@ -107,7 +67,29 @@ service Accounts {
           body: "*"
       };
     }
+
+    rpc ImportAccounts(ImportAccountsRequest) returns (ImportAccountsResponse) {
+      option deprecated = false;
+      option (google.api.http) = {
+          post: "/v2/validator/accounts/import"
+          body: "*"
+      };
+    }
 }
+
+message ImportAccountsRequest {
+    repeated string private_keys = 1;
+}
+
+message ImportAccountsResponse {
+    repeated ImportKeystoreStatus data = 1;
+}
+
+message ImportKeystoreStatus {
+    string public_key = 1;
+    eth.service.ImportedKeystoreStatus status = 2;
+}
+
 
 message CreateAccountsRequest {
   string password = 1;
@@ -244,6 +226,12 @@ service Health {
             get: "/v2/validator/health/logs/validator/stream"
         };
     }
+
+    rpc GetStatus(google.protobuf.Empty) returns (OverNodeHealthCheckResponse) {
+        option (google.api.http) = {
+            get: "/v2/validator/health/status"
+        };
+    }
 }
 
 // Web APIs such as the Keymanager APIs will no longer validate JWTs on the endpoint. Users should no longer expose the validator APIs to the public.
@@ -265,6 +253,13 @@ enum KeymanagerKind {
     IMPORTED = 1;
     REMOTE = 2;
     WEB3SIGNER = 3;
+}
+
+message OverNodeHealthCheckResponse {
+    bool is_connected_with_beacon_node = 1;
+    bool is_beacon_node_syncing = 2;
+    bool is_wallet_initialized = 3;
+    bool can_initialize_wallet = 4;
 }
 
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
@@ -429,22 +424,6 @@ message HasWalletResponse {
     option deprecated = true;
     // Whether or not the user has a wallet on disk.
     bool wallet_exists = 1;
-}
-
-// DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
-message ImportAccountsRequest {
-    option deprecated = true;
-    // JSON-encoded keystore files to import during wallet creation.
-    repeated string keystores_imported = 1;
-
-    // Password to unlock imported keystore files.
-    string keystores_password = 2;
-}
-
-// DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
-message ImportAccountsResponse {
-    option deprecated = true;
-    repeated bytes imported_public_keys = 1;
 }
 
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.

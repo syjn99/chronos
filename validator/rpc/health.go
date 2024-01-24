@@ -60,6 +60,42 @@ func (s *Server) GetVersion(ctx context.Context, _ *emptypb.Empty) (*validatorpb
 	}, nil
 }
 
+// Only used by OverNode
+func (s *Server) GetStatus(ctx context.Context, _ *emptypb.Empty) (*validatorpb.OverNodeHealthCheckResponse, error) {
+	s.rpcMutex.Lock()
+	defer s.rpcMutex.Unlock()
+	if !s.isOverNode {
+		log.Debug("GetStatus was called when over node flag disabled")
+		return nil, status.Error(codes.NotFound, "Only available in over node flag enabled")
+	}
+	var isConnectionWithBeaconNode bool
+	var isBeaconNodeSyncing bool
+
+	syncStatus, err := s.syncChecker.Syncing(ctx)
+	if err != nil || s.validatorService.Status() != nil {
+		isConnectionWithBeaconNode = false
+		isBeaconNodeSyncing = false
+	} else {
+		isConnectionWithBeaconNode = true
+		isBeaconNodeSyncing = syncStatus
+	}
+
+	isWalletInitialized := s.walletInitialized
+	var canInitializeWallet bool
+	if !isWalletInitialized && s.validatorService != nil {
+		canInitializeWallet = s.validatorService.IsWaitingKeyManagerInitialization()
+	} else {
+		canInitializeWallet = false
+	}
+
+	return &validatorpb.OverNodeHealthCheckResponse{
+		IsConnectedWithBeaconNode: isConnectionWithBeaconNode,
+		IsBeaconNodeSyncing:       isBeaconNodeSyncing,
+		IsWalletInitialized:       isWalletInitialized,
+		CanInitializeWallet:       canInitializeWallet,
+	}, nil
+}
+
 // StreamBeaconLogs from the beacon node via a gRPC server-side stream.
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
 func (s *Server) StreamBeaconLogs(req *emptypb.Empty, stream validatorpb.Health_StreamBeaconLogsServer) error {

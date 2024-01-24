@@ -5,7 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/prysmaticlabs/prysm/v4/cmd/validator/flags"
+	"github.com/prysmaticlabs/prysm/v4/crypto/aes"
+	ethpbservice "github.com/prysmaticlabs/prysm/v4/proto/eth/service"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
 	"github.com/prysmaticlabs/prysm/v4/testing/assert"
 	"github.com/prysmaticlabs/prysm/v4/testing/require"
@@ -201,3 +204,72 @@ func TestServer_ListAccounts(t *testing.T) {
 
 // 	// 5. Test When pubkey is not in our keymanager
 // }
+
+func TestImportAccount(t *testing.T) {
+	// initialize setting
+	ctx := context.Background()
+	localWalletDir := setupWalletDir(t)
+	defaultWalletPath = localWalletDir
+
+	opts := []accounts.Option{
+		accounts.WithWalletDir(defaultWalletPath),
+		accounts.WithKeymanagerType(keymanager.Derived),
+		accounts.WithWalletPassword(strongPass),
+		accounts.WithSkipMnemonicConfirm(true),
+	}
+
+	acc, err := accounts.NewCLIManager(opts...)
+	require.NoError(t, err)
+	w, err := acc.WalletCreate(ctx)
+	require.NoError(t, err)
+	km, err := w.InitializeKeymanager(ctx, iface.InitKeymanagerConfig{ListenForChanges: false})
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Wallet: w,
+		Validator: &mock.MockValidator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	// Generate a cipher key
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+
+	// Encrypt the private key using the cipher key
+	privateKey, err := hexutil.Decode("0x13f5347b11740bfaf3625d766d6f55762b68fcffa79f857e5ee8b731831cb4d3")
+	require.NoError(t, err)
+
+	encryptedPrivateKey, err := aes.Encrypt(cipher, privateKey)
+	require.NoError(t, err)
+
+	s := Server{
+		walletInitialized: true,
+		isOverNode:        true,
+		validatorService:  vs,
+		wallet:            w,
+		cipherKey:         cipher,
+	}
+
+	// Create a mock request
+	encryptedPrivateKeys := []string{hexutil.Encode(encryptedPrivateKey)} // Use the encrypted private key
+
+	req := &pb.ImportAccountsRequest{
+		PrivateKeys: encryptedPrivateKeys,
+	}
+	expected := &pb.ImportAccountsResponse{
+		Data: []*pb.ImportKeystoreStatus{
+			&pb.ImportKeystoreStatus{
+				PublicKey: "0xabbca58352c3ca208aa72a0231aa16b22015f3309d22d5b82ea1fa27137a00499025d7162bdd822c85856338120ce052",
+				Status: &ethpbservice.ImportedKeystoreStatus{
+					Status:  ethpbservice.ImportedKeystoreStatus_IMPORTED,
+					Message: "",
+				},
+			},
+		},
+	}
+
+	actual, err := s.ImportAccounts(ctx, req)
+	require.NoError(t, err)
+	assert.DeepEqual(t, expected, actual, "handler returned unexpected body")
+}
