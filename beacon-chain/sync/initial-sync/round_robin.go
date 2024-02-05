@@ -43,9 +43,19 @@ func (s *Service) roundRobinSync(genesis time.Time) error {
 
 	s.counter = ratecounter.NewRateCounter(counterSeconds * time.Second)
 
+	// Set up initial sync start slot metric.
+	initialSyncSlot := s.cfg.Chain.HeadSlot()
+	setInitialSyncStartSlotMetric(float64(initialSyncSlot))
+
 	// Step 1 - Sync to end of finalized epoch.
 	if err := s.syncToFinalizedEpoch(ctx, genesis); err != nil {
 		return err
+	}
+	// Calculate real amount of slot received during initial sync
+	// To make calculations more accurate even when invalid blocks were received
+	receivedAmount, err := s.cfg.Chain.HeadSlot().SafeSubSlot(initialSyncSlot)
+	if err == nil {
+		setInitialSyncReceivedBlocksMetric(float64(receivedAmount))
 	}
 
 	// Already at head, no need for 2nd phase.

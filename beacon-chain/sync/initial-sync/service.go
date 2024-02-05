@@ -161,6 +161,8 @@ func (s *Service) Resync() error {
 	defer func() { s.synced.Set() }()                       // Reset it at the end of the method.
 	genesis := time.Unix(int64(headState.GenesisTime()), 0) // lint:ignore uintcast -- Genesis time will not exceed int64 in your lifetime.
 
+	resetInitialSyncMetrics()
+
 	s.waitForMinimumPeers()
 	if err = s.roundRobinSync(genesis); err != nil {
 		log = log.WithError(err)
@@ -170,6 +172,8 @@ func (s *Service) Resync() error {
 }
 
 func (s *Service) waitForMinimumPeers() {
+	updateWaitForMinimumPeersMetric(true)
+	defer updateWaitForMinimumPeersMetric(false)
 	required := params.BeaconConfig().MaxPeersToSync
 	if flags.Get().MinimumSyncPeers < required {
 		required = flags.Get().MinimumSyncPeers

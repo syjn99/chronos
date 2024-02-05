@@ -63,6 +63,8 @@ func (f *blocksFetcher) selectFailOverPeer(excludedPID peer.ID, peers []peer.ID)
 
 // waitForMinimumPeers spins and waits up until enough peers are available.
 func (f *blocksFetcher) waitForMinimumPeers(ctx context.Context) ([]peer.ID, error) {
+	updateWaitForMinimumPeersMetric(true)
+	defer updateWaitForMinimumPeersMetric(false)
 	required := params.BeaconConfig().MaxPeersToSync
 	if flags.Get().MinimumSyncPeers < required {
 		required = flags.Get().MinimumSyncPeers

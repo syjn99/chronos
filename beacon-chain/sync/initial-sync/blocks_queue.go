@@ -333,6 +333,9 @@ func (q *blocksQueue) onDataReceivedEvent(ctx context.Context) eventHandlerFn {
 		}
 		m.pid = response.pid
 		m.blocks = response.blocks
+		if response.blocks != nil && len(response.blocks) > 0 {
+			updateInitialSyncReceivedBlocksMetric(float64(len(response.blocks)))
+		}
 		return stateDataParsed, nil
 	}
 }
