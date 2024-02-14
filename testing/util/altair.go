@@ -43,26 +43,6 @@ func DeterministicGenesisStateAltair(t testing.TB, numValidators uint64) (state.
 	return beaconState, privKeys
 }
 
-// TODO(john): Temporary 8x balance because validator ejected when testing. Remove this after tokenomics updated.
-// DeterministicGenesisStateAltairWith8xBalance returns a genesis state in hard fork 1 format made using the deterministic deposits.
-// Same as DeterministicGenesisStateAltair but with 8x balance.
-func DeterministicGenesisStateAltairWith8xBalance(t testing.TB, numValidators uint64) (state.BeaconState, []bls.SecretKey) {
-	deposits, privKeys, err := DeterministicDeposits8xBalanceAndKeys(numValidators)
-	if err != nil {
-		t.Fatal(errors.Wrapf(err, "failed to get %d deposits", numValidators))
-	}
-	eth1Data, err := DeterministicEth1Data(len(deposits))
-	if err != nil {
-		t.Fatal(errors.Wrapf(err, "failed to get eth1data for %d deposits", numValidators))
-	}
-	beaconState, err := GenesisBeaconState(context.Background(), deposits, uint64(0), eth1Data)
-	if err != nil {
-		t.Fatal(errors.Wrapf(err, "failed to get genesis beacon state of %d validators", numValidators))
-	}
-	resetCache()
-	return beaconState, privKeys
-}
-
 // GenesisBeaconState returns the genesis beacon state.
 func GenesisBeaconState(ctx context.Context, deposits []*ethpb.Deposit, genesisTime uint64, eth1Data *ethpb.Eth1Data) (state.BeaconState, error) {
 	st, err := emptyGenesisState()

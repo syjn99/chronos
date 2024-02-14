@@ -82,6 +82,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	MaxCommitteesPerSlot:           64,
 	MinPerEpochChurnLimit:          4,
 	ChurnLimitQuotient:             1 << 16,
+	ChurnLimitBias:                 1,
 	ShuffleRoundCount:              90,
 	MinGenesisActiveValidatorCount: 16384,
 	MinGenesisTime:                 1606824000, // Dec 1, 2020, 12pm UTC.
@@ -89,8 +90,13 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	HysteresisQuotient:             4,
 	HysteresisDownwardMultiplier:   1,
 	HysteresisUpwardMultiplier:     5,
-	IssuanceRate:                   [11]uint64{625, 575, 525, 475, 425, 375, 325, 275, 225, 175, 150},
-	IssuancePrecision:              100,
+	IssuanceRate:                   [11]uint64{20, 55, 75, 65, 50, 40, 30, 25, 23, 17, 15},
+	IssuancePrecision:              10,
+	DepositPlanEarlySlope:          uint64((700000-20000)*256*1e9) / (82125 * 2),
+	DepositPlanEarlyOffset:         20000 * 256 * 1e9,
+	DepositPlanLaterSlope:          uint64((1000000-700000)*256*1e9) / (82125 * 4),
+	DepositPlanLaterOffset:         1100000 * 128 * 1e9,
+	DepositPlanFinal:               1000000 * 256 * 1e9,
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,

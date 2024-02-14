@@ -338,7 +338,7 @@ func TestActiveValidatorCount_Genesis(t *testing.T) {
 	assert.Equal(t, uint64(c), validatorCount, "Did not get the correct validator count")
 }
 
-func TestChurnLimit_OK(t *testing.T) {
+func TestNoBiasChurnLimit_OK(t *testing.T) {
 	tests := []struct {
 		validatorCount int
 		wantedChurn    uint64
@@ -367,7 +367,51 @@ func TestChurnLimit_OK(t *testing.T) {
 		require.NoError(t, err)
 		validatorCount, err := ActiveValidatorCount(context.Background(), beaconState, time.CurrentEpoch(beaconState))
 		require.NoError(t, err)
-		resultChurn, err := ValidatorChurnLimit(validatorCount)
+		resultChurn, err := ValidatorNoBiasChurnLimit(validatorCount)
+		require.NoError(t, err)
+		assert.Equal(t, test.wantedChurn, resultChurn, "ValidatorChurnLimit(%d)", test.validatorCount)
+	}
+}
+
+func TestChurnLimit_OK(t *testing.T) {
+	tests := []struct {
+		validatorCount int
+		epoch          primitives.Epoch
+		isExit         bool
+		wantedChurn    uint64
+	}{
+		{validatorCount: 175050, epoch: 41063, isExit: false, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 175050, epoch: 41063, isExit: true, wantedChurn: 4},    // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 175051, epoch: 41063, isExit: false, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 175051, epoch: 41063, isExit: true, wantedChurn: 5},    // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 812500, epoch: 287438, isExit: false, wantedChurn: 13}, // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 812500, epoch: 287438, isExit: true, wantedChurn: 12},  // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 812501, epoch: 287438, isExit: false, wantedChurn: 12}, // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 812501, epoch: 287438, isExit: true, wantedChurn: 13},  // exit_churn when deposit > plan = chrun_limit++
+	}
+	defer ClearCache()
+	for _, test := range tests {
+		ClearCache()
+
+		validators := make([]*ethpb.Validator, test.validatorCount)
+		for i := 0; i < len(validators); i++ {
+			validators[i] = &ethpb.Validator{
+				EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance,
+				ExitEpoch:        params.BeaconConfig().FarFutureEpoch,
+			}
+		}
+
+		beaconState, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			Slot:        1,
+			Validators:  validators,
+			RandaoMixes: make([][]byte, params.BeaconConfig().EpochsPerHistoricalVector),
+		})
+		require.NoError(t, err)
+		validatorCount, err := ActiveValidatorCount(context.Background(), beaconState, time.CurrentEpoch(beaconState))
+		require.NoError(t, err)
+		validatorDeposit, err := TotalActiveBalance(beaconState)
+		require.NoError(t, err)
+		resultChurn, err := ValidatorChurnLimit(validatorCount, validatorDeposit, test.epoch, test.isExit)
 		require.NoError(t, err)
 		assert.Equal(t, test.wantedChurn, resultChurn, "ValidatorChurnLimit(%d)", test.validatorCount)
 	}

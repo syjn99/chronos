@@ -206,8 +206,28 @@ func ActivationExitEpoch(epoch primitives.Epoch) primitives.Epoch {
 	return epoch + 1 + params.BeaconConfig().MaxSeedLookahead
 }
 
+// ValidatorNoBiasChurnLimit returns the number of validators that are allowed to
+// enter and exit validator pool for an epoch regardless of target_deposit.
+//
+// Spec pseudocode definition:
+//
+//	def get_validator_no_bias_churn_limit(state: BeaconState) -> uint64:
+//	 """
+//	 Return the validator churn limit for the current epoch.
+//	 """
+//	 active_validator_indices = get_active_validator_indices(state, get_current_epoch(state))
+//	 return max(MIN_PER_EPOCH_CHURN_LIMIT, uint64(len(active_validator_indices)) // CHURN_LIMIT_QUOTIENT)
+func ValidatorNoBiasChurnLimit(activeValidatorCount uint64) (uint64, error) {
+	cfg := params.BeaconConfig()
+	churnLimit := activeValidatorCount / cfg.ChurnLimitQuotient
+	if churnLimit < cfg.MinPerEpochChurnLimit {
+		churnLimit = cfg.MinPerEpochChurnLimit
+	}
+	return churnLimit, nil
+}
+
 // ValidatorChurnLimit returns the number of validators that are allowed to
-// enter and exit validator pool for an epoch.
+// enter and exit validator pool for an epoch with bias calculated by target_deposit.
 //
 // Spec pseudocode definition:
 //
@@ -215,12 +235,26 @@ func ActivationExitEpoch(epoch primitives.Epoch) primitives.Epoch {
 //	 """
 //	 Return the validator churn limit for the current epoch.
 //	 """
-//	 active_validator_indices = get_active_validator_indices(state, get_current_epoch(state))
-//	 return max(MIN_PER_EPOCH_CHURN_LIMIT, uint64(len(active_validator_indices)) // CHURN_LIMIT_QUOTIENT)
-func ValidatorChurnLimit(activeValidatorCount uint64) (uint64, error) {
-	churnLimit := activeValidatorCount / params.BeaconConfig().ChurnLimitQuotient
-	if churnLimit < params.BeaconConfig().MinPerEpochChurnLimit {
-		churnLimit = params.BeaconConfig().MinPerEpochChurnLimit
+//	 churn_limit = max(MIN_PER_EPOCH_CHURN_LIMIT, active_validators_number // CHURN_LIMIT_QUOTIENT)
+//
+//	inc_bias = CHURN_LIMIT_BIAS if target_deposit_plan - active_validators_deposit > 0 else 0
+//	dec_bias = CHURN_LIMIT_BIAS if target_deposit_plan - active_validators_deposit < 0 else 0
+//
+//	pending_churn_limit = churn_limit + inc_bias
+//	exit_churn_limit = churn_limit + dec_bias
+//	return pending_churn_limit, exit_churn_limit
+func ValidatorChurnLimit(activeValidatorCount uint64, activeValidatorDeposit uint64, epoch primitives.Epoch, isExit bool) (uint64, error) {
+	cfg := params.BeaconConfig()
+	churnLimit := activeValidatorCount / cfg.ChurnLimitQuotient
+	if churnLimit < cfg.MinPerEpochChurnLimit {
+		churnLimit = cfg.MinPerEpochChurnLimit
+	}
+
+	depositPlan := TargetDepositPlan(epoch)
+	if isExit && depositPlan < activeValidatorDeposit {
+		churnLimit += cfg.ChurnLimitBias
+	} else if !isExit && depositPlan > activeValidatorDeposit {
+		churnLimit += cfg.ChurnLimitBias
 	}
 	return churnLimit, nil
 }

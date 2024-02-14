@@ -29,6 +29,7 @@ type BeaconChainConfig struct {
 	MaxCommitteesPerSlot           uint64     `yaml:"MAX_COMMITTEES_PER_SLOT" spec:"true"`            // MaxCommitteesPerSlot defines the max amount of committee in a single slot.
 	MinPerEpochChurnLimit          uint64     `yaml:"MIN_PER_EPOCH_CHURN_LIMIT" spec:"true"`          // MinPerEpochChurnLimit is the minimum amount of churn allotted for validator rotations.
 	ChurnLimitQuotient             uint64     `yaml:"CHURN_LIMIT_QUOTIENT" spec:"true"`               // ChurnLimitQuotient is used to determine the limit of how many validators can rotate per epoch.
+	ChurnLimitBias                 uint64     `yaml:"CHURN_LIMIT_BIAS" spec:"true"`                   // ChurnLimitBias is a parameter for dynamic churn limit calculation.
 	ShuffleRoundCount              uint64     `yaml:"SHUFFLE_ROUND_COUNT" spec:"true"`                // ShuffleRoundCount is used for retrieving the permuted index.
 	MinGenesisActiveValidatorCount uint64     `yaml:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT" spec:"true"` // MinGenesisActiveValidatorCount defines how many validator deposits needed to kick off beacon chain.
 	MinGenesisTime                 uint64     `yaml:"MIN_GENESIS_TIME" spec:"true"`                   // MinGenesisTime is the time that needed to pass before kicking off beacon chain.
@@ -38,6 +39,11 @@ type BeaconChainConfig struct {
 	HysteresisUpwardMultiplier     uint64     `yaml:"HYSTERESIS_UPWARD_MULTIPLIER" spec:"true"`       // HysteresisUpwardMultiplier defines the hysteresis upward multiplier for effective balance calculations.
 	IssuanceRate                   [11]uint64 `yaml:"ISSUANCE_RATE"`                                  // IssuanceRate defines the issuance rate for the beacon chain.
 	IssuancePrecision              uint64     `yaml:"ISSUANCE_PRECISION"`                             // IssuancePrecision defines the precision of the issuance rate.
+	DepositPlanEarlySlope          uint64     `yaml:"DEPOSIT_PLAN_EARLY_SLOPE" spec:"true"`           // DepositPlanEarlySlope defines the slope of the ~2 year deposit plan.
+	DepositPlanEarlyOffset         uint64     `yaml:"DEPOSIT_PLAN_EARLY_OFFSET" spec:"true"`          // DepositPlanEarlyOffset defines the bias of the ~2 year deposit plan.
+	DepositPlanLaterSlope          uint64     `yaml:"DEPOSIT_PLAN_LATER_SLOPE" spec:"true"`           // DepositPlanLaterSlope defines the slope of the 2~6 year deposit plan.
+	DepositPlanLaterOffset         uint64     `yaml:"DEPOSIT_PLAN_LATER_OFFSET" spec:"true"`          // DepositPlanLaterOffset defines the bias of the 2~6 year deposit plan.
+	DepositPlanFinal               uint64     `yaml:"DEPOSIT_PLAN_FINAL" spec:"true"`                 // DepositPlanFinal defines the final deposit amount after 6 years.
 
 	// Gwei value constants.
 	MinDepositAmount          uint64 `yaml:"MIN_DEPOSIT_AMOUNT" spec:"true"`          // MinDepositAmount is the minimum amount of Gwei a validator can send to the deposit contract at once (lower amounts will be reverted).

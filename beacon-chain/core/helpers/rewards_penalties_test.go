@@ -290,22 +290,52 @@ func TestEpochIssuance(t *testing.T) {
 		e    primitives.Epoch
 		want uint64
 	}{
-		{name: "Issuance of Year 1", e: primitives.Epoch(0), want: 19025875190},                                          // 761035007610
-		{name: "Issuance of Year 2", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear + 1), want: 17503805175},    // 700152207001
-		{name: "Issuance of Year 3", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*2 + 1), want: 15981735159},  // 639269406392
-		{name: "Issuance of Year 4", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*3 + 1), want: 14459665144},  // 578386605783
-		{name: "Issuance of Year 5", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*4 + 1), want: 12937595129},  // 517503805175
-		{name: "Issuance of Year 6", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*5 + 1), want: 11415525114},  // 456621004566
-		{name: "Issuance of Year 7", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*6 + 1), want: 9893455098},   // 395738203957
-		{name: "Issuance of Year 8", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*7 + 1), want: 8371385083},   // 334855403348
-		{name: "Issuance of Year 9", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*8 + 1), want: 6849315068},   // 273972602739
-		{name: "Issuance of Year 10", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*9 + 1), want: 5327245053},  // 213089802130
-		{name: "Issuance of Year 11", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*10 + 1), want: 4566210045}, // 182648401826
-		{name: "Issuance of Year 12", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*11 + 1), want: 4566210045}, // 182648401826
+		{name: "Issuance of Year 1", e: primitives.Epoch(0), want: 243531202435},
+		{name: "Issuance of Year 2", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear + 1), want: 669710806697},
+		{name: "Issuance of Year 3", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*2 + 1), want: 913242009132},
+		{name: "Issuance of Year 4", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*3 + 1), want: 791476407914},
+		{name: "Issuance of Year 5", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*4 + 1), want: 608828006088},
+		{name: "Issuance of Year 6", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*5 + 1), want: 487062404870},
+		{name: "Issuance of Year 7", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*6 + 1), want: 365296803652},
+		{name: "Issuance of Year 8", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*7 + 1), want: 304414003044},
+		{name: "Issuance of Year 9", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*8 + 1), want: 280060882800},
+		{name: "Issuance of Year 10", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*9 + 1), want: 207001522070},
+		{name: "Issuance of Year 11", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*10 + 1), want: 182648401826},
+		{name: "Issuance of Year 12", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear*11 + 1), want: 182648401826},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := EpochIssuance(tt.e)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestTargetDepositPlan(t *testing.T) {
+	tests := []struct {
+		name string
+		e    primitives.Epoch
+		want uint64
+	}{
+		{name: "TargetDepositPlan of Epoch 0 (year 1)", e: primitives.Epoch(0), want: 5120000000000000},
+		{name: "TargetDepositPlan of Epoch 41063 (year 1)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear + 1) / 2), want: 48640529923876874},
+		{name: "TargetDepositPlan of Epoch 82125 (Year 2)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear), want: 92159999999960750},
+		{name: "TargetDepositPlan of Epoch 123188 (Year 2)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*3 + 1) / 2), want: 135680529923837624},
+		{name: "TargetDepositPlan of Epoch 164250 (Year 3)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 2), want: 179199999999852250},
+		{name: "TargetDepositPlan of Epoch 205313 (Year 3)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*5 + 1) / 2), want: 188800116894792481},
+		{name: "TargetDepositPlan of Epoch 246375 (Year 4)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 3), want: 198399999999778375},
+		{name: "TargetDepositPlan of Epoch 287438 (Year 4)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*7 + 1) / 2), want: 208000116894718606},
+		{name: "TargetDepositPlan of Epoch 328500 (Year 5)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 4), want: 217599999999704500},
+		{name: "TargetDepositPlan of Epoch 369563 (Year 5)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*9 + 1) / 2), want: 227200116894644731},
+		{name: "TargetDepositPlan of Epoch 410625 (Year 6)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 5), want: 236799999999630625},
+		{name: "TargetDepositPlan of Epoch 451688 (Year 6)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*11 + 1) / 2), want: 246400116894570856},
+		{name: "TargetDepositPlan of Epoch 492750 (Year 7)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 6), want: 256000000 * 1e9},
+		{name: "TargetDepositPlan of Epoch 533813 (Year 7)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*13 + 1) / 2), want: 256000000 * 1e9},
+		{name: "TargetDepositPlan of Epoch 574875 (Year 8)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 7), want: 256000000 * 1e9},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := TargetDepositPlan(tt.e)
 			require.Equal(t, tt.want, got)
 		})
 	}

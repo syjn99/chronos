@@ -23,7 +23,7 @@ func MinimalSpecConfig() *BeaconChainConfig {
 
 	// Gwei values
 	minimalConfig.MinDepositAmount = 1e9
-	minimalConfig.MaxEffectiveBalance = 32e9
+	minimalConfig.MaxEffectiveBalance = 256e9
 	minimalConfig.EjectionBalance = 16e9
 	minimalConfig.EffectiveBalanceIncrement = 1e9
 

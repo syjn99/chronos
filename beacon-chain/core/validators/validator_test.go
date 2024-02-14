@@ -342,7 +342,9 @@ func TestExitedValidatorIndices(t *testing.T) {
 		require.NoError(t, err)
 		activeCount, err := helpers.ActiveValidatorCount(context.Background(), s, time.PrevEpoch(s))
 		require.NoError(t, err)
-		exitedIndices, err := ExitedValidatorIndices(0, tt.state.Validators, activeCount)
+		activeDeposit, err := helpers.TotalActiveBalance(s)
+		require.NoError(t, err)
+		exitedIndices, err := ExitedValidatorIndices(0, tt.state.Validators, activeCount, activeDeposit)
 		require.NoError(t, err)
 		assert.DeepEqual(t, tt.wanted, exitedIndices)
 	}

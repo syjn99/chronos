@@ -53,22 +53,22 @@ func setupService(t *testing.T) *Service {
 	}
 	latestPerformance := map[primitives.ValidatorIndex]ValidatorLatestPerformance{
 		1: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
 		2: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
 		12: {
-			balance: 31900000000,
+			balance: 255900000000,
 		},
 		15: {
-			balance: 31900000000,
+			balance: 255900000000,
 		},
 	}
 	aggregatedPerformance := map[primitives.ValidatorIndex]ValidatorAggregatedPerformance{
 		1: {
 			startEpoch:                      0,
-			startBalance:                    31700000000,
+			startBalance:                    25700000000,
 			totalAttestedCount:              12,
 			totalRequestedCount:             15,
 			totalDistance:                   14,

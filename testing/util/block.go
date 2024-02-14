@@ -778,6 +778,12 @@ func HydrateBeaconBlockBodyBellatrix(b *ethpb.BeaconBlockBodyBellatrix) *ethpb.B
 			SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 		}
 	}
+	if b.BailOuts == nil {
+		b.BailOuts = make([]*ethpb.BailOut, 0)
+		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(999),
+		})
+	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayload{
 			ParentHash:     make([]byte, fieldparams.RootLength),
@@ -920,6 +926,12 @@ func HydrateV2BlindedBeaconBlockBodyBellatrix(b *v2.BlindedBeaconBlockBodyBellat
 			SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 		}
 	}
+	if b.BailOuts == nil {
+		b.BailOuts = make([]*v1.BailOut, 0)
+		b.BailOuts = append(b.BailOuts, &v1.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(999),
+		})
+	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeader{
 			ParentHash:       make([]byte, 32),
@@ -986,6 +998,12 @@ func HydrateBeaconBlockBodyCapella(b *ethpb.BeaconBlockBodyCapella) *ethpb.Beaco
 			SyncCommitteeBits:      make([]byte, fieldparams.SyncAggregateSyncCommitteeBytesLength),
 			SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 		}
+	}
+	if b.BailOuts == nil {
+		b.BailOuts = make([]*ethpb.BailOut, 0)
+		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(999),
+		})
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayloadCapella{
@@ -1055,6 +1073,12 @@ func HydrateBlindedBeaconBlockBodyCapella(b *ethpb.BlindedBeaconBlockBodyCapella
 			SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 		}
 	}
+	if b.BailOuts == nil {
+		b.BailOuts = make([]*ethpb.BailOut, 0)
+		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(999),
+		})
+	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeaderCapella{
 			ParentHash:       make([]byte, 32),
@@ -1123,6 +1147,12 @@ func HydrateV2BlindedBeaconBlockBodyCapella(b *v2.BlindedBeaconBlockBodyCapella)
 			SyncCommitteeBits:      make([]byte, 64),
 			SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 		}
+	}
+	if b.BailOuts == nil {
+		b.BailOuts = make([]*v1.BailOut, 0)
+		b.BailOuts = append(b.BailOuts, &v1.BailOut{
+			ValidatorIndex: primitives.ValidatorIndex(999),
+		})
 	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeaderCapella{

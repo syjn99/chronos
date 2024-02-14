@@ -90,7 +90,11 @@ func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primiti
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get active validator count")
 	}
-	churn, err := helpers.ValidatorChurnLimit(activeValidatorCount)
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(s)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not calculate active balance")
+	}
+	churn, err := helpers.ValidatorChurnLimit(activeValidatorCount, activeValidatorDeposit, time.CurrentEpoch(s), true)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get churn limit")
 	}
@@ -235,7 +239,7 @@ func SlashedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validat
 }
 
 // ExitedValidatorIndices determines the indices exited during the current epoch.
-func ExitedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validator, activeValidatorCount uint64) ([]primitives.ValidatorIndex, error) {
+func ExitedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validator, activeValidatorCount uint64, activeValidatorDeposit uint64) ([]primitives.ValidatorIndex, error) {
 	exited := make([]primitives.ValidatorIndex, 0)
 	exitEpochs := make([]primitives.Epoch, 0)
 	for i := 0; i < len(validators); i++ {
@@ -258,7 +262,7 @@ func ExitedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validato
 			exitQueueChurn++
 		}
 	}
-	churn, err := helpers.ValidatorChurnLimit(activeValidatorCount)
+	churn, err := helpers.ValidatorChurnLimit(activeValidatorCount, activeValidatorDeposit, epoch, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get churn limit")
 	}
@@ -276,7 +280,7 @@ func ExitedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validato
 }
 
 // EjectedValidatorIndices determines the indices ejected during the given epoch.
-func EjectedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validator, activeValidatorCount uint64) ([]primitives.ValidatorIndex, error) {
+func EjectedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validator, activeValidatorCount uint64, activeValidatorDeposit uint64) ([]primitives.ValidatorIndex, error) {
 	ejected := make([]primitives.ValidatorIndex, 0)
 	exitEpochs := make([]primitives.Epoch, 0)
 	for i := 0; i < len(validators); i++ {
@@ -299,7 +303,7 @@ func EjectedValidatorIndices(epoch primitives.Epoch, validators []*ethpb.Validat
 			exitQueueChurn++
 		}
 	}
-	churn, err := helpers.ValidatorChurnLimit(activeValidatorCount)
+	churn, err := helpers.ValidatorChurnLimit(activeValidatorCount, activeValidatorDeposit, epoch, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get churn limit")
 	}

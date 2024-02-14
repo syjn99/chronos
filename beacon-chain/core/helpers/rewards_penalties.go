@@ -186,5 +186,17 @@ func EpochIssuance(epoch primitives.Epoch) uint64 {
 	if issuanceRateIndex >= primitives.Epoch(len(cfg.IssuanceRate)) {
 		issuanceRateIndex = primitives.Epoch(len(cfg.IssuanceRate)) - 1
 	}
-	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100) / uint64(40) // TODO(Jay) : erase uint64(40) in mainnet
+	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100)
+}
+
+func TargetDepositPlan(epoch primitives.Epoch) uint64 {
+	cfg := params.BeaconConfig()
+	e := uint64(epoch)
+	if e < cfg.EpochsPerYear*2 {
+		return cfg.DepositPlanEarlySlope*e + cfg.DepositPlanEarlyOffset
+	} else if e < cfg.EpochsPerYear*6 {
+		return cfg.DepositPlanLaterSlope*e + cfg.DepositPlanLaterOffset
+	} else {
+		return cfg.DepositPlanFinal
+	}
 }

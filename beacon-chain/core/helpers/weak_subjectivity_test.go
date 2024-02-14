@@ -24,25 +24,25 @@ func TestWeakSubjectivity_ComputeWeakSubjectivityPeriod(t *testing.T) {
 	}{
 		// Asserting that we get the same numbers as defined in the reference table:
 		// https://github.com/ethereum/consensus-specs/blob/master/specs/phase0/weak-subjectivity.md#calculating-the-weak-subjectivity-period
-		{valCount: 32768, avgBalance: 28, want: 504},
-		{valCount: 65536, avgBalance: 28, want: 752},
-		{valCount: 131072, avgBalance: 28, want: 1248},
-		{valCount: 262144, avgBalance: 28, want: 2241},
-		{valCount: 524288, avgBalance: 28, want: 2241},
-		{valCount: 1048576, avgBalance: 28, want: 2241},
-		{valCount: 32768, avgBalance: 32, want: 665},
-		{valCount: 65536, avgBalance: 32, want: 1075},
-		{valCount: 131072, avgBalance: 32, want: 1894},
-		{valCount: 262144, avgBalance: 32, want: 3532},
-		{valCount: 524288, avgBalance: 32, want: 3532},
-		{valCount: 1048576, avgBalance: 32, want: 3532},
+		{valCount: 32768, avgBalance: 224, want: 504},
+		{valCount: 65536, avgBalance: 224, want: 752},
+		{valCount: 131072, avgBalance: 224, want: 1248},
+		{valCount: 262144, avgBalance: 224, want: 2241},
+		{valCount: 524288, avgBalance: 224, want: 2241},
+		{valCount: 1048576, avgBalance: 224, want: 2241},
+		{valCount: 32768, avgBalance: 256, want: 665},
+		{valCount: 65536, avgBalance: 256, want: 1075},
+		{valCount: 131072, avgBalance: 256, want: 1894},
+		{valCount: 262144, avgBalance: 256, want: 3532},
+		{valCount: 524288, avgBalance: 256, want: 3532},
+		{valCount: 1048576, avgBalance: 256, want: 3532},
 		// Additional test vectors, to check case when T*(200+3*D) >= t*(200+12*D)
-		{valCount: 32768, avgBalance: 22, want: 277},
-		{valCount: 65536, avgBalance: 22, want: 298},
-		{valCount: 131072, avgBalance: 22, want: 340},
-		{valCount: 262144, avgBalance: 22, want: 424},
-		{valCount: 524288, avgBalance: 22, want: 593},
-		{valCount: 1048576, avgBalance: 22, want: 931},
+		{valCount: 32768, avgBalance: 176, want: 277},
+		{valCount: 65536, avgBalance: 176, want: 298},
+		{valCount: 131072, avgBalance: 176, want: 340},
+		{valCount: 262144, avgBalance: 176, want: 424},
+		{valCount: 524288, avgBalance: 176, want: 593},
+		{valCount: 1048576, avgBalance: 176, want: 931},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("valCount: %d, avgBalance: %d", tt.valCount, tt.avgBalance), func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestWeakSubjectivity_IsWithinWeakSubjectivityPeriod(t *testing.T) {
 		{
 			name: "state and checkpoint roots do not match",
 			genWsState: func() state.ReadOnlyBeaconState {
-				beaconState := genState(t, 128, 32)
+				beaconState := genState(t, 128, 256)
 				require.NoError(t, beaconState.SetSlot(42*params.BeaconConfig().SlotsPerEpoch))
 				err := beaconState.SetLatestBlockHeader(&ethpb.BeaconBlockHeader{
 					Slot:      42 * params.BeaconConfig().SlotsPerEpoch,
@@ -90,7 +90,7 @@ func TestWeakSubjectivity_IsWithinWeakSubjectivityPeriod(t *testing.T) {
 			},
 			genWsCheckpoint: func() ([32]byte, [32]byte, primitives.Epoch) {
 				var sr [32]byte
-				copy(sr[:], bytesutil.PadTo([]byte("stateroot2"), 32))
+				copy(sr[:], bytesutil.PadTo([]byte("stateroot2"), 256))
 				return sr, [32]byte{}, 42
 			},
 			wantedErr: fmt.Sprintf("state (%#x) and checkpoint (%#x) roots do not match",
@@ -99,7 +99,7 @@ func TestWeakSubjectivity_IsWithinWeakSubjectivityPeriod(t *testing.T) {
 		{
 			name: "state and checkpoint epochs do not match",
 			genWsState: func() state.ReadOnlyBeaconState {
-				beaconState := genState(t, 128, 32)
+				beaconState := genState(t, 128, 256)
 				require.NoError(t, beaconState.SetSlot(42*params.BeaconConfig().SlotsPerEpoch))
 				err := beaconState.SetLatestBlockHeader(&ethpb.BeaconBlockHeader{
 					Slot:      42 * params.BeaconConfig().SlotsPerEpoch,
@@ -118,7 +118,7 @@ func TestWeakSubjectivity_IsWithinWeakSubjectivityPeriod(t *testing.T) {
 		{
 			name: "no active validators",
 			genWsState: func() state.ReadOnlyBeaconState {
-				beaconState := genState(t, 0, 32)
+				beaconState := genState(t, 0, 256)
 				require.NoError(t, beaconState.SetSlot(42*params.BeaconConfig().SlotsPerEpoch))
 				err := beaconState.SetLatestBlockHeader(&ethpb.BeaconBlockHeader{
 					Slot:      42 * params.BeaconConfig().SlotsPerEpoch,
@@ -138,7 +138,7 @@ func TestWeakSubjectivity_IsWithinWeakSubjectivityPeriod(t *testing.T) {
 			name:  "outside weak subjectivity period",
 			epoch: 300,
 			genWsState: func() state.ReadOnlyBeaconState {
-				beaconState := genState(t, 128, 32)
+				beaconState := genState(t, 128, 256)
 				require.NoError(t, beaconState.SetSlot(42*params.BeaconConfig().SlotsPerEpoch))
 				err := beaconState.SetLatestBlockHeader(&ethpb.BeaconBlockHeader{
 					Slot:      42 * params.BeaconConfig().SlotsPerEpoch,
@@ -158,7 +158,7 @@ func TestWeakSubjectivity_IsWithinWeakSubjectivityPeriod(t *testing.T) {
 			name:  "within weak subjectivity period",
 			epoch: 299,
 			genWsState: func() state.ReadOnlyBeaconState {
-				beaconState := genState(t, 128, 32)
+				beaconState := genState(t, 128, 256)
 				require.NoError(t, beaconState.SetSlot(42*params.BeaconConfig().SlotsPerEpoch))
 				err := beaconState.SetLatestBlockHeader(&ethpb.BeaconBlockHeader{
 					Slot:      42 * params.BeaconConfig().SlotsPerEpoch,

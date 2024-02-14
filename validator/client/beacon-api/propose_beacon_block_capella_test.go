@@ -47,6 +47,7 @@ func TestProposeBeaconBlock_Capella(t *testing.T) {
 					SyncCommitteeBits:      hexutil.Encode(capellaBlock.Capella.Block.Body.SyncAggregate.SyncCommitteeBits),
 					SyncCommitteeSignature: hexutil.Encode(capellaBlock.Capella.Block.Body.SyncAggregate.SyncCommitteeSignature),
 				},
+				BailOuts: JsonifyBailOuts(capellaBlock.Capella.Block.Body.BailOuts),
 				ExecutionPayload: &apimiddleware.ExecutionPayloadCapellaJson{
 					BaseFeePerGas:  bytesutil.LittleEndianBytesToBigInt(capellaBlock.Capella.Block.Body.ExecutionPayload.BaseFeePerGas).String(),
 					BlockHash:      hexutil.Encode(capellaBlock.Capella.Block.Body.ExecutionPayload.BlockHash),

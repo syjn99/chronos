@@ -268,6 +268,14 @@ func V1Alpha1BeaconBlockBellatrixToV2Blinded(v1alpha1Block *ethpbalpha.BeaconBlo
 		}
 	}
 
+	sourceBailOuts := v1alpha1Block.Body.BailOuts
+	resultBailOuts := make([]*ethpbv1.BailOut, len(sourceBailOuts))
+	for i, e := range sourceBailOuts {
+		resultBailOuts[i] = &ethpbv1.BailOut{
+			ValidatorIndex: e.ValidatorIndex,
+		}
+	}
+
 	transactionsRoot, err := ssz.TransactionsRoot(v1alpha1Block.Body.ExecutionPayload.Transactions)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not calculate transactions root")
@@ -290,6 +298,7 @@ func V1Alpha1BeaconBlockBellatrixToV2Blinded(v1alpha1Block *ethpbalpha.BeaconBlo
 			SyncCommitteeBits:      bytesutil.SafeCopyBytes(v1alpha1Block.Body.SyncAggregate.SyncCommitteeBits),
 			SyncCommitteeSignature: bytesutil.SafeCopyBytes(v1alpha1Block.Body.SyncAggregate.SyncCommitteeSignature),
 		},
+		BailOuts: resultBailOuts,
 		ExecutionPayloadHeader: &enginev1.ExecutionPayloadHeader{
 			ParentHash:       bytesutil.SafeCopyBytes(v1alpha1Block.Body.ExecutionPayload.ParentHash),
 			FeeRecipient:     bytesutil.SafeCopyBytes(v1alpha1Block.Body.ExecutionPayload.FeeRecipient),

@@ -154,7 +154,7 @@ func TestService_ReceiveBlock(t *testing.T) {
 func TestService_ReceiveBlockWithBailOut(t *testing.T) {
 	ctx := context.Background()
 
-	genesis, keys := util.DeterministicGenesisStateAltairWith8xBalance(t, 64)
+	genesis, keys := util.DeterministicGenesisStateAltair(t, 64)
 	sCom, err := altair.NextSyncCommittee(ctx, genesis)
 	assert.NoError(t, err)
 	assert.NoError(t, genesis.SetCurrentSyncCommittee(sCom))

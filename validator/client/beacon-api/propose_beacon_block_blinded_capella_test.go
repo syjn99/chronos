@@ -48,6 +48,7 @@ func TestProposeBeaconBlock_BlindedCapella(t *testing.T) {
 					SyncCommitteeBits:      hexutil.Encode(blindedCapellaBlock.BlindedCapella.Block.Body.SyncAggregate.SyncCommitteeBits),
 					SyncCommitteeSignature: hexutil.Encode(blindedCapellaBlock.BlindedCapella.Block.Body.SyncAggregate.SyncCommitteeSignature),
 				},
+				BailOuts: JsonifyBailOuts(blindedCapellaBlock.BlindedCapella.Block.Body.BailOuts),
 				ExecutionPayloadHeader: &apimiddleware.ExecutionPayloadHeaderCapellaJson{
 					BaseFeePerGas:    bytesutil.LittleEndianBytesToBigInt(blindedCapellaBlock.BlindedCapella.Block.Body.ExecutionPayloadHeader.BaseFeePerGas).String(),
 					BlockHash:        hexutil.Encode(blindedCapellaBlock.BlindedCapella.Block.Body.ExecutionPayloadHeader.BlockHash),
@@ -309,6 +310,14 @@ func generateSignedBlindedCapellaBlock() *ethpb.GenericSignedBeaconBlock_Blinded
 					SyncAggregate: &ethpb.SyncAggregate{
 						SyncCommitteeBits:      test_helpers.FillByteSlice(64, 110),
 						SyncCommitteeSignature: test_helpers.FillByteSlice(96, 111),
+					},
+					BailOuts: []*ethpb.BailOut{
+						{
+							ValidatorIndex: 128,
+						},
+						{
+							ValidatorIndex: 129,
+						},
 					},
 					ExecutionPayloadHeader: &enginev1.ExecutionPayloadHeaderCapella{
 						ParentHash:       test_helpers.FillByteSlice(32, 112),

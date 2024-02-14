@@ -1070,7 +1070,7 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 	vals := st.Validators()
 	want := make([]*ethpb.Validators_ValidatorContainer, 0)
 	for i, v := range vals {
-		v.EffectiveBalance = 0x6c088e200
+		v.EffectiveBalance = 0x33ebd5f600
 		want = append(want, &ethpb.Validators_ValidatorContainer{
 			Index:     primitives.ValidatorIndex(i),
 			Validator: v,
@@ -1371,7 +1371,9 @@ func TestServer_GetValidatorQueue_PendingActivation(t *testing.T) {
 	}
 	activeValidatorCount, err := helpers.ActiveValidatorCount(context.Background(), headState, coreTime.CurrentEpoch(headState))
 	require.NoError(t, err)
-	wantChurn, err := helpers.ValidatorChurnLimit(activeValidatorCount)
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(headState)
+	require.NoError(t, err)
+	wantChurn, err := helpers.ValidatorChurnLimit(activeValidatorCount, activeValidatorDeposit, coreTime.CurrentEpoch(headState), true)
 	require.NoError(t, err)
 	assert.Equal(t, wantChurn, res.ChurnLimit)
 	assert.DeepEqual(t, wanted, res.ActivationPublicKeys)
@@ -1413,7 +1415,9 @@ func TestServer_GetValidatorQueue_ExitedValidatorLeavesQueue(t *testing.T) {
 	}
 	activeValidatorCount, err := helpers.ActiveValidatorCount(context.Background(), headState, coreTime.CurrentEpoch(headState))
 	require.NoError(t, err)
-	wantChurn, err := helpers.ValidatorChurnLimit(activeValidatorCount)
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(headState)
+	require.NoError(t, err)
+	wantChurn, err := helpers.ValidatorChurnLimit(activeValidatorCount, activeValidatorDeposit, coreTime.CurrentEpoch(headState), true)
 	require.NoError(t, err)
 	assert.Equal(t, wantChurn, res.ChurnLimit)
 	assert.DeepEqual(t, wanted, res.ExitPublicKeys)
@@ -1473,7 +1477,9 @@ func TestServer_GetValidatorQueue_PendingExit(t *testing.T) {
 	}
 	activeValidatorCount, err := helpers.ActiveValidatorCount(context.Background(), headState, coreTime.CurrentEpoch(headState))
 	require.NoError(t, err)
-	wantChurn, err := helpers.ValidatorChurnLimit(activeValidatorCount)
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(headState)
+	require.NoError(t, err)
+	wantChurn, err := helpers.ValidatorChurnLimit(activeValidatorCount, activeValidatorDeposit, coreTime.CurrentEpoch(headState), true)
 	require.NoError(t, err)
 	assert.Equal(t, wantChurn, res.ChurnLimit)
 	assert.DeepEqual(t, wanted, res.ExitPublicKeys)

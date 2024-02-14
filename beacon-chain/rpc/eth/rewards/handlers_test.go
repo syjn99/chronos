@@ -180,9 +180,9 @@ func TestBlockRewards(t *testing.T) {
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "12", resp.Data.ProposerIndex)
 		//assert.Equal(t, "125089490", resp.Data.Total)
-		assert.Equal(t, "1018579952", resp.Data.Total)
+		assert.Equal(t, "1237823424", resp.Data.Total)
 		//assert.Equal(t, "89442", resp.Data.Attestations)
-		assert.Equal(t, "18579952", resp.Data.Attestations)
+		assert.Equal(t, "237823424", resp.Data.Attestations)
 		//assert.Equal(t, "48", resp.Data.SyncAggregate) // TODO: change after sync committee rewards reverted
 		assert.Equal(t, "0", resp.Data.SyncAggregate)
 		//assert.Equal(t, "62500000", resp.Data.AttesterSlashings)
@@ -264,7 +264,6 @@ func TestAttestationRewards(t *testing.T) {
 		assert.Equal(t, http.StatusOK, writer.Code)
 		resp := &AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
-		//require.Equal(t, 16, len(resp.Data.IdealRewards))
 		require.Equal(t, 32, len(resp.Data.IdealRewards)) // TODO - fix this after tokenomics
 		sum := uint64(0)
 		for _, r := range resp.Data.IdealRewards {
@@ -276,8 +275,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		//assert.Equal(t, uint64(20756849), sum)
-		assert.Equal(t, uint64(11978064552), sum) // TODO - fix this after tokenomics
+		assert.Equal(t, uint64(153319282284), sum) // TODO - fix this after tokenomics
 	})
 	t.Run("ok - filtered vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -306,8 +304,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		//assert.Equal(t, uint64(794265), sum)
-		assert.Equal(t, uint64(246970401), sum) // TODO - fix this after tokenomics
+		assert.Equal(t, uint64(3161222313), sum) // TODO - fix this after tokenomics
 	})
 	t.Run("ok - all vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -330,8 +327,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		//assert.Equal(t, uint64(54221955), sum)
-		assert.Equal(t, uint64(16053076176), sum) // TODO - fix this after tokenomics
+		assert.Equal(t, uint64(205479450456), sum) // TODO - fix this after tokenomics
 	})
 	t.Run("ok - penalty", func(t *testing.T) {
 		st, err := util.NewBeaconStateCapella()
@@ -390,10 +386,8 @@ func TestAttestationRewards(t *testing.T) {
 		resp := &AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "0", resp.Data.TotalRewards[0].Head)
-		//assert.Equal(t, "-432270", resp.Data.TotalRewards[0].Source)
-		assert.Equal(t, "-130059664", resp.Data.TotalRewards[0].Source) // TODO(john) - fix this after tokenomics
-		//assert.Equal(t, "-802788", resp.Data.TotalRewards[0].Target)
-		assert.Equal(t, "-241539377", resp.Data.TotalRewards[0].Target) // TODO(john) - fix this after tokenomics
+		assert.Equal(t, "-1664764030", resp.Data.TotalRewards[0].Source) // TODO(john) - fix this after tokenomics
+		assert.Equal(t, "-3091704627", resp.Data.TotalRewards[0].Target) // TODO(john) - fix this after tokenomics
 	})
 	t.Run("invalid validator index/pubkey", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"

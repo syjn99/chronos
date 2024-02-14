@@ -391,6 +391,7 @@ func (is *infostream) calculateActivationTimeForPendingValidators(res []*ethpb.V
 
 	// Fetch the list of pending validators; count the number of attesting validators.
 	numAttestingValidators := uint64(0)
+	totalEffBalanceAttestingValidators := uint64(0)
 	pendingValidators := make([]primitives.ValidatorIndex, 0, headState.NumValidators())
 
 	err := headState.ReadFromEveryValidator(func(idx int, val state.ReadOnlyValidator) error {
@@ -406,6 +407,7 @@ func (is *infostream) calculateActivationTimeForPendingValidators(res []*ethpb.V
 		}
 		if helpers.IsActiveValidatorUsingTrie(val, epoch) {
 			numAttestingValidators++
+			totalEffBalanceAttestingValidators += val.EffectiveBalance()
 		}
 		return nil
 	})
@@ -422,7 +424,7 @@ func (is *infostream) calculateActivationTimeForPendingValidators(res []*ethpb.V
 
 	// Loop over epochs, roughly simulating progression.
 	for curEpoch := epoch + 1; len(sortedIndices) > 0 && len(pendingValidators) > 0; curEpoch++ {
-		toProcess, err := helpers.ValidatorChurnLimit(numAttestingValidators)
+		toProcess, err := helpers.ValidatorChurnLimit(numAttestingValidators, totalEffBalanceAttestingValidators, curEpoch, false)
 		if err != nil {
 			log.WithError(err).Error("Could not determine validator churn limit")
 		}

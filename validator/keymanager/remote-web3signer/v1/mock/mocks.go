@@ -322,6 +322,11 @@ func GetMockSignRequest(t string) *validatorpb.SignRequest {
 							SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 							SyncCommitteeBits:      MockSyncComitteeBits(),
 						},
+						BailOuts: []*eth.BailOut{
+							{
+								ValidatorIndex: 0,
+							},
+						},
 					},
 				},
 			},

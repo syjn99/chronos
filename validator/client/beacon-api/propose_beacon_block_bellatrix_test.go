@@ -47,6 +47,7 @@ func TestProposeBeaconBlock_Bellatrix(t *testing.T) {
 					SyncCommitteeBits:      hexutil.Encode(bellatrixBlock.Bellatrix.Block.Body.SyncAggregate.SyncCommitteeBits),
 					SyncCommitteeSignature: hexutil.Encode(bellatrixBlock.Bellatrix.Block.Body.SyncAggregate.SyncCommitteeSignature),
 				},
+				BailOuts: JsonifyBailOuts(bellatrixBlock.Bellatrix.Block.Body.BailOuts),
 				ExecutionPayload: &apimiddleware.ExecutionPayloadJson{
 					BaseFeePerGas:  bytesutil.LittleEndianBytesToBigInt(bellatrixBlock.Bellatrix.Block.Body.ExecutionPayload.BaseFeePerGas).String(),
 					BlockHash:      hexutil.Encode(bellatrixBlock.Bellatrix.Block.Body.ExecutionPayload.BlockHash),

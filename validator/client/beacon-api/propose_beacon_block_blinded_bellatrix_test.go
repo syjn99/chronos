@@ -48,6 +48,7 @@ func TestProposeBeaconBlock_BlindedBellatrix(t *testing.T) {
 					SyncCommitteeBits:      hexutil.Encode(blindedBellatrixBlock.BlindedBellatrix.Block.Body.SyncAggregate.SyncCommitteeBits),
 					SyncCommitteeSignature: hexutil.Encode(blindedBellatrixBlock.BlindedBellatrix.Block.Body.SyncAggregate.SyncCommitteeSignature),
 				},
+				BailOuts: JsonifyBailOuts(blindedBellatrixBlock.BlindedBellatrix.Block.Body.BailOuts),
 				ExecutionPayloadHeader: &apimiddleware.ExecutionPayloadHeaderJson{
 					BaseFeePerGas:    bytesutil.LittleEndianBytesToBigInt(blindedBellatrixBlock.BlindedBellatrix.Block.Body.ExecutionPayloadHeader.BaseFeePerGas).String(),
 					BlockHash:        hexutil.Encode(blindedBellatrixBlock.BlindedBellatrix.Block.Body.ExecutionPayloadHeader.BlockHash),
@@ -307,6 +308,14 @@ func generateSignedBlindedBellatrixBlock() *ethpb.GenericSignedBeaconBlock_Blind
 					SyncAggregate: &ethpb.SyncAggregate{
 						SyncCommitteeBits:      test_helpers.FillByteSlice(64, 110),
 						SyncCommitteeSignature: test_helpers.FillByteSlice(96, 111),
+					},
+					BailOuts: []*ethpb.BailOut{
+						{
+							ValidatorIndex: 128,
+						},
+						{
+							ValidatorIndex: 129,
+						},
 					},
 					ExecutionPayloadHeader: &enginev1.ExecutionPayloadHeader{
 						ParentHash:       test_helpers.FillByteSlice(32, 112),

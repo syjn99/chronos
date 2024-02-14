@@ -136,7 +136,7 @@ func TestGetSpec(t *testing.T) {
 	resp, err := server.GetSpec(context.Background(), &emptypb.Empty{})
 	require.NoError(t, err)
 
-	assert.Equal(t, 112, len(resp.Data))
+	assert.Equal(t, 118, len(resp.Data))
 	for k, v := range resp.Data {
 		switch k {
 		case "CONFIG_NAME":
@@ -375,6 +375,18 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "1575000000000000000", v)
 		case "EPOCHS_PER_YEAR":
 			assert.Equal(t, "82125", v)
+		case "DEPOSIT_PLAN_EARLY_SLOPE":
+			assert.Equal(t, "1090920036529", v)
+		case "DEPOSIT_PLAN_EARLY_OFFSET":
+			assert.Equal(t, "16384000000000", v)
+		case "DEPOSIT_PLAN_LATER_SLOPE":
+			assert.Equal(t, "233789954337", v)
+		case "DEPOSIT_PLAN_LATER_OFFSET":
+			assert.Equal(t, "140800000000000000", v)
+		case "DEPOSIT_PLAN_FINAL":
+			assert.Equal(t, "256000000000000000", v)
+		case "CHURN_LIMIT_BIAS":
+			assert.Equal(t, "1", v)
 		case "SAFE_SLOTS_TO_IMPORT_OPTIMISTICALLY":
 		default:
 			t.Errorf("Incorrect key: %s", k)

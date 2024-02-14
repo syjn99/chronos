@@ -217,6 +217,14 @@ func GenerateProtoCapellaBeaconBlock() *ethpb.BeaconBlockCapella {
 				SyncCommitteeBits:      FillByteSlice(64, 110),
 				SyncCommitteeSignature: FillByteSlice(96, 111),
 			},
+			BailOuts: []*ethpb.BailOut{
+				{
+					ValidatorIndex: 128,
+				},
+				{
+					ValidatorIndex: 129,
+				},
+			},
 			ExecutionPayload: &enginev1.ExecutionPayloadCapella{
 				ParentHash:     FillByteSlice(32, 112),
 				FeeRecipient:   FillByteSlice(20, 113),
@@ -482,6 +490,14 @@ func GenerateJsonCapellaBeaconBlock() *apimiddleware.BeaconBlockCapellaJson {
 			SyncAggregate: &apimiddleware.SyncAggregateJson{
 				SyncCommitteeBits:      FillEncodedByteSlice(64, 110),
 				SyncCommitteeSignature: FillEncodedByteSlice(96, 111),
+			},
+			BailOuts: []*apimiddleware.BailOutJson{
+				{
+					ValidatorIndex: "128",
+				},
+				{
+					ValidatorIndex: "129",
+				},
 			},
 			ExecutionPayload: &apimiddleware.ExecutionPayloadCapellaJson{
 				ParentHash:     FillEncodedByteSlice(32, 112),
