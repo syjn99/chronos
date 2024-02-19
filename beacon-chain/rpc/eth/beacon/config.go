@@ -99,6 +99,8 @@ func prepareConfigSpec() (map[string]string, error) {
 		switch vField.Kind() {
 		case reflect.Int:
 			data[tagValue] = strconv.FormatInt(vField.Int(), 10)
+		case reflect.Int64:
+			data[tagValue] = strconv.FormatInt(vField.Int(), 10)
 		case reflect.Uint64:
 			data[tagValue] = strconv.FormatUint(vField.Uint(), 10)
 		case reflect.Slice:
