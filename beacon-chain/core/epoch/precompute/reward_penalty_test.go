@@ -50,11 +50,11 @@ func TestProcessRewardsAndPenaltiesPrecompute(t *testing.T) {
 	require.Equal(t, true, processedState.Version() == version.Phase0)
 
 	// Indices that voted everything except for head, lost a bit money
-	wanted := uint64(255910816213)
+	wanted := uint64(255942922375)
 	assert.Equal(t, wanted, beaconState.Balances()[4], "Unexpected balance")
 
-	// Indices that did not vote, lost more money
-	wanted = uint64(255940544141)
+	// Indices that did not vote, lost more money. but it's proposer
+	wanted = uint64(255961948247)
 	assert.Equal(t, wanted, beaconState.Balances()[0], "Unexpected balance")
 }
 
@@ -98,7 +98,7 @@ func TestAttestationDeltaPrecompute(t *testing.T) {
 	// See: https://github.com/prysmaticlabs/prysm/issues/5593
 	bp.PrevEpochTargetAttested /= 2
 	bp.PrevEpochHeadAttested = bp.PrevEpochHeadAttested * 2 / 3
-	rewards, penalties, err := AttestationsDelta(beaconState, bp, vp)
+	rewards, penalties, _, err := AttestationsDelta(beaconState, bp, vp)
 	require.NoError(t, err)
 	attestedBalance, err := epoch.AttestingBalance(context.Background(), beaconState, atts)
 	require.NoError(t, err)
@@ -176,7 +176,7 @@ func TestAttestationDeltas_ZeroEpoch(t *testing.T) {
 
 	pBal.ActiveCurrentEpoch = 0 // Could cause a divide by zero panic.
 
-	_, _, err = AttestationsDelta(beaconState, pBal, pVals)
+	_, _, _, err = AttestationsDelta(beaconState, pBal, pVals)
 	require.NoError(t, err)
 }
 
@@ -245,7 +245,7 @@ func TestProcessRewardsAndPenaltiesPrecompute_SlashedInactivePenalty(t *testing.
 	require.NoError(t, err)
 	vp, bp, err = ProcessAttestations(context.Background(), beaconState, vp, bp)
 	require.NoError(t, err)
-	rewards, penalties, err := AttestationsDelta(beaconState, bp, vp)
+	rewards, penalties, _, err := AttestationsDelta(beaconState, bp, vp)
 	require.NoError(t, err)
 
 	finalityDelay := time.PrevEpoch(beaconState) - beaconState.FinalizedCheckpointEpoch()
@@ -312,7 +312,7 @@ func TestProposerDeltaPrecompute_HappyCase(t *testing.T) {
 	v := []*Validator{
 		{IsPrevEpochAttester: true, CurrentEpochEffectiveBalance: 32, ProposerIndex: proposerIndex},
 	}
-	r, err := ProposersDelta(beaconState, b, v)
+	r, _, err := ProposersDelta(beaconState, b, v)
 	require.NoError(t, err)
 
 	curEpoch := time.CurrentEpoch(beaconState)
@@ -336,7 +336,7 @@ func TestProposerDeltaPrecompute_ValidatorIndexOutOfRange(t *testing.T) {
 	v := []*Validator{
 		{IsPrevEpochAttester: true, CurrentEpochEffectiveBalance: 32, ProposerIndex: proposerIndex},
 	}
-	_, err = ProposersDelta(beaconState, b, v)
+	_, _, err = ProposersDelta(beaconState, b, v)
 	assert.ErrorContains(t, "proposer index out of range", err)
 }
 
@@ -352,7 +352,7 @@ func TestProposerDeltaPrecompute_SlashedCase(t *testing.T) {
 	v := []*Validator{
 		{IsPrevEpochAttester: true, CurrentEpochEffectiveBalance: 32, ProposerIndex: proposerIndex, IsSlashed: true},
 	}
-	r, err := ProposersDelta(beaconState, b, v)
+	r, _, err := ProposersDelta(beaconState, b, v)
 	require.NoError(t, err)
 	assert.Equal(t, uint64(0), r[proposerIndex], "Unexpected proposer reward for slashed")
 }
@@ -377,8 +377,8 @@ func baseReward(state state.ReadOnlyBeaconState, index primitives.ValidatorIndex
 	}
 	effectiveBalanceInc := val.EffectiveBalance() / params.BeaconConfig().EffectiveBalanceIncrement
 	totalBalanceInc := totalBalance / params.BeaconConfig().EffectiveBalanceIncrement
-	curEpoch := time.CurrentEpoch(state)
-	baseReward := effectiveBalanceInc * helpers.EpochIssuance(curEpoch) /
-		totalBalanceInc / params.BeaconConfig().BaseRewardsPerEpoch
+
+	reward, _, _ := helpers.TotalRewardWithReserveUsage(state)
+	baseReward := effectiveBalanceInc * reward / totalBalanceInc / params.BeaconConfig().BaseRewardsPerEpoch
 	return baseReward, nil
 }

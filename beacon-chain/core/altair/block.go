@@ -6,11 +6,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/signing"
-	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	p2pType "github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/types"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
-	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
@@ -81,8 +79,7 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	}
 	votedKeys := make([]bls.PublicKey, 0, len(committeeKeys))
 
-	curEpoch := time.CurrentEpoch(s)
-	proposerReward, participantReward, err := SyncRewards(curEpoch)
+	proposerReward, participantReward, perRewardReserveUsage, err := SyncRewards(s)
 	if err != nil {
 		return nil, nil, 0, err
 	}
@@ -92,6 +89,7 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	}
 
 	earnedProposerReward := uint64(0)
+	cumulatedReserveUsage := uint64(0)
 	for i := uint64(0); i < sync.SyncCommitteeBits.Len(); i++ {
 		vIdx, exists := s.ValidatorIndexByPubkey(bytesutil.ToBytes48(committeeKeys[i]))
 		// Impossible scenario.
@@ -109,6 +107,7 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 				return nil, nil, 0, err
 			}
 			earnedProposerReward += proposerReward
+			cumulatedReserveUsage += perRewardReserveUsage
 		} else {
 			if err := helpers.DecreaseBalance(s, vIdx, participantReward); err != nil {
 				return nil, nil, 0, err
@@ -116,6 +115,9 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 		}
 	}
 	if err := helpers.IncreaseBalance(s, proposerIndex, earnedProposerReward); err != nil {
+		return nil, nil, 0, err
+	}
+	if err := helpers.DecreaseCurrentReserve(s, cumulatedReserveUsage); err != nil {
 		return nil, nil, 0, err
 	}
 	return s, votedKeys, earnedProposerReward, err
@@ -148,12 +150,15 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 }
 
 // SyncRewards returns the proposer reward and the sync participant reward given the total active balance in state.
-func SyncRewards(epoch primitives.Epoch) (proposerReward, participantReward uint64, err error) {
-	//cfg := params.BeaconConfig()
-	//
-	//totalBaseRewards := helpers.EpochIssuance(epoch)
-	//maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
-	//participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
-	//proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)
-	return 0, 0, nil
+func SyncRewards(s state.BeaconState) (proposerReward, participantReward, perRewardReserveUsage uint64, err error) {
+	cfg := params.BeaconConfig()
+	totalBaseRewards, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(s)
+	maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
+	participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
+	proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)
+	perRewardReserveUsage = uint64(0)
+	if sign > 1 {
+		perRewardReserveUsage = (proposerReward + participantReward) * deltaReserve / totalBaseRewards
+	}
+	return proposerReward, participantReward, perRewardReserveUsage, nil
 }

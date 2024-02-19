@@ -2,8 +2,11 @@ package helpers
 
 import (
 	"errors"
+	"math"
+	"math/big"
 
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/cache"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
@@ -12,6 +15,7 @@ import (
 )
 
 var balanceCache = cache.NewEffectiveBalanceCache()
+var balanceWithQueueCache = cache.NewEffectiveBalanceCache()
 
 // TotalBalance returns the total amount at stake in Gwei
 // of input validators.
@@ -81,6 +85,51 @@ func TotalActiveBalance(s state.ReadOnlyBeaconState) (uint64, error) {
 	// Spec defines `EffectiveBalanceIncrement` as min to avoid divisions by zero.
 	total = mathutil.Max(params.BeaconConfig().EffectiveBalanceIncrement, total)
 	if err := balanceCache.AddTotalEffectiveBalance(s, total); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+// TotalBalanceWithQueue returns the total amount at stake in Gwei
+// of active validators + pending validators - exiting validators.
+func TotalBalanceWithQueue(s state.ReadOnlyBeaconState) (uint64, error) {
+	bal, err := balanceWithQueueCache.Get(s)
+	switch {
+	case err == nil:
+		return bal, nil
+	case errors.Is(err, cache.ErrNotFound):
+		// Do nothing if we receive a not found error.
+	default:
+		// In the event, we encounter another error we return it.
+		return 0, err
+	}
+
+	total := uint64(0)
+	totalExit := uint64(0)
+	epoch := slots.ToEpoch(s.Slot())
+	if err := s.ReadFromEveryValidator(func(idx int, val state.ReadOnlyValidator) error {
+		if IsPendingValidatorUsingTrie(val, epoch) {
+			total += val.EffectiveBalance()
+		} else if IsActiveValidatorUsingTrie(val, epoch) {
+			total += val.EffectiveBalance()
+		}
+		if IsExitingValidatorUsingTrie(val, epoch) {
+			totalExit += val.EffectiveBalance()
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+	if total > totalExit {
+		total -= totalExit
+	} else {
+		total = 0
+	}
+
+	// Spec defines `EffectiveBalanceIncrement` as min to avoid divisions by zero.
+	total = mathutil.Max(params.BeaconConfig().EffectiveBalanceIncrement, total)
+	if err := balanceWithQueueCache.AddTotalEffectiveBalance(s, total); err != nil {
 		return 0, err
 	}
 
@@ -189,6 +238,7 @@ func EpochIssuance(epoch primitives.Epoch) uint64 {
 	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100)
 }
 
+// TargetDepositPlan returns the target deposit plan for the given epoch.
 func TargetDepositPlan(epoch primitives.Epoch) uint64 {
 	cfg := params.BeaconConfig()
 	e := uint64(epoch)
@@ -199,4 +249,193 @@ func TargetDepositPlan(epoch primitives.Epoch) uint64 {
 	} else {
 		return cfg.DepositPlanFinal
 	}
+}
+
+func ProcessRewardfactorUpdate(state state.BeaconState) error {
+	// update reward adjustment factor
+	calculatedFactor, err := CalculateRewardAdjustmentFactor(state)
+	if err != nil {
+		return err
+	}
+	err = SetRewardAdjustmentFactor(state, calculatedFactor)
+	if err != nil {
+		return err
+	}
+
+	// update current epoch reserve
+	err = state.SetPreviousEpochReserve(state.CurrentEpochReserve())
+	if err != nil {
+		return err
+	}
+
+	// send over to reserve if there is any remaining reward
+	_, sign, reserve := TotalRewardWithReserveUsage(state)
+	if sign < 0 {
+		return IncreaseCurrentReserve(state, reserve)
+	}
+	return nil
+}
+
+// TotalRewardNReserveUsage returns the total reward and reserve usage(sign, amount) in the given epoch.
+// if sign is 1, it means to use following amount uses reserve.
+// if sign is -1, it means to use following amount to be added to reserve.
+func TotalRewardWithReserveUsage(s state.ReadOnlyBeaconState) (uint64, int, uint64) {
+	cfg := params.BeaconConfig()
+	epochIssuance := EpochIssuance(time.CurrentEpoch(s))
+	rewardAdjustmentFactor := GetRewardAdjustmentFactor(s)
+	validatorReward := cfg.MaxTargetDeposit / cfg.RewardFeedbackPrecision * uint64(cfg.TargetYield+rewardAdjustmentFactor) / cfg.EpochsPerYear
+	if validatorReward >= epochIssuance {
+		remainingReserve := s.PreviousEpochReserve()
+		if remainingReserve < validatorReward-epochIssuance {
+			return epochIssuance + remainingReserve, 1, remainingReserve
+		} else {
+			return validatorReward, 1, validatorReward - epochIssuance
+		}
+	} else {
+		return validatorReward, -1, epochIssuance - validatorReward
+	}
+}
+
+// CalcutateRewardAdjustmentFactor returns the adjustment factor for the next epoch.
+// This is pseudo code from the spec.
+//
+// Spec code:
+//
+//	def process_validator_reward(epoch, parent, deposit, pending_deposit, exit_deposit):
+//		deposit_delta = pending_deposit - exit_deposit
+//		future_deposit = deposit + deposit_delta
+//		target_deposit = TARGET_DEPOSIT_PLAN[epoch]
+//
+//		error_rate = abs(future_deposit - target_deposit) / target_deposit
+//		mitigating_factor = max(1e-6, min(1.0, error_rate / threshold))
+//		change_rate = target_change_rate * mitigating_factor
+//
+//		if future_deposit >= target_deposit:
+//			bias_delta = -change_rate
+//		else:
+//			bias_delta =  change_rate
+//
+//		prev_bias = parent.bias
+//		bias = prev_bias + bias_delta
+//		bias = max(MIN_YIELD - TARGET_YIELD, bias)
+//		bias = min(bias, INCENIVE_LIMIT * TARGET_YIELD)
+//
+//		return bias
+func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (int64, error) {
+	cfg := params.BeaconConfig()
+	futureDeposit, err := TotalBalanceWithQueue(state)
+	if err != nil {
+		return 0, err
+	}
+	targetDeposit := TargetDepositPlan(time.NextEpoch(state))
+
+	// Using big integers for precise calculation
+	if futureDeposit >= math.MaxInt64 || targetDeposit >= math.MaxInt64 {
+		return 0, errors.New("deposit exceeds max int64, cannot calculate reward adjustment factor")
+	}
+	bigFutureDeposit := big.NewInt(int64(futureDeposit)) // lint:ignore uintcast -- changeRate will not exceed int64 because of total issuance.
+	bigTargetDeposit := big.NewInt(int64(targetDeposit)) // lint:ignore uintcast -- changeRate will not exceed int64 because of total issuance.
+	bigRewardPrecision := big.NewInt(int64(cfg.RewardFeedbackPrecision))
+
+	// Calculate the gap and error rate to make mitigating factor
+	gap := new(big.Int).Abs(new(big.Int).Sub(bigFutureDeposit, bigTargetDeposit))
+	numerator := new(big.Int).Mul(gap, bigRewardPrecision)
+	errRate := new(big.Int).Div(numerator, bigTargetDeposit)
+	mitigatingFactor := big.NewInt(int64(mathutil.Max(1000000, mathutil.Min(cfg.RewardFeedbackPrecision, errRate.Uint64()*cfg.RewardFeedbackThresholdReciprocal)))) // lint:ignore uintcast -- errRate will not exceed int64 because of truncation.
+
+	// Calculate the change rate
+	targetChangeRate := big.NewInt(int64(cfg.TargetChangeRate))
+	changeRate := new(big.Int).Div(new(big.Int).Mul(targetChangeRate, mitigatingFactor), bigRewardPrecision)
+	if changeRate.Uint64() >= math.MaxInt64 {
+		return 0, errors.New("changeRate exceeds max int64, cannot calculate reward adjustment factor")
+	}
+
+	biasDelta := int64(0)
+	if futureDeposit >= targetDeposit {
+		biasDelta = -changeRate.Int64() // lint:ignore uintcast -- changeRate will not exceed int64 because of truncation.
+	} else {
+		biasDelta = changeRate.Int64() // lint:ignore uintcast -- changeRate will not exceed int64 because of truncation.
+	}
+
+	bias := GetRewardAdjustmentFactor(state) + biasDelta
+	return TruncateRewardAdjustmentFactor(bias), nil
+}
+
+// GetRewardAdjustmentFactor returns the reward adjustment factor.
+// The reward adjustment factor is a uint64, if factor is negative, it will be read to -(reward adjustment factor - RewardFeedbackPrecision).
+func GetRewardAdjustmentFactor(state state.ReadOnlyBeaconState) int64 {
+	cfg := params.BeaconConfig()
+	factor := state.RewardAdjustmentFactor()
+	if factor > cfg.RewardFeedbackPrecision {
+		return -int64(factor - cfg.RewardFeedbackPrecision) // lint:ignore uintcast -- factor will not exceed int64 because of truncation.
+	} else {
+		return int64(factor) // lint:ignore uintcast -- factor will not exceed int64 because of truncation.
+	}
+}
+
+// SetRewardAdjustmentFactor sets the reward adjustment factor to the given value.
+// Because the reward adjustment factor is a uint64, if factor is negative, it will be set to RewardFeedbackPrecision - factor.
+// And input factor is bounded by RewardFeedbackPrecision.
+func SetRewardAdjustmentFactor(state state.BeaconState, factor int64) error {
+	cfg := params.BeaconConfig()
+
+	if factor < 0 {
+		return state.SetRewardAdjustmentFactor(cfg.RewardFeedbackPrecision + uint64(-factor))
+	} else if factor > int64(cfg.RewardFeedbackPrecision) {
+		return state.SetRewardAdjustmentFactor(cfg.RewardFeedbackPrecision)
+	} else {
+		return state.SetRewardAdjustmentFactor(uint64(factor))
+	}
+}
+
+// TruncateRewardAdjustmentFactor truncates the given bias to the min and max bounds.
+// The min and max bounds are defined in the spec.
+func TruncateRewardAdjustmentFactor(bias int64) int64 {
+	cfg := params.BeaconConfig()
+
+	lowerBound := cfg.MinYield - cfg.TargetYield
+	upperBound := cfg.IncentiveLimit / int64(cfg.RewardFeedbackPrecision) * cfg.TargetYield
+	if lowerBound > bias {
+		bias = lowerBound
+	}
+	if upperBound < bias {
+		bias = upperBound
+	}
+	return bias
+}
+
+// IncreaseCurrentReserve increases the current reserve by the given amount.
+// If the reserve is more than the maximum uint64, it sets the reserve to the maximum uint64.
+// But real reserve is bounded by 51,200,000,000,000,000
+func IncreaseCurrentReserve(state state.BeaconState, add uint64) error {
+	if mathutil.MaxUint64-add < state.CurrentEpochReserve() {
+		err := state.SetCurrentEpochReserve(mathutil.MaxUint64)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := state.SetCurrentEpochReserve(state.CurrentEpochReserve() + add)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// DecreaseCurrentReserve reduces the current reserve by the given amount.
+// If the reserve is less than the given amount, it sets the reserve to 0.
+func DecreaseCurrentReserve(state state.BeaconState, sub uint64) error {
+	currentReserve := state.CurrentEpochReserve()
+	if currentReserve < sub {
+		err := state.SetCurrentEpochReserve(0)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := state.SetCurrentEpochReserve(currentReserve - sub)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

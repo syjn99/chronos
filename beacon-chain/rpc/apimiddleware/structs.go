@@ -789,11 +789,14 @@ type BeaconStateJson struct {
 	BlockRoots                  []string                  `json:"block_roots" hex:"true"`
 	StateRoots                  []string                  `json:"state_roots" hex:"true"`
 	HistoricalRoots             []string                  `json:"historical_roots" hex:"true"`
+	RewardAdjustmentFactor      string                    `json:"reward_adjustment_factor"`
 	Eth1Data                    *Eth1DataJson             `json:"eth1_data"`
 	Eth1DataVotes               []*Eth1DataJson           `json:"eth1_data_votes"`
 	Eth1DepositIndex            string                    `json:"eth1_deposit_index"`
 	Validators                  []*ValidatorJson          `json:"validators"`
 	Balances                    []string                  `json:"balances"`
+	PreviousEpochReserve        string                    `json:"previous_epoch_reserve"`
+	CurrentEpochReserve         string                    `json:"current_epoch_reserve"`
 	RandaoMixes                 []string                  `json:"randao_mixes" hex:"true"`
 	Slashings                   []string                  `json:"slashings"`
 	PreviousEpochAttestations   []*PendingAttestationJson `json:"previous_epoch_attestations"`
@@ -813,11 +816,14 @@ type BeaconStateAltairJson struct {
 	BlockRoots                  []string               `json:"block_roots" hex:"true"`
 	StateRoots                  []string               `json:"state_roots" hex:"true"`
 	HistoricalRoots             []string               `json:"historical_roots" hex:"true"`
+	RewardAdjustmentFactor      string                 `json:"reward_adjustment_factor"`
 	Eth1Data                    *Eth1DataJson          `json:"eth1_data"`
 	Eth1DataVotes               []*Eth1DataJson        `json:"eth1_data_votes"`
 	Eth1DepositIndex            string                 `json:"eth1_deposit_index"`
 	Validators                  []*ValidatorJson       `json:"validators"`
 	Balances                    []string               `json:"balances"`
+	PreviousEpochReserve        string                 `json:"previous_epoch_reserve"`
+	CurrentEpochReserve         string                 `json:"current_epoch_reserve"`
 	RandaoMixes                 []string               `json:"randao_mixes" hex:"true"`
 	Slashings                   []string               `json:"slashings"`
 	PreviousEpochParticipation  EpochParticipation     `json:"previous_epoch_participation"`
@@ -841,11 +847,14 @@ type BeaconStateBellatrixJson struct {
 	BlockRoots                   []string                    `json:"block_roots" hex:"true"`
 	StateRoots                   []string                    `json:"state_roots" hex:"true"`
 	HistoricalRoots              []string                    `json:"historical_roots" hex:"true"`
+	RewardAdjustmentFactor       string                      `json:"reward_adjustment_factor"`
 	Eth1Data                     *Eth1DataJson               `json:"eth1_data"`
 	Eth1DataVotes                []*Eth1DataJson             `json:"eth1_data_votes"`
 	Eth1DepositIndex             string                      `json:"eth1_deposit_index"`
 	Validators                   []*ValidatorJson            `json:"validators"`
 	Balances                     []string                    `json:"balances"`
+	PreviousEpochReserve         string                      `json:"previous_epoch_reserve"`
+	CurrentEpochReserve          string                      `json:"current_epoch_reserve"`
 	RandaoMixes                  []string                    `json:"randao_mixes" hex:"true"`
 	Slashings                    []string                    `json:"slashings"`
 	PreviousEpochParticipation   EpochParticipation          `json:"previous_epoch_participation"`
@@ -870,11 +879,14 @@ type BeaconStateCapellaJson struct {
 	BlockRoots                   []string                           `json:"block_roots" hex:"true"`
 	StateRoots                   []string                           `json:"state_roots" hex:"true"`
 	HistoricalRoots              []string                           `json:"historical_roots" hex:"true"`
+	RewardAdjustmentFactor       string                             `json:"reward_adjustment_factor"`
 	Eth1Data                     *Eth1DataJson                      `json:"eth1_data"`
 	Eth1DataVotes                []*Eth1DataJson                    `json:"eth1_data_votes"`
 	Eth1DepositIndex             string                             `json:"eth1_deposit_index"`
 	Validators                   []*ValidatorJson                   `json:"validators"`
 	Balances                     []string                           `json:"balances"`
+	PreviousEpochReserve         string                             `json:"previous_epoch_reserve"`
+	CurrentEpochReserve          string                             `json:"current_epoch_reserve"`
 	RandaoMixes                  []string                           `json:"randao_mixes" hex:"true"`
 	Slashings                    []string                           `json:"slashings"`
 	PreviousEpochParticipation   EpochParticipation                 `json:"previous_epoch_participation"`

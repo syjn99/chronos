@@ -10,8 +10,8 @@ import (
 )
 
 type (
-	attesterRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, []uint64, error)
-	proposerRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, error)
+	attesterRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, []uint64, []uint64, error)
+	proposerRewardsFunc func(state.ReadOnlyBeaconState, *Balance, []*Validator) ([]uint64, []uint64, error)
 )
 
 // ProcessRewardsAndPenaltiesPrecompute processes the rewards and penalties of individual validator.
@@ -34,15 +34,16 @@ func ProcessRewardsAndPenaltiesPrecompute(
 		return state, errors.New("precomputed registries not the same length as state registries")
 	}
 
-	attsRewards, attsPenalties, err := attRewardsFunc(state, pBal, vp)
+	attsRewards, attsPenalties, attReserveUses, err := attRewardsFunc(state, pBal, vp)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get attester attestation delta")
 	}
-	proposerRewards, err := proRewardsFunc(state, pBal, vp)
+	proposerRewards, proposerReseveUses, err := proRewardsFunc(state, pBal, vp)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get proposer attestation delta")
 	}
 	validatorBals := state.Balances()
+	reserveUsage := uint64(0)
 	for i := 0; i < numOfVals; i++ {
 		vp[i].BeforeEpochTransitionBalance = validatorBals[i]
 
@@ -55,10 +56,14 @@ func ProcessRewardsAndPenaltiesPrecompute(
 		validatorBals[i] = helpers.DecreaseBalanceWithVal(validatorBals[i], attsPenalties[i])
 
 		vp[i].AfterEpochTransitionBalance = validatorBals[i]
+		reserveUsage += attReserveUses[i] + proposerReseveUses[i]
 	}
 
 	if err := state.SetBalances(validatorBals); err != nil {
 		return nil, errors.Wrap(err, "could not set validator balances")
+	}
+	if err := helpers.DecreaseCurrentReserve(state, reserveUsage); err != nil {
+		return nil, errors.Wrap(err, "could not set current epoch reserve")
 	}
 
 	return state, nil
@@ -66,30 +71,32 @@ func ProcessRewardsAndPenaltiesPrecompute(
 
 // AttestationsDelta computes and returns the rewards and penalties differences for individual validators based on the
 // voting records.
-func AttestationsDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Validator) ([]uint64, []uint64, error) {
+func AttestationsDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Validator) ([]uint64, []uint64, []uint64, error) {
 	numOfVals := state.NumValidators()
 	rewards := make([]uint64, numOfVals)
 	penalties := make([]uint64, numOfVals)
+	reserveUsages := make([]uint64, numOfVals)
 	prevEpoch := time.PrevEpoch(state)
 	finalizedEpoch := state.FinalizedCheckpointEpoch()
 
 	for i, v := range vp {
-		rewards[i], penalties[i] = attestationDelta(pBal, v, prevEpoch, finalizedEpoch)
+		rewards[i], penalties[i], reserveUsages[i] = attestationDelta(state, pBal, v, prevEpoch, finalizedEpoch)
 	}
-	return rewards, penalties, nil
+	return rewards, penalties, reserveUsages, nil
 }
 
-func attestationDelta(pBal *Balance, v *Validator, prevEpoch, finalizedEpoch primitives.Epoch) (uint64, uint64) {
+func attestationDelta(state state.ReadOnlyBeaconState, pBal *Balance, v *Validator, prevEpoch, finalizedEpoch primitives.Epoch) (uint64, uint64, uint64) {
 	if !EligibleForRewards(v) || pBal.ActiveCurrentEpoch == 0 {
-		return 0, 0
+		return 0, 0, 0
 	}
 
 	baseRewardsPerEpoch := params.BeaconConfig().BaseRewardsPerEpoch
 	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
 	currentEpochIncrement := pBal.ActiveCurrentEpoch / effectiveBalanceIncrement
 	vb := v.CurrentEpochEffectiveBalance / effectiveBalanceIncrement
-	br := vb * helpers.EpochIssuance(prevEpoch.Add(1)) / currentEpochIncrement / baseRewardsPerEpoch
-	r, p := uint64(0), uint64(0)
+	totalReward, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(state)
+	br := vb * totalReward / currentEpochIncrement / baseRewardsPerEpoch
+	r, p, ru := uint64(0), uint64(0), uint64(0)
 
 	// Process source reward / penalty
 	if v.IsPrevEpochAttester && !v.IsSlashed {
@@ -150,34 +157,42 @@ func attestationDelta(pBal *Balance, v *Validator, prevEpoch, finalizedEpoch pri
 			p += vb * uint64(finalityDelay) / params.BeaconConfig().InactivityPenaltyQuotient
 		}
 	}
-	return r, p
+
+	if sign > 0 {
+		ru = r * deltaReserve / totalReward
+	}
+	return r, p, ru
 }
 
 // ProposersDelta computes and returns the rewards and penalties differences for individual validators based on the
 // proposer inclusion records.
-func ProposersDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Validator) ([]uint64, error) {
+func ProposersDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Validator) ([]uint64, []uint64, error) {
 	numofVals := state.NumValidators()
 	rewards := make([]uint64, numofVals)
+	reserveUsage := make([]uint64, numofVals)
 
-	curEpoch := time.CurrentEpoch(state)
 	baseRewardsPerEpoch := params.BeaconConfig().BaseRewardsPerEpoch
 	proposerRewardQuotient := params.BeaconConfig().ProposerRewardQuotient
 	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
+	totalReward, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(state)
 	for _, v := range vp {
 		if uint64(v.ProposerIndex) >= uint64(len(rewards)) {
 			// This should never happen with a valid state / validator.
-			return nil, errors.New("proposer index out of range")
+			return nil, nil, errors.New("proposer index out of range")
 		}
 		// Only apply inclusion rewards to proposer only if the attested hasn't been slashed.
 		if v.IsPrevEpochAttester && !v.IsSlashed {
 			currentEpochIncrement := pBal.ActiveCurrentEpoch / effectiveBalanceIncrement
 			vBalanceIncrement := v.CurrentEpochEffectiveBalance / effectiveBalanceIncrement
-			baseReward := vBalanceIncrement * helpers.EpochIssuance(curEpoch) / currentEpochIncrement / baseRewardsPerEpoch
+			baseReward := vBalanceIncrement * totalReward / currentEpochIncrement / baseRewardsPerEpoch
 			proposerReward := baseReward / proposerRewardQuotient
 			rewards[v.ProposerIndex] += proposerReward
+			if sign > 0 {
+				reserveUsage[v.ProposerIndex] += proposerReward * deltaReserve / totalReward
+			}
 		}
 	}
-	return rewards, nil
+	return rewards, reserveUsage, nil
 }
 
 // EligibleForRewards for validator.

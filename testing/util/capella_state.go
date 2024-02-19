@@ -140,9 +140,10 @@ func buildGenesisBeaconStateCapella(genesisTime uint64, preState state.BeaconSta
 	}
 	st := &ethpb.BeaconStateCapella{
 		// Misc fields.
-		Slot:                  0,
-		GenesisTime:           genesisTime,
-		GenesisValidatorsRoot: genesisValidatorsRoot[:],
+		Slot:                   0,
+		GenesisTime:            genesisTime,
+		GenesisValidatorsRoot:  genesisValidatorsRoot[:],
+		RewardAdjustmentFactor: preState.RewardAdjustmentFactor(),
 
 		Fork: &ethpb.Fork{
 			PreviousVersion: params.BeaconConfig().GenesisForkVersion,
@@ -153,6 +154,8 @@ func buildGenesisBeaconStateCapella(genesisTime uint64, preState state.BeaconSta
 		// Validator registry fields.
 		Validators:                 preState.Validators(),
 		Balances:                   preState.Balances(),
+		PreviousEpochReserve:       preState.PreviousEpochReserve(),
+		CurrentEpochReserve:        preState.CurrentEpochReserve(),
 		PreviousEpochParticipation: prevEpochParticipation,
 		CurrentEpochParticipation:  currEpochParticipation,
 		InactivityScores:           scores,

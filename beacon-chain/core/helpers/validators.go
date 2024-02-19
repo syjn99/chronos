@@ -54,6 +54,24 @@ func checkValidatorActiveStatus(activationEpoch, exitEpoch, epoch primitives.Epo
 	return activationEpoch <= epoch && epoch < exitEpoch
 }
 
+// IsPendingValidatorUsingTrie checks if a read only validator is waiting for activation.
+func IsPendingValidatorUsingTrie(validator state.ReadOnlyValidator, epoch primitives.Epoch) bool {
+	return checkValidatorPendingStatus(validator.ActivationEpoch(), epoch)
+}
+
+func checkValidatorPendingStatus(activationEpoch, epoch primitives.Epoch) bool {
+	return activationEpoch > epoch
+}
+
+// IsExitingValidatorUsingTrie checks if a read only validator is waiting for activation.
+func IsExitingValidatorUsingTrie(validator state.ReadOnlyValidator, epoch primitives.Epoch) bool {
+	return checkValidatorExitingStatus(validator.ActivationEpoch(), validator.ExitEpoch(), epoch)
+}
+
+func checkValidatorExitingStatus(activationEpoch, exitEpoch, epoch primitives.Epoch) bool {
+	return activationEpoch <= epoch && epoch < exitEpoch && exitEpoch != params.BeaconConfig().FarFutureEpoch
+}
+
 // IsSlashableValidator returns the boolean value on whether the validator
 // is slashable or not.
 //

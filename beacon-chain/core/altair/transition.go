@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	e "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/epoch"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/epoch/precompute"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"go.opencensus.io/trace"
 )
@@ -66,6 +67,11 @@ func ProcessEpoch(ctx context.Context, state state.BeaconState) (state.BeaconSta
 	state, err = e.ProcessRegistryUpdates(ctx, state)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not process registry updates")
+	}
+
+	err = helpers.ProcessRewardfactorUpdate(state)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not update reserve and reward factor")
 	}
 
 	// Modified in Altair and Bellatrix.

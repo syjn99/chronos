@@ -710,6 +710,20 @@ func genSyncAggregate() *v1alpha1.SyncAggregate {
 	}
 }
 
+func genBailOuts(num int) []*v1alpha1.BailOut {
+	bo := make([]*v1alpha1.BailOut, num)
+	for i := 0; i < num; i++ {
+		bo[i] = genBailOut()
+	}
+	return bo
+}
+
+func genBailOut() *v1alpha1.BailOut {
+	return &v1alpha1.BailOut{
+		ValidatorIndex: 888888,
+	}
+}
+
 func genBeaconBlockBodyAltair() *v1alpha1.BeaconBlockBodyAltair {
 	return &v1alpha1.BeaconBlockBodyAltair{
 		RandaoReveal:      bytes(32),
@@ -721,6 +735,7 @@ func genBeaconBlockBodyAltair() *v1alpha1.BeaconBlockBodyAltair {
 		Deposits:          genDeposits(5),
 		VoluntaryExits:    genSignedVoluntaryExits(12),
 		SyncAggregate:     genSyncAggregate(),
+		BailOuts:          genBailOuts(5),
 	}
 }
 
@@ -752,6 +767,7 @@ func genBeaconBlockBodyBellatrix() *v1alpha1.BeaconBlockBodyBellatrix {
 		Deposits:          genDeposits(5),
 		VoluntaryExits:    genSignedVoluntaryExits(12),
 		SyncAggregate:     genSyncAggregate(),
+		BailOuts:          genBailOuts(5),
 		ExecutionPayload:  genPayload(),
 	}
 }
@@ -784,6 +800,7 @@ func genBeaconBlockBodyCapella() *v1alpha1.BeaconBlockBodyCapella {
 		Deposits:              genDeposits(5),
 		VoluntaryExits:        genSignedVoluntaryExits(12),
 		SyncAggregate:         genSyncAggregate(),
+		BailOuts:              genBailOuts(5),
 		ExecutionPayload:      genPayloadCapella(),
 		BlsToExecutionChanges: genBLSToExecutionChanges(10),
 	}
@@ -817,6 +834,7 @@ func genBlindedBeaconBlockBodyCapella() *v1alpha1.BlindedBeaconBlockBodyCapella 
 		Deposits:               genDeposits(5),
 		VoluntaryExits:         genSignedVoluntaryExits(12),
 		SyncAggregate:          genSyncAggregate(),
+		BailOuts:               genBailOuts(5),
 		ExecutionPayloadHeader: genPayloadHeaderCapella(),
 		BlsToExecutionChanges:  genBLSToExecutionChanges(10),
 	}

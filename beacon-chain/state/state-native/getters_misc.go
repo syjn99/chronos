@@ -79,6 +79,14 @@ func (b *BeaconState) HistoricalRoots() ([][]byte, error) {
 	return b.historicalRoots.Slice(), nil
 }
 
+// Reserve of the beacon state as an uint64.
+func (b *BeaconState) RewardAdjustmentFactor() uint64 {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.rewardAdjustmentFactor
+}
+
 // balancesLength returns the length of the balances slice.
 // This assumes that a lock is already held on BeaconState.
 func (b *BeaconState) balancesLength() int {
@@ -87,6 +95,22 @@ func (b *BeaconState) balancesLength() int {
 	}
 
 	return len(b.balances)
+}
+
+// PreviousEpochReserve of the beacon state as an uint64.
+func (b *BeaconState) PreviousEpochReserve() uint64 {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.previousEpochReserve
+}
+
+// CurrentEpochReserve of the beacon state as an uint64.
+func (b *BeaconState) CurrentEpochReserve() uint64 {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.currentEpochReserve
 }
 
 // HistoricalSummaries of the beacon state.

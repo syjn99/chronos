@@ -450,6 +450,14 @@ func V1Alpha1BeaconBlockCapellaToV2Blinded(v1alpha1Block *ethpbalpha.BeaconBlock
 		}
 	}
 
+	sourceBOs := v1alpha1Block.Body.BailOuts
+	resultBOs := make([]*ethpbv1.BailOut, len(sourceBOs))
+	for i, e := range sourceBOs {
+		resultBOs[i] = &ethpbv1.BailOut{
+			ValidatorIndex: e.ValidatorIndex,
+		}
+	}
+
 	transactionsRoot, err := ssz.TransactionsRoot(v1alpha1Block.Body.ExecutionPayload.Transactions)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not calculate transactions root")
@@ -489,6 +497,7 @@ func V1Alpha1BeaconBlockCapellaToV2Blinded(v1alpha1Block *ethpbalpha.BeaconBlock
 			SyncCommitteeBits:      bytesutil.SafeCopyBytes(v1alpha1Block.Body.SyncAggregate.SyncCommitteeBits),
 			SyncCommitteeSignature: bytesutil.SafeCopyBytes(v1alpha1Block.Body.SyncAggregate.SyncCommitteeSignature),
 		},
+		BailOuts: resultBOs,
 		ExecutionPayloadHeader: &enginev1.ExecutionPayloadHeaderCapella{
 			ParentHash:       bytesutil.SafeCopyBytes(v1alpha1Block.Body.ExecutionPayload.ParentHash),
 			FeeRecipient:     bytesutil.SafeCopyBytes(v1alpha1Block.Body.ExecutionPayload.FeeRecipient),
@@ -599,9 +608,10 @@ func BeaconStateAltairToProto(altairState state.BeaconState) (*ethpbv2.BeaconSta
 			StateRoot:     bytesutil.SafeCopyBytes(sourceLatestBlockHeader.StateRoot),
 			BodyRoot:      bytesutil.SafeCopyBytes(sourceLatestBlockHeader.BodyRoot),
 		},
-		BlockRoots:      bytesutil.SafeCopy2dBytes(altairState.BlockRoots()),
-		StateRoots:      bytesutil.SafeCopy2dBytes(altairState.StateRoots()),
-		HistoricalRoots: bytesutil.SafeCopy2dBytes(hrs),
+		BlockRoots:             bytesutil.SafeCopy2dBytes(altairState.BlockRoots()),
+		StateRoots:             bytesutil.SafeCopy2dBytes(altairState.StateRoots()),
+		HistoricalRoots:        bytesutil.SafeCopy2dBytes(hrs),
+		RewardAdjustmentFactor: altairState.RewardAdjustmentFactor(),
 		Eth1Data: &ethpbv1.Eth1Data{
 			DepositRoot:  bytesutil.SafeCopyBytes(sourceEth1Data.DepositRoot),
 			DepositCount: sourceEth1Data.DepositCount,
@@ -611,6 +621,8 @@ func BeaconStateAltairToProto(altairState state.BeaconState) (*ethpbv2.BeaconSta
 		Eth1DepositIndex:           altairState.Eth1DepositIndex(),
 		Validators:                 resultValidators,
 		Balances:                   altairState.Balances(),
+		PreviousEpochReserve:       altairState.PreviousEpochReserve(),
+		CurrentEpochReserve:        altairState.CurrentEpochReserve(),
 		RandaoMixes:                bytesutil.SafeCopy2dBytes(altairState.RandaoMixes()),
 		Slashings:                  altairState.Slashings(),
 		PreviousEpochParticipation: bytesutil.SafeCopyBytes(sourcePrevEpochParticipation),
@@ -731,9 +743,10 @@ func BeaconStateBellatrixToProto(st state.BeaconState) (*ethpbv2.BeaconStateBell
 			StateRoot:     bytesutil.SafeCopyBytes(sourceLatestBlockHeader.StateRoot),
 			BodyRoot:      bytesutil.SafeCopyBytes(sourceLatestBlockHeader.BodyRoot),
 		},
-		BlockRoots:      bytesutil.SafeCopy2dBytes(st.BlockRoots()),
-		StateRoots:      bytesutil.SafeCopy2dBytes(st.StateRoots()),
-		HistoricalRoots: bytesutil.SafeCopy2dBytes(hRoots),
+		BlockRoots:             bytesutil.SafeCopy2dBytes(st.BlockRoots()),
+		StateRoots:             bytesutil.SafeCopy2dBytes(st.StateRoots()),
+		HistoricalRoots:        bytesutil.SafeCopy2dBytes(hRoots),
+		RewardAdjustmentFactor: st.RewardAdjustmentFactor(),
 		Eth1Data: &ethpbv1.Eth1Data{
 			DepositRoot:  bytesutil.SafeCopyBytes(sourceEth1Data.DepositRoot),
 			DepositCount: sourceEth1Data.DepositCount,
@@ -743,6 +756,8 @@ func BeaconStateBellatrixToProto(st state.BeaconState) (*ethpbv2.BeaconStateBell
 		Eth1DepositIndex:           st.Eth1DepositIndex(),
 		Validators:                 resultValidators,
 		Balances:                   st.Balances(),
+		PreviousEpochReserve:       st.PreviousEpochReserve(),
+		CurrentEpochReserve:        st.CurrentEpochReserve(),
 		RandaoMixes:                bytesutil.SafeCopy2dBytes(st.RandaoMixes()),
 		Slashings:                  st.Slashings(),
 		PreviousEpochParticipation: bytesutil.SafeCopyBytes(sourcePrevEpochParticipation),
@@ -894,8 +909,9 @@ func BeaconStateCapellaToProto(st state.BeaconState) (*ethpbv2.BeaconStateCapell
 			StateRoot:     bytesutil.SafeCopyBytes(sourceLatestBlockHeader.StateRoot),
 			BodyRoot:      bytesutil.SafeCopyBytes(sourceLatestBlockHeader.BodyRoot),
 		},
-		BlockRoots: bytesutil.SafeCopy2dBytes(st.BlockRoots()),
-		StateRoots: bytesutil.SafeCopy2dBytes(st.StateRoots()),
+		BlockRoots:             bytesutil.SafeCopy2dBytes(st.BlockRoots()),
+		StateRoots:             bytesutil.SafeCopy2dBytes(st.StateRoots()),
+		RewardAdjustmentFactor: st.RewardAdjustmentFactor(),
 		Eth1Data: &ethpbv1.Eth1Data{
 			DepositRoot:  bytesutil.SafeCopyBytes(sourceEth1Data.DepositRoot),
 			DepositCount: sourceEth1Data.DepositCount,
@@ -905,6 +921,8 @@ func BeaconStateCapellaToProto(st state.BeaconState) (*ethpbv2.BeaconStateCapell
 		Eth1DepositIndex:           st.Eth1DepositIndex(),
 		Validators:                 resultValidators,
 		Balances:                   st.Balances(),
+		PreviousEpochReserve:       st.PreviousEpochReserve(),
+		CurrentEpochReserve:        st.CurrentEpochReserve(),
 		RandaoMixes:                bytesutil.SafeCopy2dBytes(st.RandaoMixes()),
 		Slashings:                  st.Slashings(),
 		PreviousEpochParticipation: bytesutil.SafeCopyBytes(sourcePrevEpochParticipation),

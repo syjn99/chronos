@@ -392,7 +392,7 @@ func idealAttRewards(
 			}
 		}
 	}
-	deltas, err := altair.AttestationsDelta(st, bal, idealVals)
+	deltas, _, err := altair.AttestationsDelta(st, bal, idealVals)
 	if err != nil {
 		errJson := &network.DefaultErrorJson{
 			Message: "Could not get attestations delta: " + err.Error(),
@@ -428,7 +428,7 @@ func totalAttRewards(
 	for i, v := range valIndices {
 		totalRewards[i] = TotalAttestationReward{ValidatorIndex: strconv.FormatUint(uint64(v), 10)}
 	}
-	deltas, err := altair.AttestationsDelta(st, bal, vals)
+	deltas, _, err := altair.AttestationsDelta(st, bal, vals)
 	if err != nil {
 		errJson := &network.DefaultErrorJson{
 			Message: "Could not get attestations delta: " + err.Error(),

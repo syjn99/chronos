@@ -56,8 +56,8 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 	var reward uint64
 	beaconState, reward, err = altair.ProcessSyncAggregate(context.Background(), beaconState, syncAggregate)
 	require.NoError(t, err)
-	//assert.Equal(t, uint64(2654208), reward) // 106170880 // TODO(john): Fix this test after sync committee rewards are enabled.
-	assert.Equal(t, uint64(0), reward) // 106170880
+	assert.Equal(t, uint64(21743616), reward)
+	assert.Equal(t, uint64(21743616), reward)
 
 	// Use a non-sync committee index to compare profitability.
 	syncCommittee := make(map[primitives.ValidatorIndex]bool)
@@ -74,14 +74,12 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 
 	// Sync committee should be more profitable than non sync committee
 	balances := beaconState.Balances()
-	//require.Equal(t, true, balances[indices[0]] > balances[nonSyncIndex]) // TODO(john): Fix this test after sync committee rewards are enabled.
-	require.Equal(t, true, balances[indices[0]] == balances[nonSyncIndex])
+	require.Equal(t, true, balances[indices[0]] > balances[nonSyncIndex])
 
 	// Proposer should be more profitable than rest of the sync committee
 	proposerIndex, err := helpers.BeaconProposerIndex(context.Background(), beaconState)
 	require.NoError(t, err)
-	//require.Equal(t, true, balances[proposerIndex] > balances[indices[0]]) // TODO(john): Fix this test after sync committee rewards are enabled.
-	require.Equal(t, true, balances[proposerIndex] == balances[indices[0]])
+	require.Equal(t, true, balances[proposerIndex] > balances[indices[0]])
 
 	// Sync committee should have the same profits, except you are a proposer
 	for i := 1; i < len(indices); i++ {
@@ -91,15 +89,14 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 		require.Equal(t, balances[indices[i-1]], balances[indices[i]])
 	}
 
-	// Increased balance validator count should equal to sync committee count
-	// TODO(john): Fix this test after sync committee rewards are enabled.
-	//increased := uint64(0)
-	//for _, balance := range balances {
-	//	if balance > params.BeaconConfig().MaxEffectiveBalance {
-	//		increased++
-	//	}
-	//}
-	//require.Equal(t, params.BeaconConfig().SyncCommitteeSize, increased)
+	// Increased balance validator count should equal to sync committee count + 1(proposer)
+	increased := uint64(0)
+	for _, balance := range balances {
+		if balance > params.BeaconConfig().MaxEffectiveBalance {
+			increased++
+		}
+	}
+	require.Equal(t, params.BeaconConfig().SyncCommitteeSize+1, increased)
 }
 
 func TestProcessSyncCommittee_MixParticipation_BadSignature(t *testing.T) {
@@ -200,8 +197,7 @@ func TestProcessSyncCommittee_DontPrecompute(t *testing.T) {
 	require.Equal(t, 511, len(votedKeys))
 	require.DeepEqual(t, committeeKeys[0], votedKeys[0].Marshal())
 	balances := st.Balances()
-	//require.Equal(t, uint64(36288), balances[idx]) // 1451559
-	require.Equal(t, uint64(0), balances[idx]) // TODO(john): Fix this test after sync committee rewards are enabled.
+	require.Equal(t, uint64(297279), balances[idx])
 }
 
 func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
@@ -241,20 +237,18 @@ func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
 			require.DeepEqual(t, true, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
-			require.Equal(t, uint64(32000000000), balances[idx]) // 32001451559
+			require.Equal(t, uint64(256000297279), balances[idx])
 		} else {
 			pk := bytesutil.ToBytes48(committeeKeys[i])
 			require.DeepEqual(t, false, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
 			if idx != proposerIndex {
-				// TODO(john): Fix this test after sync committee rewards are enabled.
-				// require.Equal(t, uint64(31999963712), balances[idx]) // 31998548441
-				require.Equal(t, uint64(32000000000), balances[idx]) // 31998548441
+				require.Equal(t, uint64(255999702721), balances[idx])
 			}
 		}
 	}
-	require.Equal(t, uint64(32000000000), balances[proposerIndex]) // 32051633881
+	require.Equal(t, uint64(256010871808), balances[proposerIndex])
 }
 
 func Test_VerifySyncCommitteeSig(t *testing.T) {
@@ -296,92 +290,35 @@ func Test_VerifySyncCommitteeSig(t *testing.T) {
 func Test_SyncRewards(t *testing.T) {
 	tests := []struct {
 		name                  string
-		epoch                 primitives.Epoch
+		epoch                 uint64
 		wantProposerReward    uint64
 		wantParticipantReward uint64
 		errString             string
 	}{
 		{
 			name:                  "epoch is 1 (year 1) ",
-			epoch:                 primitives.Epoch(0),
-			wantProposerReward:    0, // 5184,  // 207365,
-			wantParticipantReward: 0, // 36288, // 1451559,
+			epoch:                 0,
+			wantProposerReward:    42468,  // 5184,  // 207365,
+			wantParticipantReward: 297279, // 36288, // 1451559,
 			errString:             "active balance can't be 0",
 		},
 		{
 			name:                  "epoch is 82126 (year 2)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear + 1),
-			wantProposerReward:    0, // 4769,  // 190776,
-			wantParticipantReward: 0, // 33385, // 1335434,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 164251 (year 3)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*2 + 1),
-			wantProposerReward:    0, // 4354,  // 174187,
-			wantParticipantReward: 0, // 30482, // 1219309,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 4)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*3 + 1),
-			wantProposerReward:    0, // 3939,  // 157597,
-			wantParticipantReward: 0, // 27579, // 1103184,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 5)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*4 + 1),
-			wantProposerReward:    0, // 3525,  // 141008,
-			wantParticipantReward: 0, // 24676, // 987060,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 6)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*5 + 1),
-			wantProposerReward:    0, // 3110,  // 124419,
-			wantParticipantReward: 0, // 21773, // 870935,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 7)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*6 + 1),
-			wantProposerReward:    0, // 2695,  // 107830,
-			wantParticipantReward: 0, // 18870, // 754810,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 8)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*7 + 1),
-			wantProposerReward:    0, // 2281,  // 91240,
-			wantParticipantReward: 0, // 15967, // 638685,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 9)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*8 + 1),
-			wantProposerReward:    0, // 1866,  // 74651,
-			wantParticipantReward: 0, // 13064, // 522561,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 10)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*9 + 1),
-			wantProposerReward:    0, // 1451,  // 58062,
-			wantParticipantReward: 0, // 10160, // 406436,
-			errString:             "",
-		},
-		{
-			name:                  "epoch is 82126 (year 11)",
-			epoch:                 primitives.Epoch(params.BeaconConfig().EpochsPerYear*10 + 1),
-			wantProposerReward:    0, // 1244, // 49767,
-			wantParticipantReward: 0, // 8709, // 348374,
+			epoch:                 params.BeaconConfig().EpochsPerYear + 1,
+			wantProposerReward:    42468,  // 4769,  // 190776,
+			wantParticipantReward: 297279, // 33385, // 1335434,
 			errString:             "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			proposerReward, participantReward, err := altair.SyncRewards(tt.epoch)
+			beaconState, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().MaxValidatorsPerCommittee)
+			require.NoError(t, beaconState.SetSlot(params.BeaconConfig().SlotsPerEpoch.Mul(tt.epoch)))
+			committee, err := altair.NextSyncCommittee(context.Background(), beaconState)
+			require.NoError(t, err)
+			require.NoError(t, beaconState.SetCurrentSyncCommittee(committee))
+
+			proposerReward, participantReward, _, err := altair.SyncRewards(beaconState)
 			if (err != nil) && (tt.errString != "") {
 				require.ErrorContains(t, tt.errString, err)
 				return

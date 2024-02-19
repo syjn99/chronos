@@ -460,7 +460,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
-			wantedBalance:       32000000000,
+			wantedBalance:       256000000000,
 		},
 		{
 			name:    "some participated without flags",
@@ -470,7 +470,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
-			wantedBalance:       32000000000,
+			wantedBalance:       256000000000,
 		},
 		{
 			name:    "some participated with some flags",
@@ -480,7 +480,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
-			wantedBalance:       32003317840, // 32132713965,
+			wantedBalance:       256027179794,
 		},
 		{
 			name:    "all participated with some flags",
@@ -490,7 +490,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
-			wantedBalance:       32002322488, // 32092899776,
+			wantedBalance:       256019025856,
 		},
 		{
 			name:    "all participated with all flags",
@@ -500,7 +500,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   true,
 			},
 			wantedParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
-			wantedBalance:       32008958168, // 32358327707,
+			wantedBalance:       256073385444,
 		},
 	}
 	for _, test := range tests {
@@ -551,6 +551,7 @@ func TestEpochParticipation(t *testing.T) {
 		epochParticipation       []byte
 		participatedFlags        map[uint8]bool
 		wantedNumerator          uint64
+		wantedReserve            uint64
 		wantedEpochParticipation []byte
 	}{
 		{
@@ -561,6 +562,7 @@ func TestEpochParticipation(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedNumerator:          0,
+			wantedReserve:            0,
 			wantedEpochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
 		},
 		{
@@ -571,6 +573,7 @@ func TestEpochParticipation(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedNumerator:          0,
+			wantedReserve:            0,
 			wantedEpochParticipation: []byte{0, 0, 0, 0, 0, 0, 0, 0},
 		},
 		{
@@ -580,7 +583,8 @@ func TestEpochParticipation(t *testing.T) {
 				targetFlagIndex: true,
 				headFlagIndex:   false,
 			},
-			wantedNumerator:          1486392320, // 59455856640,
+			wantedNumerator:          12176547840, // 59455856640,
+			wantedReserve:            0,
 			wantedEpochParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
 		},
 		{
@@ -590,7 +594,8 @@ func TestEpochParticipation(t *testing.T) {
 				targetFlagIndex: false,
 				headFlagIndex:   false,
 			},
-			wantedNumerator:          1040474624, // 41619099648,
+			wantedNumerator:          8523583488, // 41619099648,
+			wantedReserve:            0,
 			wantedEpochParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
 		},
 		{
@@ -600,16 +605,18 @@ func TestEpochParticipation(t *testing.T) {
 				targetFlagIndex: true,
 				headFlagIndex:   true,
 			},
-			wantedNumerator:          4013259264, // 160530812928,
+			wantedNumerator:          32876679168, // 160530812928,
+			wantedReserve:            0,
 			wantedEpochParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
 		},
 	}
 	for _, test := range tests {
 		b, err := helpers.TotalActiveBalance(beaconState)
 		require.NoError(t, err)
-		n, p, err := altair.EpochParticipation(beaconState, test.indices, test.epochParticipation, test.participatedFlags, b)
+		n, r, p, err := altair.EpochParticipation(beaconState, test.indices, test.epochParticipation, test.participatedFlags, b)
 		require.NoError(t, err)
 		require.Equal(t, test.wantedNumerator, n)
+		require.Equal(t, test.wantedReserve, r)
 		require.DeepSSZEqual(t, test.wantedEpochParticipation, p)
 	}
 }
@@ -617,23 +624,31 @@ func TestEpochParticipation(t *testing.T) {
 func TestRewardProposer(t *testing.T) {
 	beaconState, _ := util.DeterministicGenesisStateAltair(t, params.BeaconConfig().MaxValidatorsPerCommittee)
 	require.NoError(t, beaconState.SetSlot(1))
+	err := beaconState.SetCurrentEpochReserve(1000000000000)
+	require.NoError(t, err)
 	tests := []struct {
-		rewardNumerator uint64
-		want            uint64
+		rewardNumerator  uint64
+		reserveNumerator uint64
+		want             uint64
 	}{
-		{rewardNumerator: 1, want: 32000000000},
-		{rewardNumerator: 10000, want: 32000000022},
-		{rewardNumerator: 1000000, want: 32000002254},
-		{rewardNumerator: 1000000000, want: 32002234396},
-		{rewardNumerator: 1000000000000, want: 34234377253},
+		{rewardNumerator: 1, reserveNumerator: 1, want: 0},
+		{rewardNumerator: 10000, reserveNumerator: 10000, want: 22},
+		{rewardNumerator: 1000000, reserveNumerator: 1000000, want: 2232},
+		{rewardNumerator: 1000000000, reserveNumerator: 1000000000, want: 2232142},
+		{rewardNumerator: 1000000000000, reserveNumerator: 1000000000000, want: 2232142857},
 	}
 	for _, test := range tests {
-		require.NoError(t, altair.RewardProposer(context.Background(), beaconState, test.rewardNumerator))
+		pr := beaconState.CurrentEpochReserve()
 		i, err := helpers.BeaconProposerIndex(context.Background(), beaconState)
 		require.NoError(t, err)
+		pb, err := beaconState.BalanceAtIndex(i)
+		require.NoError(t, err)
+		require.NoError(t, altair.RewardProposer(context.Background(), beaconState, test.rewardNumerator, test.reserveNumerator))
 		b, err := beaconState.BalanceAtIndex(i)
 		require.NoError(t, err)
-		require.Equal(t, test.want, b)
+		require.Equal(t, test.want+pb, b)
+		r := beaconState.CurrentEpochReserve()
+		require.Equal(t, test.want, pr-r)
 	}
 }
 

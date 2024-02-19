@@ -15,6 +15,7 @@ import (
 	e "github.com/prysmaticlabs/prysm/v4/beacon-chain/core/epoch"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/epoch/precompute"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/execution"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
@@ -394,6 +395,11 @@ func ProcessEpochPrecompute(ctx context.Context, state state.BeaconState) (state
 	err = precompute.ProcessSlashingsPrecompute(state, bp)
 	if err != nil {
 		return nil, err
+	}
+
+	err = helpers.ProcessRewardfactorUpdate(state)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not update reserve and reward factor")
 	}
 
 	state, err = e.ProcessFinalUpdates(state)

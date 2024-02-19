@@ -780,9 +780,6 @@ func HydrateBeaconBlockBodyBellatrix(b *ethpb.BeaconBlockBodyBellatrix) *ethpb.B
 	}
 	if b.BailOuts == nil {
 		b.BailOuts = make([]*ethpb.BailOut, 0)
-		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
-			ValidatorIndex: primitives.ValidatorIndex(999),
-		})
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayload{
@@ -854,9 +851,6 @@ func HydrateBlindedBeaconBlockBodyBellatrix(b *ethpb.BlindedBeaconBlockBodyBella
 	}
 	if b.BailOuts == nil {
 		b.BailOuts = make([]*ethpb.BailOut, 0)
-		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
-			ValidatorIndex: primitives.ValidatorIndex(999),
-		})
 	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeader{
@@ -928,9 +922,6 @@ func HydrateV2BlindedBeaconBlockBodyBellatrix(b *v2.BlindedBeaconBlockBodyBellat
 	}
 	if b.BailOuts == nil {
 		b.BailOuts = make([]*v1.BailOut, 0)
-		b.BailOuts = append(b.BailOuts, &v1.BailOut{
-			ValidatorIndex: primitives.ValidatorIndex(999),
-		})
 	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeader{
@@ -1001,9 +992,6 @@ func HydrateBeaconBlockBodyCapella(b *ethpb.BeaconBlockBodyCapella) *ethpb.Beaco
 	}
 	if b.BailOuts == nil {
 		b.BailOuts = make([]*ethpb.BailOut, 0)
-		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
-			ValidatorIndex: primitives.ValidatorIndex(999),
-		})
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayloadCapella{
@@ -1075,9 +1063,6 @@ func HydrateBlindedBeaconBlockBodyCapella(b *ethpb.BlindedBeaconBlockBodyCapella
 	}
 	if b.BailOuts == nil {
 		b.BailOuts = make([]*ethpb.BailOut, 0)
-		b.BailOuts = append(b.BailOuts, &ethpb.BailOut{
-			ValidatorIndex: primitives.ValidatorIndex(999),
-		})
 	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeaderCapella{
@@ -1150,9 +1135,6 @@ func HydrateV2BlindedBeaconBlockBodyCapella(b *v2.BlindedBeaconBlockBodyCapella)
 	}
 	if b.BailOuts == nil {
 		b.BailOuts = make([]*v1.BailOut, 0)
-		b.BailOuts = append(b.BailOuts, &v1.BailOut{
-			ValidatorIndex: primitives.ValidatorIndex(999),
-		})
 	}
 	if b.ExecutionPayloadHeader == nil {
 		b.ExecutionPayloadHeader = &enginev1.ExecutionPayloadHeaderCapella{

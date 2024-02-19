@@ -380,10 +380,10 @@ func TestChurnLimit_OK(t *testing.T) {
 		isExit         bool
 		wantedChurn    uint64
 	}{
-		{validatorCount: 175050, epoch: 41063, isExit: false, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
-		{validatorCount: 175050, epoch: 41063, isExit: true, wantedChurn: 4},    // exit_churn when deposit < plan = chrun_limit
-		{validatorCount: 175051, epoch: 41063, isExit: false, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
-		{validatorCount: 175051, epoch: 41063, isExit: true, wantedChurn: 5},    // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 190002, epoch: 41063, isExit: false, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 190002, epoch: 41063, isExit: true, wantedChurn: 4},    // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 190003, epoch: 41063, isExit: false, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 190003, epoch: 41063, isExit: true, wantedChurn: 5},    // exit_churn when deposit > plan = chrun_limit++
 		{validatorCount: 812500, epoch: 287438, isExit: false, wantedChurn: 13}, // pending_churn when deposit < plan = chrun_limit++
 		{validatorCount: 812500, epoch: 287438, isExit: true, wantedChurn: 12},  // exit_churn when deposit < plan = chrun_limit
 		{validatorCount: 812501, epoch: 287438, isExit: false, wantedChurn: 12}, // pending_churn when deposit > plan = chrun_limit
@@ -696,15 +696,21 @@ func TestIsEligibleForActivationQueue(t *testing.T) {
 		validator *ethpb.Validator
 		want      bool
 	}{
-		{"Eligible",
+		{
+			"Eligible",
 			&ethpb.Validator{ActivationEligibilityEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance},
-			true},
-		{"Incorrect activation eligibility epoch",
+			true,
+		},
+		{
+			"Incorrect activation eligibility epoch",
 			&ethpb.Validator{ActivationEligibilityEpoch: 1, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance},
-			false},
-		{"Not enough balance",
+			false,
+		},
+		{
+			"Not enough balance",
 			&ethpb.Validator{ActivationEligibilityEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: 1},
-			false},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -720,18 +726,24 @@ func TestIsIsEligibleForActivation(t *testing.T) {
 		state     *ethpb.BeaconState
 		want      bool
 	}{
-		{"Eligible",
+		{
+			"Eligible",
 			&ethpb.Validator{ActivationEligibilityEpoch: 1, ActivationEpoch: params.BeaconConfig().FarFutureEpoch},
 			&ethpb.BeaconState{FinalizedCheckpoint: &ethpb.Checkpoint{Epoch: 2}},
-			true},
-		{"Not yet finalized",
+			true,
+		},
+		{
+			"Not yet finalized",
 			&ethpb.Validator{ActivationEligibilityEpoch: 1, ActivationEpoch: params.BeaconConfig().FarFutureEpoch},
 			&ethpb.BeaconState{FinalizedCheckpoint: &ethpb.Checkpoint{Root: make([]byte, 32)}},
-			false},
-		{"Incorrect activation epoch",
+			false,
+		},
+		{
+			"Incorrect activation epoch",
 			&ethpb.Validator{ActivationEligibilityEpoch: 1},
 			&ethpb.BeaconState{FinalizedCheckpoint: &ethpb.Checkpoint{Epoch: 2}},
-			false},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

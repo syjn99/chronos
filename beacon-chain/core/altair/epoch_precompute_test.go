@@ -221,14 +221,16 @@ func TestAttestationsDelta(t *testing.T) {
 	require.NoError(t, err)
 	validators, balance, err = ProcessEpochParticipation(context.Background(), s, balance, validators)
 	require.NoError(t, err)
-	deltas, err := AttestationsDelta(s, balance, validators)
+	deltas, rDeltas, err := AttestationsDelta(s, balance, validators)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))
 	penalties := make([]uint64, len(deltas))
+	totalReserve := uint64(0)
 	for i, d := range deltas {
 		rewards[i] = d.HeadReward + d.SourceReward + d.TargetReward
 		penalties[i] = d.SourcePenalty + d.TargetPenalty
+		totalReserve += rDeltas[i]
 	}
 
 	// Reward amount should increase as validator index increases due to setup.
@@ -246,9 +248,9 @@ func TestAttestationsDelta(t *testing.T) {
 	// Last index should have 0 penalty.
 	require.Equal(t, uint64(0), penalties[len(penalties)-1])
 
-	want := []uint64{0, 780358157, 1746515875, 2006635260} // []uint64{0, 31214326479, 69860635453, 80265410946}
+	want := []uint64{0, 6392694042, 14307458094, 16438356108}
 	require.DeepEqual(t, want, rewards)
-	want = []uint64{2972792980, 1932315437, 0, 0} // []uint64{118911719920, 77292617948, 0, 0}
+	want = []uint64{24353120160, 15829528104, 0, 0}
 	require.DeepEqual(t, want, penalties)
 }
 
@@ -259,14 +261,16 @@ func TestAttestationsDeltaBellatrix(t *testing.T) {
 	require.NoError(t, err)
 	validators, balance, err = ProcessEpochParticipation(context.Background(), s, balance, validators)
 	require.NoError(t, err)
-	deltas, err := AttestationsDelta(s, balance, validators)
+	deltas, rDeltas, err := AttestationsDelta(s, balance, validators)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))
 	penalties := make([]uint64, len(deltas))
+	totalReserve := uint64(0)
 	for i, d := range deltas {
 		rewards[i] = d.HeadReward + d.SourceReward + d.TargetReward
 		penalties[i] = d.SourcePenalty + d.TargetPenalty
+		totalReserve += rDeltas[i]
 	}
 
 	// Reward amount should increase as validator index increases due to setup.
@@ -284,9 +288,9 @@ func TestAttestationsDeltaBellatrix(t *testing.T) {
 	// Last index should have 0 penalty.
 	require.Equal(t, uint64(0), penalties[len(penalties)-1])
 
-	want := []uint64{0, 780358157, 1746515875, 2006635260} // []uint64{0, 31214326479, 69860635453, 80265410946}
+	want := []uint64{0, 6392694042, 14307458094, 16438356108}
 	require.DeepEqual(t, want, rewards)
-	want = []uint64{2972792980, 1932315437, 0, 0} // []uint64{118911719920, 77292617948, 0, 0}
+	want = []uint64{24353120160, 15829528104, 0, 0}
 	require.DeepEqual(t, want, penalties)
 }
 
@@ -307,14 +311,16 @@ func TestProcessRewardsAndPenaltiesPrecompute_Ok(t *testing.T) {
 	}
 
 	wanted := make([]uint64, s.NumValidators())
-	deltas, err := AttestationsDelta(s, balance, validators)
+	deltas, rDeltas, err := AttestationsDelta(s, balance, validators)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))
 	penalties := make([]uint64, len(deltas))
+	totalReserve := uint64(0)
 	for i, d := range deltas {
 		rewards[i] = d.HeadReward + d.SourceReward + d.TargetReward
 		penalties[i] = d.SourcePenalty + d.TargetPenalty
+		totalReserve += rDeltas[i]
 	}
 	for i := range rewards {
 		wanted[i] += rewards[i]
@@ -327,6 +333,7 @@ func TestProcessRewardsAndPenaltiesPrecompute_Ok(t *testing.T) {
 		}
 	}
 	require.DeepEqual(t, wanted, balances)
+	require.Equal(t, uint64(0), totalReserve)
 }
 
 func TestProcessRewardsAndPenaltiesPrecompute_InactivityLeak(t *testing.T) {
@@ -348,8 +355,8 @@ func TestProcessRewardsAndPenaltiesPrecompute_InactivityLeak(t *testing.T) {
 	balances := s.Balances()
 	inactivityBalances := sCopy.Balances()
 	// Balances decreased to 0 due to inactivity
-	require.Equal(t, uint64(1746515875), balances[2]) // 69860635453
-	require.Equal(t, uint64(2006635260), balances[3]) // 80265410946
+	require.Equal(t, uint64(14307458094), balances[2])
+	require.Equal(t, uint64(16438356108), balances[3]) // 80265410946
 	require.Equal(t, uint64(0), inactivityBalances[2])
 	require.Equal(t, uint64(0), inactivityBalances[3])
 }

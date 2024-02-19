@@ -8,6 +8,7 @@ import (
 	state_native "github.com/prysmaticlabs/prysm/v4/beacon-chain/state/state-native"
 	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
+	mathutil "github.com/prysmaticlabs/prysm/v4/math"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v4/testing/assert"
 	"github.com/prysmaticlabs/prysm/v4/testing/require"
@@ -73,6 +74,34 @@ func TestTotalActiveBalance(t *testing.T) {
 		bal, err := TotalActiveBalance(state)
 		require.NoError(t, err)
 		require.Equal(t, uint64(test.vCount)*params.BeaconConfig().MaxEffectiveBalance, bal)
+	}
+}
+
+func TestTotalBalanceWithQueue(t *testing.T) {
+	tests := []struct {
+		vCount int
+		result int
+	}{
+		{vCount: 1, result: 1},
+		{vCount: 10, result: 7},
+		{vCount: 10000, result: 6667},
+	}
+	for _, test := range tests {
+		validators := make([]*ethpb.Validator, 0)
+		for i := 0; i < test.vCount; i++ {
+			if i%3 == 1 {
+				validators = append(validators, &ethpb.Validator{EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance, ExitEpoch: primitives.Epoch(i + 1)})
+			} else if i%3 == 2 {
+				validators = append(validators, &ethpb.Validator{EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance, ActivationEpoch: primitives.Epoch(mathutil.MaxUint64), ExitEpoch: primitives.Epoch(mathutil.MaxUint64)})
+			} else {
+				validators = append(validators, &ethpb.Validator{EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance, ActivationEpoch: 0, ExitEpoch: primitives.Epoch(mathutil.MaxUint64)})
+			}
+		}
+		state, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{Validators: validators})
+		require.NoError(t, err)
+		bal, err := TotalBalanceWithQueue(state)
+		require.NoError(t, err)
+		require.Equal(t, uint64(test.result)*params.BeaconConfig().MaxEffectiveBalance, bal)
 	}
 }
 
@@ -338,5 +367,237 @@ func TestTargetDepositPlan(t *testing.T) {
 			got := TargetDepositPlan(tt.e)
 			require.Equal(t, tt.want, got)
 		})
+	}
+}
+
+func TestProcessRewardfactorUpdate_OK(t *testing.T) {
+	tests := []struct {
+		epoch       uint64
+		valCnt      uint64
+		currReserve uint64
+		wantFactor  int64
+		wantReserve uint64
+	}{
+		{epoch: 1, valCnt: 10000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 88624474886},
+		{epoch: 1, valCnt: 20000, currReserve: 1000000000, wantFactor: 62074, wantReserve: 88671039380},
+		{epoch: 1, valCnt: 21000, currReserve: 1000000000, wantFactor: -7434821, wantReserve: 88694408696},
+		{epoch: 1, valCnt: 50000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 88717990868},
+		{epoch: 80000, valCnt: 200000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 88624474886},
+		{epoch: 80000, valCnt: 350000, currReserve: 1000000000, wantFactor: 515327, wantReserve: 88669626500},
+		{epoch: 80000, valCnt: 360000, currReserve: 1000000000, wantFactor: -3755663, wantReserve: 88682940027},
+		{epoch: 80000, valCnt: 400000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 88717990868},
+		{epoch: 150000, valCnt: 400000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 514804079148},
+		{epoch: 150000, valCnt: 640000, currReserve: 1000000000, wantFactor: 236043, wantReserve: 514850101346},
+		{epoch: 150000, valCnt: 650000, currReserve: 1000000000, wantFactor: -2104018, wantReserve: 514857395783},
+		{epoch: 150000, valCnt: 750000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 514897595130},
+		{epoch: 300000, valCnt: 700000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 636569680365},
+		{epoch: 300000, valCnt: 820000, currReserve: 1000000000, wantFactor: 723357, wantReserve: 636614183508},
+		{epoch: 300000, valCnt: 830000, currReserve: 1000000000, wantFactor: -1097089, wantReserve: 636619858201},
+		{epoch: 300000, valCnt: 950000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 636663196347},
+		{epoch: 600000, valCnt: 900000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 149507275495},
+		{epoch: 600000, valCnt: 990000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 149549357687},
+		{epoch: 600000, valCnt: 1010000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 149558709285},
+		{epoch: 600000, valCnt: 1100000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 149600791477},
+	}
+	for _, test := range tests {
+		base := buildState(params.BeaconConfig().SlotsPerEpoch.Mul(test.epoch), test.valCnt)
+		base.RewardAdjustmentFactor = 0
+		base.CurrentEpochReserve = test.currReserve
+		beaconState, err := state_native.InitializeFromProtoPhase0(base)
+		require.NoError(t, err)
+
+		err = ProcessRewardfactorUpdate(beaconState)
+		require.NoError(t, err)
+		assert.Equal(t, test.wantFactor, GetRewardAdjustmentFactor(beaconState))
+		assert.Equal(t, test.currReserve, beaconState.PreviousEpochReserve())
+		assert.Equal(t, test.wantReserve, beaconState.CurrentEpochReserve())
+	}
+}
+
+func TestTotalRewardWithReserveUsage_OK(t *testing.T) {
+	tests := []struct {
+		epoch   uint64
+		factor  uint64
+		reserve uint64
+		want    uint64
+		sign    int
+		usage   uint64
+	}{
+		{epoch: 1, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 181187214612},
+		{epoch: 1, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 87671232877},
+		{epoch: 1, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: 1, usage: 224048706240},
+		{epoch: 90000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 607366818874},
+		{epoch: 90000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 513850837139},
+		{epoch: 90000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: -1, usage: 202130898022},
+		{epoch: 170000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 850898021309},
+		{epoch: 170000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 757382039574},
+		{epoch: 170000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: -1, usage: 445662100457},
+		{epoch: 260000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 729132420091},
+		{epoch: 260000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 635616438356},
+		{epoch: 260000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: -1, usage: 323896499239},
+		{epoch: 350000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 546484018265},
+		{epoch: 350000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 452968036530},
+		{epoch: 350000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: -1, usage: 141248097413},
+		{epoch: 430000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 424718417047},
+		{epoch: 430000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 331202435312},
+		{epoch: 430000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: -1, usage: 19482496195},
+		{epoch: 500000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 302952815829},
+		{epoch: 500000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 209436834094},
+		{epoch: 500000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: 1, usage: 102283105023},
+		{epoch: 500000, factor: 100000000000, reserve: 1000000, want: 365297803652, sign: 1, usage: 1000000},
+		{epoch: 580000, factor: 1030000000000, reserve: 1000000000, want: 62343987823, sign: -1, usage: 242070015221},
+		{epoch: 580000, factor: 0, reserve: 1000000000, want: 155859969558, sign: -1, usage: 148554033486},
+		{epoch: 580000, factor: 100000000000, reserve: 1000000000000000, want: 467579908675, sign: 1, usage: 163165905631},
+		{epoch: 580000, factor: 100000000000, reserve: 1000000, want: 304415003044, sign: 1, usage: 1000000},
+	}
+	for _, test := range tests {
+		base := buildState(params.BeaconConfig().SlotsPerEpoch.Mul(test.epoch), 20000)
+		base.RewardAdjustmentFactor = test.factor
+		base.PreviousEpochReserve = test.reserve
+		base.CurrentEpochReserve = test.reserve
+		beaconState, err := state_native.InitializeFromProtoPhase0(base)
+		require.NoError(t, err)
+
+		got, sign, usage := TotalRewardWithReserveUsage(beaconState)
+		assert.Equal(t, test.want, got)
+		assert.Equal(t, test.sign, sign)
+		assert.Equal(t, test.usage, usage)
+	}
+}
+
+func TestCalculateRewardAdjustmentFactor_OK(t *testing.T) {
+	tests := []struct {
+		epoch  uint64
+		valCnt uint64
+		want   int64
+	}{
+		{epoch: 1, valCnt: 10000, want: 106044060},        // 0.000010604406
+		{epoch: 1, valCnt: 20000, want: 438843},           // 0.000000438843
+		{epoch: 1, valCnt: 21000, want: -52561243},        // -0.000052561243
+		{epoch: 1, valCnt: 50000, want: -106044060},       // -0.000106044060
+		{epoch: 80000, valCnt: 200000, want: 25311030},    // 0.000025311030
+		{epoch: 80000, valCnt: 350000, want: 869564},      // 0.000000869564
+		{epoch: 80000, valCnt: 360000, want: -6337314},    // -0.000006337314
+		{epoch: 80000, valCnt: 400000, want: -25311030},   // -0.000025311030
+		{epoch: 150000, valCnt: 400000, want: 18735240},   // 0.000018735240
+		{epoch: 150000, valCnt: 640000, want: 294822},     // 0.000000294822
+		{epoch: 150000, valCnt: 650000, want: -2627952},   // -0.000002627952
+		{epoch: 150000, valCnt: 750000, want: -18735240},  // -0.000018735240
+		{epoch: 300000, valCnt: 700000, want: 16524735},   // 0.000016524735
+		{epoch: 300000, valCnt: 820000, want: 796886},     // 0.000000796886
+		{epoch: 300000, valCnt: 830000, want: -1208607},   // -0.000001208607
+		{epoch: 300000, valCnt: 950000, want: -16524735},  // -0.000016524735
+		{epoch: 600000, valCnt: 900000, want: 15000000},   // 0.000015000000
+		{epoch: 600000, valCnt: 990000, want: 1500000},    // 0.000001500000
+		{epoch: 600000, valCnt: 1010000, want: -1500000},  // -0.000001500000
+		{epoch: 600000, valCnt: 1100000, want: -15000000}, // -0.000015000000
+	}
+	for _, test := range tests {
+		base := buildState(params.BeaconConfig().SlotsPerEpoch.Mul(test.epoch), test.valCnt)
+		base.RewardAdjustmentFactor = 0
+		beaconState, err := state_native.InitializeFromProtoPhase0(base)
+		require.NoError(t, err)
+
+		got, err := CalculateRewardAdjustmentFactor(beaconState)
+		require.NoError(t, err)
+		assert.Equal(t, test.want, got)
+	}
+}
+
+func TestGetRewardAdjustmentFactor_OK(t *testing.T) {
+	tests := []struct {
+		factor uint64
+		want   int64
+	}{
+		{factor: 1000000000000, want: 1000000000000},
+		{factor: 1000000000001, want: -1},
+		{factor: 1200000000000, want: -200000000000},
+		{factor: 0, want: 0},
+		{factor: 100000000000, want: 100000000000},
+	}
+	for _, test := range tests {
+		state, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			RewardAdjustmentFactor: test.factor,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, test.want, GetRewardAdjustmentFactor(state))
+	}
+}
+
+func TestSetRewardAdjustmentFactor_OK(t *testing.T) {
+	tests := []struct {
+		factor int64
+		want   uint64
+	}{
+		{factor: 1000000000000, want: 1000000000000},
+		{factor: 1000000000001, want: 1000000000000},
+		{factor: 0, want: 0},
+		{factor: -100000000000, want: 1100000000000},
+		{factor: -1, want: 1000000000001},
+	}
+	for _, test := range tests {
+		state, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			RewardAdjustmentFactor: 0,
+		})
+		require.NoError(t, err)
+		err = SetRewardAdjustmentFactor(state, test.factor)
+		require.NoError(t, err)
+		assert.Equal(t, test.want, state.RewardAdjustmentFactor())
+	}
+}
+
+func TestTruncateRewardAdjustmentFactor_OK(t *testing.T) {
+	tests := []struct {
+		in   int64
+		want int64
+	}{
+		{in: -30000000001, want: -30000000000},
+		{in: -30000000000, want: -30000000000},
+		{in: -10000000000, want: -10000000000},
+		{in: 0, want: 0},
+		{in: 10000000000, want: 10000000000},
+		{in: 100000000000, want: 100000000000},
+		{in: 100000000001, want: 100000000000},
+	}
+	for _, test := range tests {
+		assert.Equal(t, test.want, TruncateRewardAdjustmentFactor(test.in))
+	}
+}
+
+func TestIncreaseCurrentReserve_OK(t *testing.T) {
+	tests := []struct {
+		r    uint64
+		add  uint64
+		want uint64
+	}{
+		{r: 1000000000000000000, add: 100000000000000000, want: 1100000000000000000},
+		{r: mathutil.MaxUint64, add: 1, want: mathutil.MaxUint64},
+	}
+	for _, test := range tests {
+		state, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			CurrentEpochReserve: test.r,
+		})
+		require.NoError(t, err)
+		require.NoError(t, IncreaseCurrentReserve(state, test.add))
+		assert.Equal(t, test.want, state.CurrentEpochReserve())
+	}
+}
+
+func TestDecreaseCurrentReserve_OK(t *testing.T) {
+	tests := []struct {
+		r    uint64
+		sub  uint64
+		want uint64
+	}{
+		{r: 1000000000000000000, sub: 100000000000000000, want: 900000000000000000},
+		{r: 100000000000000000, sub: 100000000000000001, want: 0},
+	}
+	for _, test := range tests {
+		state, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			CurrentEpochReserve: test.r,
+		})
+		require.NoError(t, err)
+		require.NoError(t, DecreaseCurrentReserve(state, test.sub))
+		assert.Equal(t, test.want, state.CurrentEpochReserve())
 	}
 }

@@ -28,11 +28,14 @@ type BeaconState struct {
 	stateRoots                          *customtypes.StateRoots
 	historicalRoots                     customtypes.HistoricalRoots
 	historicalSummaries                 []*ethpb.HistoricalSummary
+	RewardAdjustmentFactor              uint64
 	eth1Data                            *ethpb.Eth1Data
 	eth1DataVotes                       []*ethpb.Eth1Data
 	eth1DepositIndex                    uint64
 	validators                          []*ethpb.Validator
 	balances                            []uint64
+	previousEpochReserve                uint64
+	currentEpochReserve                 uint64
 	randaoMixes                         *customtypes.RandaoMixes
 	slashings                           []uint64
 	previousEpochAttestations           []*ethpb.PendingAttestation

@@ -43,6 +43,7 @@ message BeaconState {
   repeated bytes block_roots = 2002 [(ethereum.eth.ext.ssz_size) = "block_roots.size"];
   repeated bytes state_roots = 2003 [(ethereum.eth.ext.ssz_size) = "state_roots.size"];
   repeated bytes historical_roots = 2004 [(ethereum.eth.ext.ssz_size) = "?,32", (ethereum.eth.ext.ssz_max)  = "16777216"];
+  uint64 reward_adjustment_factor = 2005;
 
   // Eth1 [3001-4000]
   v1.Eth1Data eth1_data = 3001;
@@ -52,6 +53,8 @@ message BeaconState {
   // Registry [4001-5000]
   repeated v1.Validator validators = 4001 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
   repeated uint64 balances = 4002 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
+  uint64 previous_epoch_reserve = 4003;
+  uint64 current_epoch_reserve = 4004;
 
   // Randomness [5001-6000]
   repeated bytes randao_mixes = 5001 [(ethereum.eth.ext.ssz_size) = "randao_mixes.size"];
@@ -89,6 +92,7 @@ message BeaconStateBellatrix {
   repeated bytes block_roots = 2002 [(ethereum.eth.ext.ssz_size) = "block_roots.size"];
   repeated bytes state_roots = 2003 [(ethereum.eth.ext.ssz_size) = "state_roots.size"];
   repeated bytes historical_roots = 2004 [(ethereum.eth.ext.ssz_size) = "?,32", (ethereum.eth.ext.ssz_max)  = "16777216"];
+  uint64 reward_adjustment_factor = 2005;
 
   // Eth1 [3001-4000]
   v1.Eth1Data eth1_data = 3001;
@@ -98,6 +102,8 @@ message BeaconStateBellatrix {
   // Registry [4001-5000]
   repeated v1.Validator validators = 4001 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
   repeated uint64 balances = 4002 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
+  uint64 previous_epoch_reserve = 4003;
+  uint64 current_epoch_reserve = 4004;
 
   // Randomness [5001-6000]
   repeated bytes randao_mixes = 5001 [(ethereum.eth.ext.ssz_size) = "randao_mixes.size"];
@@ -138,6 +144,7 @@ message BeaconStateCapella {
   repeated bytes block_roots = 2002 [(ethereum.eth.ext.ssz_size) = "block_roots.size"];
   repeated bytes state_roots = 2003 [(ethereum.eth.ext.ssz_size) = "state_roots.size"];
   repeated bytes historical_roots = 2004 [(ethereum.eth.ext.ssz_size) = "?,32", (ethereum.eth.ext.ssz_max)  = "16777216"];
+  uint64 reward_adjustment_factor = 2005;
 
   // Eth1 [3001-4000]
   v1.Eth1Data eth1_data = 3001;
@@ -147,6 +154,8 @@ message BeaconStateCapella {
   // Registry [4001-5000]
   repeated v1.Validator validators = 4001 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
   repeated uint64 balances = 4002 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
+  uint64 previous_epoch_reserve = 4003;
+  uint64 current_epoch_reserve = 4004;
 
   // Randomness [5001-6000]
   repeated bytes randao_mixes = 5001 [(ethereum.eth.ext.ssz_size) = "randao_mixes.size"];

@@ -152,6 +152,36 @@ func (b *BeaconState) AppendHistoricalSummaries(summary *ethpb.HistoricalSummary
 	return nil
 }
 
+// SetRewardAdjustmentFactor for the beacon state.
+func (b *BeaconState) SetRewardAdjustmentFactor(val uint64) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	b.rewardAdjustmentFactor = val
+	b.markFieldAsDirty(types.RewardAdjustmentFactor)
+	return nil
+}
+
+// SetPreviousEpochReserve for the beacon state.
+func (b *BeaconState) SetPreviousEpochReserve(val uint64) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	b.previousEpochReserve = val
+	b.markFieldAsDirty(types.PreviousEpochReserve)
+	return nil
+}
+
+// SetCurrentEpochReserve for the beacon state.
+func (b *BeaconState) SetCurrentEpochReserve(val uint64) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	b.currentEpochReserve = val
+	b.markFieldAsDirty(types.CurrentEpochReserve)
+	return nil
+}
+
 // Recomputes the branch up the index in the Merkle trie representation
 // of the beacon state. This method performs slice reads and the caller MUST
 // hold the lock before calling this method.

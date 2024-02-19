@@ -35,11 +35,11 @@ func TestBeaconStateMerkleProofs_altair(t *testing.T) {
 	htr, err := altair.HashTreeRoot(ctx)
 	require.NoError(t, err)
 	results := []string{
-		"0x173669ae8794c057def63b20372114a628abb029354a2ef50d7a1aaa9a3dab4a",
-		"0xe8facaa9be1c488207092f135ca6159f7998f313459b4198f46a9433f8b346e6",
-		"0x0a7910590f2a08faa740a5c40e919722b80a786d18d146318309926a6b2ab95e",
-		"0x81eea5ee148ae61f7355f6643a2e2419e7fe02e6d01cff67b1f2a694ca6a7991",
-		"0xfcdfc627caa2b0c05cea554731754ab8589bc68a4e35a96c7c7b22d019ffa17d",
+		"0xacff3e632bf8ff27b783ac48086a544d1e920512add91817790d355e09846cd0",
+		"0x966474d982a6695e57f9cd7dbcd1d646b817acc468c6a9c8fa9da4bd25428d9d",
+		"0xdb56114e00fdd4c1f85c892bf35ac9a89289aaecb1ebd0a96cde606a748b5d71",
+		"0xd96747cbf167ae33a66b7c32dd372eaba88f4b0d0669f319f06a1f1b193be155",
+		"0x2032b54f7c2fb563c6f466d72174313b838524ec8ca884fd10f584079eb4b017",
 	}
 	t.Run("current sync committee", func(t *testing.T) {
 		cscp, err := altair.CurrentSyncCommitteeProof(ctx)

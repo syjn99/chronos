@@ -76,7 +76,7 @@ func runPrecomputeRewardsAndPenaltiesTest(t *testing.T, testFolderPath string) {
 	require.NoError(t, err)
 	vp, bp, err = altair.ProcessEpochParticipation(ctx, preBeaconState, bp, vp)
 	require.NoError(t, err)
-	deltas, err := altair.AttestationsDelta(preBeaconState, bp, vp)
+	deltas, _, err := altair.AttestationsDelta(preBeaconState, bp, vp)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))

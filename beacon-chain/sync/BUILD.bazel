@@ -133,6 +133,7 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
+    timeout = "long",
     srcs = [
         "batch_verifier_test.go",
         "block_batcher_test.go",

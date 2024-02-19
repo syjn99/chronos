@@ -136,9 +136,10 @@ func buildGenesisBeaconState(genesisTime uint64, preState state.BeaconState, eth
 	}
 	st := &ethpb.BeaconStateAltair{
 		// Misc fields.
-		Slot:                  0,
-		GenesisTime:           genesisTime,
-		GenesisValidatorsRoot: genesisValidatorsRoot[:],
+		Slot:                   0,
+		GenesisTime:            genesisTime,
+		GenesisValidatorsRoot:  genesisValidatorsRoot[:],
+		RewardAdjustmentFactor: preState.RewardAdjustmentFactor(),
 
 		Fork: &ethpb.Fork{
 			PreviousVersion: params.BeaconConfig().GenesisForkVersion,
@@ -149,6 +150,8 @@ func buildGenesisBeaconState(genesisTime uint64, preState state.BeaconState, eth
 		// Validator registry fields.
 		Validators:                 preState.Validators(),
 		Balances:                   preState.Balances(),
+		PreviousEpochReserve:       preState.PreviousEpochReserve(),
+		CurrentEpochReserve:        preState.CurrentEpochReserve(),
 		PreviousEpochParticipation: prevEpochParticipation,
 		CurrentEpochParticipation:  currEpochParticipation,
 		InactivityScores:           scores,
@@ -232,10 +235,12 @@ func emptyGenesisState() (state.BeaconState, error) {
 			Epoch:           0,
 		},
 		// Validator registry fields.
-		Validators:       []*ethpb.Validator{},
-		Balances:         []uint64{},
-		InactivityScores: []uint64{},
-		BailOutScores:    []uint64{},
+		Validators:           []*ethpb.Validator{},
+		Balances:             []uint64{},
+		PreviousEpochReserve: 0,
+		CurrentEpochReserve:  0,
+		InactivityScores:     []uint64{},
+		BailOutScores:        []uint64{},
 
 		JustificationBits:          []byte{0},
 		HistoricalRoots:            [][]byte{},

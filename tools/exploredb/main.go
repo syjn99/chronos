@@ -351,6 +351,8 @@ func printStates(stateC <-chan *modifiedState, doneC chan<- bool) {
 		log.Infof("validators                    : sizeSSZ = %s, count = %d", humanize.Bytes(size), count)
 		size, count = sizeAndCountOfUin64List(st.Balances())
 		log.Infof("balances                      : size = %s, count = %d", humanize.Bytes(size), count)
+		log.Infof("previous_epoch_reserve                          : %d", st.PreviousEpochReserve())
+		log.Infof("current_epoch_reserve                          : %d", st.CurrentEpochReserve())
 		size, count = sizeAndCountOfByteList(st.RandaoMixes())
 		log.Infof("randao_mixes                  : size = %s, count = %d", humanize.Bytes(size), count)
 		size, count = sizeAndCountOfUin64List(st.Slashings())
