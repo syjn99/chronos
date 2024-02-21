@@ -32,3 +32,7 @@ type PeerDetailInfoResponse struct {
 	GossipScore      string `json:"gossip_score"`
 	BehaviourPenalty string `json:"behaviour_penalty"`
 }
+
+type EpochReward struct {
+	Reward uint64 `json:"reward"`
+}

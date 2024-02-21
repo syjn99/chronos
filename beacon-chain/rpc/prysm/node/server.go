@@ -5,6 +5,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/db"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/execution"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state/stategen"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/sync"
 )
 
@@ -18,4 +19,5 @@ type Server struct {
 	GenesisTimeFetcher        blockchain.TimeFetcher
 	HeadFetcher               blockchain.HeadFetcher
 	ExecutionChainInfoFetcher execution.ChainInfoFetcher
+	ReplayerBuilder           stategen.ReplayerBuilder
 }

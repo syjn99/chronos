@@ -1,6 +1,7 @@
 package node
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -11,11 +12,15 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	manet "github.com/multiformats/go-multiaddr/net"
 	"github.com/pkg/errors"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/peers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/peers/peerdata"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
+	"github.com/prysmaticlabs/prysm/v4/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v4/network"
 	eth "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
+	"github.com/prysmaticlabs/prysm/v4/time/slots"
 )
 
 // ListTrustedPeer retrieves data about the node's trusted peers.
@@ -221,4 +226,53 @@ func (s *Server) ListPeerDetailInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	network.WriteJson(w, res)
+}
+
+// GetEpochReward returns the epoch reward for the given epoch.
+func (s *Server) GetEpochReward(w http.ResponseWriter, r *http.Request) {
+	var requestedEpoch primitives.Epoch
+	segments := strings.Split(r.URL.Path, "/")
+	epoch := segments[len(segments)-1]
+	if epoch == "latest" {
+		requestedEpoch = slots.ToEpoch(s.GenesisTimeFetcher.CurrentSlot())
+	} else {
+		uintEpoch, err := strconv.ParseUint(epoch, 10, 64)
+		if err != nil {
+			errJson := &network.DefaultErrorJson{
+				Message: errors.Wrapf(err, "parse int error").Error(),
+				Code:    http.StatusBadRequest,
+			}
+			network.WriteError(w, errJson)
+			return
+		}
+		requestedEpoch = primitives.Epoch(uintEpoch)
+	}
+
+	var reqState state.BeaconState
+	var slot primitives.Slot
+	var err error
+	slot, err = slots.EpochStart(requestedEpoch)
+	if err != nil {
+		errJson := &network.DefaultErrorJson{
+			Message: errors.Wrapf(err, "Could not get start slot of requested epoch").Error(),
+			Code:    http.StatusBadRequest,
+		}
+		network.WriteError(w, errJson)
+		return
+	}
+	ctx := context.Background()
+	reqState, err = s.ReplayerBuilder.ReplayerForSlot(slot).ReplayBlocks(ctx)
+	if err != nil {
+		errJson := &network.DefaultErrorJson{
+			Message: errors.Wrapf(err, "error replaying blocks for state at slot").Error(),
+			Code:    http.StatusBadRequest,
+		}
+		network.WriteError(w, errJson)
+		return
+	}
+
+	reward, _, _ := helpers.TotalRewardWithReserveUsage(reqState)
+
+	response := &EpochReward{Reward: reward}
+	network.WriteJson(w, response)
 }

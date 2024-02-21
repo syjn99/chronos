@@ -2,6 +2,8 @@ package node
 
 import (
 	"bytes"
+	"context"
+	"encoding/binary"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -14,12 +16,20 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	libp2ptest "github.com/libp2p/go-libp2p/p2p/host/peerstore/test"
 	ma "github.com/multiformats/go-multiaddr"
+	mock "github.com/prysmaticlabs/prysm/v4/beacon-chain/blockchain/testing"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/db"
+	dbTest "github.com/prysmaticlabs/prysm/v4/beacon-chain/db/testing"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/peers"
 	mockp2p "github.com/prysmaticlabs/prysm/v4/beacon-chain/p2p/testing"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
+	mockstategen "github.com/prysmaticlabs/prysm/v4/beacon-chain/state/stategen/mock"
+	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/network"
+	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v4/testing/assert"
 	"github.com/prysmaticlabs/prysm/v4/testing/require"
+	"github.com/prysmaticlabs/prysm/v4/testing/util"
 )
 
 type testIdentity enode.ID
@@ -304,4 +314,52 @@ func TestListPeerDetailInfo(t *testing.T) {
 	s.ListPeerDetailInfo(writer, request)
 	resp := &[]*PeerDetailInfoResponse{}
 	require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
+}
+
+func TestGetEpochReward(t *testing.T) {
+	ctx := context.Background()
+	beaconDB := dbTest.SetupDB(t)
+	_, _, headState := setupValidators(t, beaconDB, 100)
+	b := util.NewBeaconBlock()
+	gRoot, err := b.Block.HashTreeRoot()
+	require.NoError(t, err)
+	require.NoError(t, beaconDB.SaveGenesisBlockRoot(ctx, gRoot))
+	require.NoError(t, beaconDB.SaveState(ctx, headState, gRoot))
+
+	s := &Server{
+		GenesisTimeFetcher: &mock.ChainService{},
+		ReplayerBuilder:    mockstategen.NewMockReplayerBuilder(mockstategen.WithMockState(headState)),
+	}
+
+	url := "http://anything.is.fine/chronos/states/epoch_reward/0"
+	request := httptest.NewRequest("GET", url, nil)
+	writer := httptest.NewRecorder()
+	writer.Body = &bytes.Buffer{}
+	s.GetEpochReward(writer, request)
+	resp := &EpochReward{}
+	require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
+}
+
+func setupValidators(t testing.TB, _ db.Database, count int) ([]*ethpb.Validator, []uint64, state.BeaconState) {
+	balances := make([]uint64, count)
+	validators := make([]*ethpb.Validator, 0, count)
+	for i := 0; i < count; i++ {
+		pubKey := pubKey(uint64(i))
+		balances[i] = uint64(i)
+		validators = append(validators, &ethpb.Validator{
+			PublicKey:             pubKey,
+			WithdrawalCredentials: make([]byte, 32),
+		})
+	}
+	s, err := util.NewBeaconState()
+	require.NoError(t, err)
+	require.NoError(t, s.SetValidators(validators))
+	require.NoError(t, s.SetBalances(balances))
+	return validators, balances, s
+}
+
+func pubKey(i uint64) []byte {
+	pubKey := make([]byte, params.BeaconConfig().BLSPubkeyLength)
+	binary.LittleEndian.PutUint64(pubKey, i)
+	return pubKey
 }

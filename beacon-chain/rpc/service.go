@@ -327,12 +327,14 @@ func (s *Service) Start() {
 		MetadataProvider:          s.cfg.MetadataProvider,
 		HeadFetcher:               s.cfg.HeadFetcher,
 		ExecutionChainInfoFetcher: s.cfg.ExecutionChainInfoFetcher,
+		ReplayerBuilder:           ch,
 	}
 
 	s.cfg.Router.HandleFunc("/prysm/node/trusted_peers", nodeServerPrysm.ListTrustedPeer).Methods("GET")
 	s.cfg.Router.HandleFunc("/prysm/node/trusted_peers", nodeServerPrysm.AddTrustedPeer).Methods("POST")
 	s.cfg.Router.HandleFunc("/prysm/node/trusted_peers/{peer_id}", nodeServerPrysm.RemoveTrustedPeer).Methods("Delete")
 	s.cfg.Router.HandleFunc("/chronos/debug/peers/detail/{ip}", nodeServerPrysm.ListPeerDetailInfo).Methods("GET")
+	s.cfg.Router.HandleFunc("/chronos/states/epoch_reward/{epoch}", nodeServerPrysm.GetEpochReward).Methods("GET")
 
 	beaconChainServer := &beaconv1alpha1.Server{
 		Ctx:                         s.ctx,
