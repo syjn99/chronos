@@ -273,6 +273,6 @@ func (s *Server) GetEpochReward(w http.ResponseWriter, r *http.Request) {
 
 	reward, _, _ := helpers.TotalRewardWithReserveUsage(reqState)
 
-	response := &EpochReward{Reward: reward}
+	response := &EpochReward{Reward: strconv.FormatUint(reward, 10)}
 	network.WriteJson(w, response)
 }

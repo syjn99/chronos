@@ -34,5 +34,5 @@ type PeerDetailInfoResponse struct {
 }
 
 type EpochReward struct {
-	Reward uint64 `json:"reward"`
+	Reward string `json:"reward"`
 }
