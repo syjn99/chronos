@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"sort"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/blockchain"
@@ -119,7 +120,7 @@ func ComputeValidatorPerformance(
 	correctlyVotedTarget := make([]bool, 0, responseCap)
 	correctlyVotedHead := make([]bool, 0, responseCap)
 	inactivityScores := make([]uint64, 0, responseCap)
-	bailoutScores := make([]uint64, 0, responseCap)
+	bailoutScores := make([]string, 0, responseCap)
 	// Append performance summaries.
 	// Also track missing validators using public keys.
 	for _, idx := range validatorIndices {
@@ -136,7 +137,7 @@ func ComputeValidatorPerformance(
 		if !helpers.IsActiveValidatorUsingTrie(val, currentEpoch) {
 			// Inactive validator; treat it as missing.
 			missingValidators = append(missingValidators, pubKey[:])
-			bailoutScores = append(bailoutScores, validatorSummary[idx].BailOutScore)
+			bailoutScores = append(bailoutScores, strconv.FormatUint(validatorSummary[idx].BailOutScore, 10))
 			continue
 		}
 
@@ -153,7 +154,7 @@ func ComputeValidatorPerformance(
 		} else {
 			correctlyVotedSource = append(correctlyVotedSource, summary.IsPrevEpochSourceAttester)
 			inactivityScores = append(inactivityScores, summary.InactivityScore)
-			bailoutScores = append(bailoutScores, summary.BailOutScore)
+			bailoutScores = append(bailoutScores, strconv.FormatUint(summary.BailOutScore, 10))
 		}
 	}
 

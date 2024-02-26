@@ -25,7 +25,7 @@ type ValidatorPerformanceResponse struct {
 	BalancesAfterEpochTransition  []uint64 `json:"balances_after_epoch_transition,omitempty"`
 	MissingValidators             [][]byte `json:"missing_validators,omitempty"`
 	InactivityScores              []uint64 `json:"inactivity_scores,omitempty"`
-	BailOutScores                 []uint64 `json:"bail_out_scores,omitempty"`
+	BailOutScores                 []string `json:"bail_out_scores,omitempty"`
 }
 
 // GetValidatorPerformance is an HTTP handler for GetValidatorPerformance.

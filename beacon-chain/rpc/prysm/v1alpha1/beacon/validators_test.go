@@ -1880,7 +1880,7 @@ func TestGetValidatorPerformance_OK(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{101, 102},
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
-		BailOutScores:                 []uint64{0},
+		BailOutScores:                 []string{"0"},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -1950,7 +1950,7 @@ func TestGetValidatorPerformance_Indices(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{extraBal, extraBal + params.BeaconConfig().GweiPerEth},
 		BalancesAfterEpochTransition:  []uint64{vp[1].AfterEpochTransitionBalance, vp[2].AfterEpochTransitionBalance},
 		MissingValidators:             [][]byte{publicKey1[:]},
-		BailOutScores:                 []uint64{0},
+		BailOutScores:                 []string{"0"},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -2021,7 +2021,7 @@ func TestGetValidatorPerformance_IndicesPubkeys(t *testing.T) {
 		BalancesBeforeEpochTransition: []uint64{extraBal, extraBal + params.BeaconConfig().GweiPerEth},
 		BalancesAfterEpochTransition:  []uint64{vp[1].AfterEpochTransitionBalance, vp[2].AfterEpochTransitionBalance},
 		MissingValidators:             [][]byte{publicKey1[:]},
-		BailOutScores:                 []uint64{0},
+		BailOutScores:                 []string{"0"},
 	}
 	// Index 2 and publicKey3 points to the same validator.
 	// Should not return duplicates.
@@ -2092,7 +2092,7 @@ func TestGetValidatorPerformanceAltair_OK(t *testing.T) {
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
 		InactivityScores:              []uint64{0, 0},
-		BailOutScores:                 []uint64{0, params.BeaconConfig().BailOutScoreBias, params.BeaconConfig().BailOutScoreBias},
+		BailOutScores:                 []string{"0", strconv.FormatUint(params.BeaconConfig().BailOutScoreBias, 10), strconv.FormatUint(params.BeaconConfig().BailOutScoreBias, 10)},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -2162,7 +2162,7 @@ func TestGetValidatorPerformanceBellatrix_OK(t *testing.T) {
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
 		InactivityScores:              []uint64{0, 0},
-		BailOutScores:                 []uint64{0, 1000000000000000, 1000000000000000},
+		BailOutScores:                 []string{"0", "1000000000000000", "1000000000000000"},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
@@ -2232,7 +2232,7 @@ func TestGetValidatorPerformanceCapella_OK(t *testing.T) {
 		BalancesAfterEpochTransition:  []uint64{0, 0},
 		MissingValidators:             [][]byte{publicKey1[:]},
 		InactivityScores:              []uint64{0, 0},
-		BailOutScores:                 []uint64{0, 1000000000000000, 1000000000000000},
+		BailOutScores:                 []string{"0", "1000000000000000", "1000000000000000"},
 	}
 
 	res, err := bs.GetValidatorPerformance(ctx, &ethpb.ValidatorPerformanceRequest{
