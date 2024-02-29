@@ -283,7 +283,7 @@ func (c *ValidatorClient) initializeFromCLI(cliCtx *cli.Context) error {
 	return nil
 }
 
-// Not initialize Wallet Here, initialize Wallet by call InitializeDerivedWallet api
+// Not initialize Wallet Here, initialize Wallet by call InitializeWallet api
 func (c *ValidatorClient) initializeForOverNode(cliCtx *cli.Context) error {
 	// Read cipher key from stdin.
 	cipherKey, err := readCipherKey()

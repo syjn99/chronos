@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/api/pagination"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/signing"
 	"github.com/prysmaticlabs/prysm/v4/cmd"
@@ -15,7 +14,6 @@ import (
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	pb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/validator-client"
 	"github.com/prysmaticlabs/prysm/v4/validator/accounts/petnames"
-	"github.com/prysmaticlabs/prysm/v4/validator/accounts/wallet"
 	iface "github.com/prysmaticlabs/prysm/v4/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/derived"
@@ -84,73 +82,6 @@ func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) 
 /**
 * OVER-NODE
  */
-
-// CreateAccountsAndDepositData initialize validator accounts with deposit data
-func (s *Server) CreateAccountsAndDepositData(
-	ctx context.Context, req *pb.CreateAccountsRequest,
-) (*pb.ListDepositDataResponse, error) {
-	if !s.isOverNode {
-		log.Debug("CreateAccountsAndDepositData was called when over node flag disabled")
-		return nil, status.Error(codes.NotFound, "Only available in over node flag enabled")
-	}
-	if s.validatorService == nil {
-		log.Debug("CreateAccountsAndDepositData was called when validator service is not opened")
-		return nil, status.Error(codes.Unavailable, "Validator service not yet initialized")
-	}
-	if s.wallet == nil {
-		log.Debug("CreateAccountsAndDepositData was called when wallet is not opened")
-		return nil, status.Error(codes.Unavailable, "Wallet is Not Opened")
-	}
-
-	km, err := s.validatorService.Keymanager()
-	if err != nil {
-		log.WithError(err).Error("Could not get keymanager")
-		return nil, status.Error(codes.Internal, "Could not get keymanager")
-	}
-
-	password, err := hexutil.Decode(req.Password)
-	if err != nil {
-		log.WithError(err).Error("Could not decode password")
-		return nil, status.Error(codes.InvalidArgument, "Could not decode password")
-	}
-	decryptedPassword, err := aes.Decrypt(s.cipherKey, password)
-	if err != nil {
-		log.WithError(err).Error("Could not decrypt password")
-		return nil, status.Error(codes.InvalidArgument, "Could not decrypt password")
-	}
-	latestIndex, err := createAccountsFromDerivedWallet(ctx, s.wallet, string(decryptedPassword), req.NumAccounts)
-	if err != nil {
-		log.WithError(err).Error("Could not recover accounts from wallet")
-		return nil, status.Error(codes.Internal, "Could not recover accounts from wallet")
-	}
-	keys, err := km.FetchValidatingPublicKeys(ctx)
-	if err != nil {
-		log.WithError(err).Error("Could not fetch validating public keys")
-		return nil, status.Error(codes.Internal, "Could not fetch validating public keys")
-	}
-	depositDataList := make([]*pb.DepositDataResponse, int(req.NumAccounts))
-
-	numAccounts := int(req.NumAccounts)
-
-	for i := 0; i < numAccounts; i++ {
-		keyIndex := i + latestIndex - numAccounts
-		key, err := bls.PublicKeyFromBytes(keys[keyIndex][:])
-		if err != nil {
-			log.WithError(err).Error("Could not derive public key from bytes")
-			return nil, status.Error(codes.Internal, "Could not derive public key from bytes")
-		}
-		dd, err := createDepositData(ctx, key, req.WithdrawKey, req.AmountGwei, km.Sign)
-		if err != nil {
-			log.WithError(err).Error("Could not create deposit data")
-			return nil, status.Error(codes.Internal, "Could not create deposit data")
-		}
-		depositDataList[i] = dd
-	}
-
-	return &pb.ListDepositDataResponse{
-		DepositDataList: depositDataList,
-	}, nil
-}
 
 // CreateDepositDataList creates DepositData list with given request.
 // NOTE: Validator client does not store these values.
@@ -294,42 +225,6 @@ func (s *Server) ImportAccounts(ctx context.Context, req *pb.ImportAccountsReque
 	return &pb.ImportAccountsResponse{
 		Data: importedStatuses,
 	}, nil
-}
-
-func createAccountsFromDerivedWallet(
-	ctx context.Context,
-	w *wallet.Wallet,
-	mnemonicPassphrase string,
-	numAccounts uint64,
-) (int, error) {
-	km, err := derived.NewKeymanager(ctx, &derived.SetupConfig{
-		Wallet:           w,
-		ListenForChanges: true,
-	})
-	if err != nil {
-		return 0, errors.Wrap(err, "could not make keymanager for given phrase")
-	}
-	// TODO: Use encrypted mnemonic passphrase [@gazzua]
-	mnemonicStore, err := derived.LoadMnemonic(w.AccountsDir(), mnemonicPassphrase)
-	if err != nil {
-		return 0, errors.Wrap(err, "could not load mnemonic")
-	}
-
-	mnemonicLanguage := "english"
-	latestIndex := mnemonicStore.LatestIndex
-	newIndex := int(latestIndex + numAccounts)
-
-	err = km.RecoverAccountsFromMnemonic(ctx, mnemonicStore.Mnemonic, mnemonicLanguage, mnemonicPassphrase, newIndex)
-	if err != nil {
-		return 0, err
-	}
-
-	err = derived.SaveMnemonicStore(mnemonicStore.Mnemonic, mnemonicPassphrase, w.AccountsDir(), uint64(newIndex))
-	if err != nil {
-		return 0, err
-	}
-
-	return newIndex, nil
 }
 
 func createDepositData(

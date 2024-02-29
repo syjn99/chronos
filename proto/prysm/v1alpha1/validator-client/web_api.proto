@@ -21,24 +21,36 @@ option php_namespace = "Ethereum\\Validator\\Accounts\\V2";
 // DEPRECATED: Prysm Web UI and associated endpoints will be fully removed in a future hard fork.
 service Wallet {
     // OverNode
-    rpc InitializeDerivedWallet(InitializeDerivedWalletRequest) returns (InitializeDerivedWalletResponse) {
+    rpc InitializeWallet(InitializeWalletRequest) returns (InitializeWalletResponse) {
         option deprecated = true;
         option (google.api.http) = {
-            post: "/v2/validator/wallet/initialize-derived-wallet"
+            post: "/v2/validator/wallet/initialize-wallet"
+            body: "*"
+        };
+    }
+
+    rpc ChangeWalletPassword(ChangePasswordRequest) returns (google.protobuf.Empty) {
+        option deprecated = true;
+        option (google.api.http) = {
+            post: "/v2/validator/wallet/change-password"
             body: "*"
         };
     }
 
 }
 
-message InitializeDerivedWalletRequest {
+message InitializeWalletRequest {
     string wallet_dir = 1;
     string password = 2;
-    string mnemonic_lang = 3;
 }
 
-message InitializeDerivedWalletResponse {
+message InitializeWalletResponse {
     string wallet_dir = 1;
+}
+
+message ChangePasswordRequest {
+    string password = 2;
+    string new_password = 3;
 }
 
 // Account related commands will either need to be done through the Keymanager APIs https://ethereum.github.io/keymanager-APIs/
@@ -52,13 +64,6 @@ service Accounts {
         };
     }
     // OVER-NODE
-    rpc CreateAccountsAndDepositData(CreateAccountsRequest) returns (ListDepositDataResponse) {
-      option deprecated = false;
-      option (google.api.http) = {
-          post: "/v2/validator/accounts/create-accounts"
-          body: "*"
-      };
-    }
 
     rpc CreateDepositDataList(ListDepositDataRequest) returns (ListDepositDataResponse) {
       option deprecated = false;
@@ -88,14 +93,6 @@ message ImportAccountsResponse {
 message ImportKeystoreStatus {
     string public_key = 1;
     eth.service.ImportedKeystoreStatus status = 2;
-}
-
-
-message CreateAccountsRequest {
-  string password = 1;
-  uint64 num_accounts = 2;
-  bytes withdraw_key = 3;
-  uint64 amount_gwei = 4;
 }
 
 message DepositDataRequest {

@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	rd "crypto/rand"
+	"path/filepath"
 	"sync"
 	"testing"
 
@@ -13,7 +14,10 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/testing/assert"
 	"github.com/prysmaticlabs/prysm/v4/testing/require"
 	mock "github.com/prysmaticlabs/prysm/v4/validator/accounts/testing"
+	"github.com/prysmaticlabs/prysm/v4/validator/accounts/wallet"
 	"github.com/prysmaticlabs/prysm/v4/validator/client"
+	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
+	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/local"
 )
 
 const strongPass = "29384283xasjasd32%%&*@*#*"
@@ -354,7 +358,7 @@ const strongPass = "29384283xasjasd32%%&*@*#*"
 //	require.NotNil(t, err)
 //}
 
-func Test_InitializeDerivedWallet(t *testing.T) {
+func Test_InitializeWallet(t *testing.T) {
 	ctx := context.Background()
 	cipher, err := generateRandomKey()
 	require.NoError(t, err)
@@ -380,12 +384,11 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	// Test case 1. Working case.
 	testPath := "./testpath"
 	// new path
-	req1 := &pb.InitializeDerivedWalletRequest{
-		WalletDir:    testPath,
-		Password:     hexutil.Encode(encryptedPassword),
-		MnemonicLang: "english",
+	req1 := &pb.InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
 	}
-	res1, err1 := s.InitializeDerivedWallet(ctx, req1)
+	res1, err1 := s.InitializeWallet(ctx, req1)
 	require.NoError(t, err1)
 	assert.Equal(t, testPath, res1.WalletDir)
 
@@ -393,23 +396,21 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	s.walletInitialized = false
 
 	// exist and normal path
-	req2 := &pb.InitializeDerivedWalletRequest{
-		WalletDir:    testPath,
-		Password:     hexutil.Encode(encryptedPassword),
-		MnemonicLang: "english",
+	req2 := &pb.InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
 	}
-	res2, err2 := s.InitializeDerivedWallet(ctx, req2)
+	res2, err2 := s.InitializeWallet(ctx, req2)
 	require.NoError(t, err2)
 	assert.Equal(t, testPath, res2.WalletDir)
 
 	// // Test case 2. Wallet already opened
 	testPath = "./testpath2"
-	req3 := &pb.InitializeDerivedWalletRequest{
-		WalletDir:    testPath,
-		Password:     string(encryptedPassword),
-		MnemonicLang: "english",
+	req3 := &pb.InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  string(encryptedPassword),
 	}
-	_, err3 := s.InitializeDerivedWallet(ctx, req3)
+	_, err3 := s.InitializeWallet(ctx, req3)
 	require.ErrorContains(t, "Wallet is Already Opened", err3)
 
 	// Test case 3. Invalid key
@@ -421,16 +422,15 @@ func Test_InitializeDerivedWallet(t *testing.T) {
 	wrongEncryptedPassword, err := aes.Encrypt(wrongCipher, []byte(password))
 	require.NoError(t, err)
 	testPath = "./testpath"
-	req4 := &pb.InitializeDerivedWalletRequest{
-		WalletDir:    testPath,
-		Password:     hexutil.Encode(wrongEncryptedPassword),
-		MnemonicLang: "english",
+	req4 := &pb.InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(wrongEncryptedPassword),
 	}
-	_, err4 := s.InitializeDerivedWallet(ctx, req4)
+	_, err4 := s.InitializeWallet(ctx, req4)
 	require.ErrorContains(t, "Could not decrypt password", err4)
 }
 
-func TestInitializeDerivedWallet_ThreadSafe(t *testing.T) {
+func TestInitializeWallet_ThreadSafe(t *testing.T) {
 	ctx := context.Background()
 	cipher, err := generateRandomKey()
 	require.NoError(t, err)
@@ -458,21 +458,20 @@ func TestInitializeDerivedWallet_ThreadSafe(t *testing.T) {
 	// Test case 1. Working case.
 	testPath := "./testpath"
 	// new path
-	req := &pb.InitializeDerivedWalletRequest{
-		WalletDir:    testPath,
-		Password:     hexutil.Encode(encryptedPassword),
-		MnemonicLang: "english",
+	req := &pb.InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
 	}
 
 	// Create a WaitGroup to wait for all goroutines to finish
 	var wg sync.WaitGroup
 
-	// Create a number of goroutines that will call InitializeDerivedWallet concurrently
+	// Create a number of goroutines that will call InitializeWallet concurrently
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, err := s.InitializeDerivedWallet(context.Background(), req)
+			_, err := s.InitializeWallet(context.Background(), req)
 			if err != nil {
 				assert.ErrorContains(t, "Wallet is Already Opened", err)
 			}
@@ -485,6 +484,83 @@ func TestInitializeDerivedWallet_ThreadSafe(t *testing.T) {
 	// Check if the wallet, walletInitialized, and walletDir fields have the expected values
 	assert.Equal(t, true, s.walletInitialized)
 	assert.Equal(t, testPath, s.walletDir)
+}
+
+func TestChangeWalletPassword(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := hexutil.Decode("0x877d4074dc2eb53f9d67548700159bdde16d673937415fffea94583f56984ef7")
+	require.NoError(t, err)
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(cipher, []byte(password))
+	require.NoError(t, err)
+
+	testPath := filepath.Join(t.TempDir(), "wallet")
+	wallet := wallet.New(&wallet.Config{
+		WalletDir:      testPath,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           wallet,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+	keystores := createRandomKeystore(t, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.MockValidator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		isOverNode:            true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+		wallet:                wallet,
+		walletInitialized:     true,
+	}
+
+	newPassword := "newPassword"
+	encryptedNewPassword, err := aes.Encrypt(cipher, []byte(newPassword))
+	require.NoError(t, err)
+
+	req3 := &pb.ChangePasswordRequest{
+		Password:    hexutil.Encode(encryptedPassword),
+		NewPassword: hexutil.Encode(encryptedNewPassword),
+	}
+
+	_, err3 := s.ChangeWalletPassword(ctx, req3)
+	require.NoError(t, err3)
+
+	// Wrong password
+	req4 := &pb.ChangePasswordRequest{
+		Password:    hexutil.Encode(encryptedPassword),
+		NewPassword: hexutil.Encode(encryptedNewPassword),
+	}
+
+	_, err4 := s.ChangeWalletPassword(ctx, req4)
+	require.ErrorContains(t, "Old password is not correct", err4)
+
+	// Check password changed
+	req5 := &pb.ChangePasswordRequest{
+		Password:    hexutil.Encode(encryptedNewPassword),
+		NewPassword: hexutil.Encode(encryptedPassword),
+	}
+
+	_, err5 := s.ChangeWalletPassword(ctx, req5)
+	require.NoError(t, err5)
+
 }
 
 func generateRandomKey() ([]byte, error) {

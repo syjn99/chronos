@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -112,7 +113,7 @@ func TestServer_ListAccounts(t *testing.T) {
 // 	require.ErrorContains(t, "Wallet is Not Opened", err1)
 // 	// 2. Normal Case
 // 	testPath := "./testpath"
-// 	req2 := &pb.InitializeDerivedWalletRequest{
+// 	req2 := &pb.InitializeWallet{
 // 		WalletDir:    testPath,
 // 		Password:     "testpassword",
 // 		MnemonicLang: "english",
@@ -149,7 +150,7 @@ func TestServer_ListAccounts(t *testing.T) {
 // 	// create wallet
 // 	testPath := "./testpath"
 // 	// new path
-// 	req1 := &pb.InitializeDerivedWalletRequest{
+// 	req1 := &pb.InitializeWallet{
 // 		WalletDir:    testPath,
 // 		Password:     "testpassword",
 // 		MnemonicLang: "english",
@@ -233,15 +234,30 @@ func TestImportAccount(t *testing.T) {
 	require.NoError(t, err)
 
 	// Generate a cipher key
-	cipher, err := generateRandomKey()
+	cipher, err := hexutil.Decode("0x877d4074dc2eb53f9d67548700159bdde16d673937415fffea94583f56984ef7")
 	require.NoError(t, err)
 
+	//cipher := []byte("0x877d4074dc2eb53f9d67548700159bdde16d673937415fffea94583f56984ef7")
+	password, err := aes.Encrypt(cipher, []byte("123qwe123123123123123"))
+	require.NoError(t, err)
+	fmt.Println(hexutil.Encode(password))
+	password, err = aes.Encrypt(cipher, []byte("43214321qwe"))
+	require.NoError(t, err)
+	fmt.Println(hexutil.Encode(password))
+	//ciper := "0x3130313031303130313031303130313031303130313031303130313031303130"
+	//cipher, err := generateRandomKey()
+	//require.NoError(t, err)
+	//0x20f825658b4574a712f9443d1900f195ef155c9b4e125969dcdcadfb99d43fc084d6e47ccfecbc0623e48822cd851863
+	//0x82502435630c691e93be7ea949a9081fe85ae5e3dab3a37d3bc9acd2efbc9d00
+	//0x01c5e0d2e4698631450e7bd76d434e2d9d9e0d94f8d6c78e52b91e84fc75e23b8b33b74cc038ad001d7a28ae850d9535e6f3f24c62d04705ced8680f805a37f0
+	//
 	// Encrypt the private key using the cipher key
 	privateKey, err := hexutil.Decode("0x13f5347b11740bfaf3625d766d6f55762b68fcffa79f857e5ee8b731831cb4d3")
 	require.NoError(t, err)
-
+	//fmt.Println(hexutil.Encode(privateKey))
 	encryptedPrivateKey, err := aes.Encrypt(cipher, privateKey)
 	require.NoError(t, err)
+	fmt.Println(hexutil.Encode(encryptedPrivateKey))
 
 	s := Server{
 		walletInitialized: true,

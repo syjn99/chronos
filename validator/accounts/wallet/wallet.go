@@ -395,6 +395,32 @@ func (w *Wallet) WriteKeymanagerConfigToDisk(_ context.Context, encoded []byte) 
 	return nil
 }
 
+// ChangePassword changes the wallet password.
+func (w *Wallet) ChangePassword(ctx context.Context, km keymanager.IKeymanager, newPassword string) error {
+	switch w.KeymanagerKind() {
+	case keymanager.Local:
+		localKm, ok := km.(*local.Keymanager)
+		if !ok {
+			return errors.New("could not cast keymanager to local keymanager")
+		}
+		err := localKm.ChangeKeystorePassword(ctx, newPassword)
+		if err != nil {
+			return err
+		}
+	case keymanager.Derived:
+		derivedKm, ok := km.(*derived.Keymanager)
+		if !ok {
+			return errors.New("could not cast keymanager to derived keymanager")
+		}
+		err := derivedKm.ChangeKeystorePassword(ctx, newPassword)
+		if err != nil {
+			return err
+		}
+	}
+	w.walletPassword = newPassword
+	return nil
+}
+
 func readKeymanagerKindFromWalletPath(walletPath string) (keymanager.Kind, error) {
 	walletItem, err := os.Open(walletPath) // #nosec G304
 	if err != nil {
