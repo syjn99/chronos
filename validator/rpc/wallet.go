@@ -176,12 +176,24 @@ func createLocalKeymanagerWallet(
 		return nil, errors.Wrap(err, "could not save wallet to disk")
 	}
 
-	_, err := local.NewKeymanager(ctx, &local.SetupConfig{
+	localKm, err := local.NewKeymanager(ctx, &local.SetupConfig{
 		Wallet:           w,
-		ListenForChanges: true,
+		ListenForChanges: false,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "could not initialize HD keymanager")
+	}
+	// make empty accounts keystore json file
+	accountsKeystore, err := localKm.CreateAccountsKeystore(ctx, make([][]byte, 0), make([][]byte, 0))
+	if err != nil {
+		return nil, err
+	}
+	encodedAccounts, err := json.MarshalIndent(accountsKeystore, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+	if err = w.WriteFileAtPath(ctx, local.AccountsPath, local.AccountsKeystoreFileName, encodedAccounts); err != nil {
+		return nil, err
 	}
 
 	return w, nil
