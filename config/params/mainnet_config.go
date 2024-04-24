@@ -100,7 +100,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	MaxTargetDeposit:                  1000000 * 256 * 1e9,
 	RewardFeedbackPrecision:           1000000000000,
 	RewardFeedbackThresholdReciprocal: 10,
-	TargetChangeRate:                  15000000,
+	TargetChangeRate:                  1500000,
 	MinYield:                          20000000000,
 	TargetYield:                       50000000000,
 	IncentiveLimit:                    2000000000000,

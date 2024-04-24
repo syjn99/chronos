@@ -378,26 +378,26 @@ func TestProcessRewardfactorUpdate_OK(t *testing.T) {
 		wantFactor  int64
 		wantReserve uint64
 	}{
-		{epoch: 1, valCnt: 10000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 88624474886},
-		{epoch: 1, valCnt: 20000, currReserve: 1000000000, wantFactor: 62074, wantReserve: 88671039380},
-		{epoch: 1, valCnt: 21000, currReserve: 1000000000, wantFactor: -7434821, wantReserve: 88694408696},
-		{epoch: 1, valCnt: 50000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 88717990868},
-		{epoch: 80000, valCnt: 200000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 88624474886},
-		{epoch: 80000, valCnt: 350000, currReserve: 1000000000, wantFactor: 515327, wantReserve: 88669626500},
-		{epoch: 80000, valCnt: 360000, currReserve: 1000000000, wantFactor: -3755663, wantReserve: 88682940027},
-		{epoch: 80000, valCnt: 400000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 88717990868},
-		{epoch: 150000, valCnt: 400000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 514804079148},
-		{epoch: 150000, valCnt: 640000, currReserve: 1000000000, wantFactor: 236043, wantReserve: 514850101346},
-		{epoch: 150000, valCnt: 650000, currReserve: 1000000000, wantFactor: -2104018, wantReserve: 514857395783},
-		{epoch: 150000, valCnt: 750000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 514897595130},
-		{epoch: 300000, valCnt: 700000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 636569680365},
-		{epoch: 300000, valCnt: 820000, currReserve: 1000000000, wantFactor: 723357, wantReserve: 636614183508},
-		{epoch: 300000, valCnt: 830000, currReserve: 1000000000, wantFactor: -1097089, wantReserve: 636619858201},
-		{epoch: 300000, valCnt: 950000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 636663196347},
-		{epoch: 600000, valCnt: 900000, currReserve: 1000000000, wantFactor: 15000000, wantReserve: 149507275495},
-		{epoch: 600000, valCnt: 990000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 149549357687},
-		{epoch: 600000, valCnt: 1010000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 149558709285},
-		{epoch: 600000, valCnt: 1100000, currReserve: 1000000000, wantFactor: -15000000, wantReserve: 149600791477},
+		{epoch: 1, valCnt: 10000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 88666557078},
+		{epoch: 1, valCnt: 20000, currReserve: 1000000000, wantFactor: 6207, wantReserve: 88671213528},
+		{epoch: 1, valCnt: 21000, currReserve: 1000000000, wantFactor: -743482, wantReserve: 88673550459},
+		{epoch: 1, valCnt: 50000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 88675908676},
+		{epoch: 80000, valCnt: 200000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 88666557078},
+		{epoch: 80000, valCnt: 350000, currReserve: 1000000000, wantFactor: 51532, wantReserve: 88671072241},
+		{epoch: 80000, valCnt: 360000, currReserve: 1000000000, wantFactor: -375566, wantReserve: 88672403591},
+		{epoch: 80000, valCnt: 400000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 88675908676},
+		{epoch: 150000, valCnt: 400000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 514846161340},
+		{epoch: 150000, valCnt: 640000, currReserve: 1000000000, wantFactor: 23604, wantReserve: 514850763561},
+		{epoch: 150000, valCnt: 650000, currReserve: 1000000000, wantFactor: -210401, wantReserve: 514851493001},
+		{epoch: 150000, valCnt: 750000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 514855512938},
+		{epoch: 300000, valCnt: 700000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 636611762557},
+		{epoch: 300000, valCnt: 820000, currReserve: 1000000000, wantFactor: 72335, wantReserve: 636616212873},
+		{epoch: 300000, valCnt: 830000, currReserve: 1000000000, wantFactor: -109708, wantReserve: 636616780338},
+		{epoch: 300000, valCnt: 950000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 636621114155},
+		{epoch: 600000, valCnt: 900000, currReserve: 1000000000, wantFactor: 1500000, wantReserve: 149549357687},
+		{epoch: 600000, valCnt: 990000, currReserve: 1000000000, wantFactor: 150000, wantReserve: 149553565906},
+		{epoch: 600000, valCnt: 1010000, currReserve: 1000000000, wantFactor: -150000, wantReserve: 149554501066},
+		{epoch: 600000, valCnt: 1100000, currReserve: 1000000000, wantFactor: -1500000, wantReserve: 149558709285},
 	}
 	for _, test := range tests {
 		base := buildState(params.BeaconConfig().SlotsPerEpoch.Mul(test.epoch), test.valCnt)
@@ -471,26 +471,26 @@ func TestCalculateRewardAdjustmentFactor_OK(t *testing.T) {
 		valCnt uint64
 		want   int64
 	}{
-		{epoch: 1, valCnt: 10000, want: 15000000},         // 0.000010604406
-		{epoch: 1, valCnt: 20000, want: 62074},            // 0.000000438843
-		{epoch: 1, valCnt: 21000, want: -7434821},         // -0.000052561243
-		{epoch: 1, valCnt: 50000, want: -15000000},        // -0.000106044060
-		{epoch: 80000, valCnt: 200000, want: 15000000},    // 0.000025311030
-		{epoch: 80000, valCnt: 350000, want: 515327},      // 0.000000869564
-		{epoch: 80000, valCnt: 360000, want: -3755663},    // -0.000006337314
-		{epoch: 80000, valCnt: 400000, want: -15000000},   // -0.000025311030
-		{epoch: 150000, valCnt: 400000, want: 15000000},   // 0.000018735240
-		{epoch: 150000, valCnt: 640000, want: 236043},     // 0.000000294822
-		{epoch: 150000, valCnt: 650000, want: -2104018},   // -0.000002627952
-		{epoch: 150000, valCnt: 750000, want: -15000000},  // -0.000018735240
-		{epoch: 300000, valCnt: 700000, want: 15000000},   // 0.000016524735
-		{epoch: 300000, valCnt: 820000, want: 723357},     // 0.000000796886
-		{epoch: 300000, valCnt: 830000, want: -1097089},   // -0.000001208607
-		{epoch: 300000, valCnt: 950000, want: -15000000},  // -0.000016524735
-		{epoch: 600000, valCnt: 900000, want: 15000000},   // 0.000015000000
-		{epoch: 600000, valCnt: 990000, want: 1500000},    // 0.000001500000
-		{epoch: 600000, valCnt: 1010000, want: -1500000},  // -0.000001500000
-		{epoch: 600000, valCnt: 1100000, want: -15000000}, // -0.000015000000
+		{epoch: 1, valCnt: 10000, want: 1500000},
+		{epoch: 1, valCnt: 20000, want: 6207},
+		{epoch: 1, valCnt: 21000, want: -743482},
+		{epoch: 1, valCnt: 50000, want: -1500000},
+		{epoch: 80000, valCnt: 200000, want: 1500000},
+		{epoch: 80000, valCnt: 350000, want: 51532},
+		{epoch: 80000, valCnt: 360000, want: -375566},
+		{epoch: 80000, valCnt: 400000, want: -1500000},
+		{epoch: 150000, valCnt: 400000, want: 1500000},
+		{epoch: 150000, valCnt: 640000, want: 23604},
+		{epoch: 150000, valCnt: 650000, want: -210401},
+		{epoch: 150000, valCnt: 750000, want: -1500000},
+		{epoch: 300000, valCnt: 700000, want: 1500000},
+		{epoch: 300000, valCnt: 820000, want: 72335},
+		{epoch: 300000, valCnt: 830000, want: -109708},
+		{epoch: 300000, valCnt: 950000, want: -1500000},
+		{epoch: 600000, valCnt: 900000, want: 1500000},
+		{epoch: 600000, valCnt: 990000, want: 150000},
+		{epoch: 600000, valCnt: 1010000, want: -150000},
+		{epoch: 600000, valCnt: 1100000, want: -1500000},
 	}
 	for _, test := range tests {
 		base := buildState(params.BeaconConfig().SlotsPerEpoch.Mul(test.epoch), test.valCnt)
