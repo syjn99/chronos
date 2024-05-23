@@ -276,7 +276,7 @@ func ProcessRewardfactorUpdate(state state.BeaconState) error {
 	return nil
 }
 
-// TotalRewardNReserveUsage returns the total reward and reserve usage(sign, amount) in the given epoch.
+// TotalRewardWithReserveUsage returns the total reward and reserve usage(sign, amount) in the given epoch.
 // if sign is 1, it means to use following amount uses reserve.
 // if sign is -1, it means to use following amount to be added to reserve.
 func TotalRewardWithReserveUsage(s state.ReadOnlyBeaconState) (uint64, int, uint64) {

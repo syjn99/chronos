@@ -240,11 +240,12 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	TimelyHeadFlagIndex:   2,
 
 	// Incentivization weight values.
-	TimelySourceWeight: 14,
-	TimelyTargetWeight: 26,
-	TimelyHeadWeight:   14,
-	SyncRewardWeight:   2,
+	TimelySourceWeight: 12,
+	TimelyTargetWeight: 24,
+	TimelyHeadWeight:   12,
+	SyncRewardWeight:   0,
 	ProposerWeight:     8,
+	LightLayerWeight:   8,
 	WeightDenominator:  64,
 
 	// Validator related values.

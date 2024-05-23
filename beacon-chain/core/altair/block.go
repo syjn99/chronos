@@ -150,6 +150,7 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 }
 
 // SyncRewards returns the proposer reward and the sync participant reward given the total active balance in state.
+// Since SyncRewardWeight is equal to zero, this will return zeros.
 func SyncRewards(s state.BeaconState) (proposerReward, participantReward, perRewardReserveUsage uint64, err error) {
 	cfg := params.BeaconConfig()
 	totalBaseRewards, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(s)

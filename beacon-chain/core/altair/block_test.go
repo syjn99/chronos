@@ -56,8 +56,7 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 	var reward uint64
 	beaconState, reward, err = altair.ProcessSyncAggregate(context.Background(), beaconState, syncAggregate)
 	require.NoError(t, err)
-	assert.Equal(t, uint64(21743616), reward)
-	assert.Equal(t, uint64(21743616), reward)
+	assert.Equal(t, uint64(0), reward)
 
 	// Use a non-sync committee index to compare profitability.
 	syncCommittee := make(map[primitives.ValidatorIndex]bool)
@@ -72,14 +71,14 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 		}
 	}
 
-	// Sync committee should be more profitable than non sync committee
+	// Sync committee should be non-profitable
 	balances := beaconState.Balances()
-	require.Equal(t, true, balances[indices[0]] > balances[nonSyncIndex])
+	require.Equal(t, true, balances[indices[0]] == balances[nonSyncIndex])
 
-	// Proposer should be more profitable than rest of the sync committee
+	// Proposer reward should not be affected by sync committee reward.
 	proposerIndex, err := helpers.BeaconProposerIndex(context.Background(), beaconState)
 	require.NoError(t, err)
-	require.Equal(t, true, balances[proposerIndex] > balances[indices[0]])
+	require.Equal(t, true, balances[proposerIndex] == balances[indices[0]])
 
 	// Sync committee should have the same profits, except you are a proposer
 	for i := 1; i < len(indices); i++ {
@@ -89,14 +88,14 @@ func TestProcessSyncCommittee_PerfectParticipation(t *testing.T) {
 		require.Equal(t, balances[indices[i-1]], balances[indices[i]])
 	}
 
-	// Increased balance validator count should equal to sync committee count + 1(proposer)
+	// Increased balance validator count should equal to zero.
 	increased := uint64(0)
 	for _, balance := range balances {
 		if balance > params.BeaconConfig().MaxEffectiveBalance {
 			increased++
 		}
 	}
-	require.Equal(t, params.BeaconConfig().SyncCommitteeSize+1, increased)
+	require.Equal(t, uint64(0), increased)
 }
 
 func TestProcessSyncCommittee_MixParticipation_BadSignature(t *testing.T) {
@@ -197,7 +196,7 @@ func TestProcessSyncCommittee_DontPrecompute(t *testing.T) {
 	require.Equal(t, 511, len(votedKeys))
 	require.DeepEqual(t, committeeKeys[0], votedKeys[0].Marshal())
 	balances := st.Balances()
-	require.Equal(t, uint64(297279), balances[idx])
+	require.Equal(t, uint64(0), balances[idx])
 }
 
 func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
@@ -231,24 +230,25 @@ func TestProcessSyncCommittee_processSyncAggregate(t *testing.T) {
 	proposerIndex, err := helpers.BeaconProposerIndex(context.Background(), beaconState)
 	require.NoError(t, err)
 
+	// Participating sync committee should not be rewarded or penalised.
 	for i := 0; i < len(syncBits); i++ {
 		if syncBits.BitAt(uint64(i)) {
 			pk := bytesutil.ToBytes48(committeeKeys[i])
 			require.DeepEqual(t, true, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
-			require.Equal(t, uint64(256000297279), balances[idx])
+			require.Equal(t, uint64(256000000000), balances[idx])
 		} else {
 			pk := bytesutil.ToBytes48(committeeKeys[i])
 			require.DeepEqual(t, false, votedMap[pk])
 			idx, ok := st.ValidatorIndexByPubkey(pk)
 			require.Equal(t, true, ok)
 			if idx != proposerIndex {
-				require.Equal(t, uint64(255999702721), balances[idx])
+				require.Equal(t, uint64(256000000000), balances[idx])
 			}
 		}
 	}
-	require.Equal(t, uint64(256010871808), balances[proposerIndex])
+	require.Equal(t, uint64(256000000000), balances[proposerIndex])
 }
 
 func Test_VerifySyncCommitteeSig(t *testing.T) {
@@ -298,15 +298,15 @@ func Test_SyncRewards(t *testing.T) {
 		{
 			name:                  "epoch is 1 (year 1) ",
 			epoch:                 0,
-			wantProposerReward:    42468,  // 5184,  // 207365,
-			wantParticipantReward: 297279, // 36288, // 1451559,
+			wantProposerReward:    0,
+			wantParticipantReward: 0,
 			errString:             "active balance can't be 0",
 		},
 		{
 			name:                  "epoch is 82126 (year 2)",
 			epoch:                 params.BeaconConfig().EpochsPerYear + 1,
-			wantProposerReward:    42468,  // 4769,  // 190776,
-			wantParticipantReward: 297279, // 33385, // 1335434,
+			wantProposerReward:    0,
+			wantParticipantReward: 0,
 			errString:             "",
 		},
 	}

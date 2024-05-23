@@ -367,6 +367,7 @@ func attestationDelta(
 	srcWeight := cfg.TimelySourceWeight
 	tgtWeight := cfg.TimelyTargetWeight
 	headWeight := cfg.TimelyHeadWeight
+	lightLayerWeight := cfg.LightLayerWeight
 	attDelta := &AttDelta{}
 	// Process source reward / penalty
 	if val.IsPrevEpochSourceAttester && !val.IsSlashed {
@@ -388,10 +389,10 @@ func attestationDelta(
 		attDelta.TargetPenalty += baseReward * tgtWeight / weightDenominator
 	}
 
-	// Process head reward / penalty
+	// Process head reward / penalty with light layer reward
 	if val.IsPrevEpochHeadAttester && !val.IsSlashed {
 		if !inactivityLeak {
-			n := baseReward * headWeight * (bal.PrevEpochHeadAttested / increment)
+			n := baseReward * (headWeight + lightLayerWeight) * (bal.PrevEpochHeadAttested / increment)
 			attDelta.HeadReward += n / (activeIncrement * weightDenominator)
 		}
 	}
