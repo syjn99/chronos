@@ -9,7 +9,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
-	"github.com/prysmaticlabs/go-bitfield"
+	bitfield "github.com/prysmaticlabs/go-bitfield"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/cache"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/time"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/state"
@@ -387,6 +387,7 @@ func ClearCache() {
 	proposerIndicesCache.Clear()
 	syncCommitteeCache.Clear()
 	balanceCache.Clear()
+	balanceWithQueueCache.Clear()
 }
 
 // computeCommittee returns the requested shuffled committee out of the total committees using
