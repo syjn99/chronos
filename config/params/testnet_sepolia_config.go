@@ -1,9 +1,5 @@
 package params
 
-import (
-	eth1Params "github.com/ethereum/go-ethereum/params"
-)
-
 // UseSepoliaNetworkConfig uses the Sepolia beacon chain specific network config.
 func UseSepoliaNetworkConfig() {
 	cfg := BeaconNetworkConfig().Copy()
@@ -27,8 +23,8 @@ func SepoliaConfig() *BeaconChainConfig {
 	cfg.ConfigName = SepoliaName
 	cfg.GenesisForkVersion = []byte{0x90, 0x00, 0x00, 0x69}
 	cfg.SecondsPerETH1Block = 14
-	cfg.DepositChainID = eth1Params.SepoliaChainConfig.ChainID.Uint64()
-	cfg.DepositNetworkID = eth1Params.SepoliaChainConfig.ChainID.Uint64()
+	cfg.DepositChainID = 0
+	cfg.DepositNetworkID = 0
 	cfg.AltairForkEpoch = 50
 	cfg.AltairForkVersion = []byte{0x90, 0x00, 0x00, 0x70}
 	cfg.BellatrixForkEpoch = 100

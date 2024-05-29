@@ -30,7 +30,7 @@ jobs:
     needs: extract_name
     strategy:
       matrix:
-        symbol-list:  [chronos_osx_amd64, chronos_osx_arm64, chronos_windows, chronos_linux_amd64,chronos_linux_arm64]
+        symbol-list:  [chronos_osx_amd64, chronos_osx_arm64, chronos_windows, chronos_linux_amd64, chronos_linux_arm64]
     uses: ./.github/workflows/dist.upload.yml
     name: build
     with:

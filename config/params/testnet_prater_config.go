@@ -1,9 +1,5 @@
 package params
 
-import (
-	eth1Params "github.com/ethereum/go-ethereum/params"
-)
-
 // UsePraterNetworkConfig uses the Prater specific
 // network config.
 func UsePraterNetworkConfig() {
@@ -32,8 +28,8 @@ func PraterConfig() *BeaconChainConfig {
 	cfg.ConfigName = PraterName
 	cfg.GenesisForkVersion = []byte{0x00, 0x00, 0x10, 0x20}
 	cfg.SecondsPerETH1Block = 14
-	cfg.DepositChainID = eth1Params.GoerliChainConfig.ChainID.Uint64()
-	cfg.DepositNetworkID = eth1Params.GoerliChainConfig.ChainID.Uint64()
+	cfg.DepositChainID = 0
+	cfg.DepositNetworkID = 0
 	cfg.AltairForkEpoch = 36660
 	cfg.AltairForkVersion = []byte{0x1, 0x0, 0x10, 0x20}
 	cfg.BellatrixForkEpoch = 112260

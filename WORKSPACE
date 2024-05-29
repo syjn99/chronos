@@ -16,11 +16,11 @@ load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
-HERMETIC_CC_TOOLCHAIN_VERSION = "v2.1.2"
+HERMETIC_CC_TOOLCHAIN_VERSION = "v3.0.1"
 
 http_archive(
     name = "hermetic_cc_toolchain",
-    sha256 = "28fc71b9b3191c312ee83faa1dc65b38eb70c3a57740368f7e7c7a49bedf3106",
+    sha256 = "3bc6ec127622fdceb4129cb06b6f7ab098c4d539124dde96a6318e7c32a53f7a",
     urls = [
         "https://mirror.bazel.build/github.com/uber/hermetic_cc_toolchain/releases/download/{0}/hermetic_cc_toolchain-{0}.tar.gz".format(HERMETIC_CC_TOOLCHAIN_VERSION),
         "https://github.com/uber/hermetic_cc_toolchain/releases/download/{0}/hermetic_cc_toolchain-{0}.tar.gz".format(HERMETIC_CC_TOOLCHAIN_VERSION),
@@ -72,10 +72,10 @@ bazel_skylib_workspace()
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "5982e5463f171da99e3bdaeff8c0f48283a7a5f396ec5282910b9e8a49c0dd7e",
+    integrity = "sha256-MpOL2hbmcABjA1R5Bj2dJMYO2o15/Uc5Vj9Q0zHLMgk=",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.25.0/bazel-gazelle-v0.25.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.35.0/bazel-gazelle-v0.35.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.35.0/bazel-gazelle-v0.35.0.tar.gz",
     ],
 )
 
@@ -99,10 +99,10 @@ http_archive(
         # Expose internals of go_test for custom build transitions.
         "//third_party:io_bazel_rules_go_test.patch",
     ],
-    sha256 = "6b65cb7917b4d1709f9410ffe00ecf3e160edf674b78c54a894471320862184f",
+    sha256 = "80a98277ad1311dacd837f9b16db62887702e9f1d1c4c9f796d0121a46c8e184",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.39.0/rules_go-v0.39.0.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.39.0/rules_go-v0.39.0.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.46.0/rules_go-v0.46.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.46.0/rules_go-v0.46.0.zip",
     ],
 )
 
@@ -318,13 +318,6 @@ filegroup(
 )
 
 http_archive(
-    name = "com_github_bazelbuild_buildtools",
-    sha256 = "7a182df18df1debabd9e36ae07c8edfa1378b8424a04561b674d933b965372b3",
-    strip_prefix = "buildtools-f2aed9ee205d62d45c55cfabbfd26342f8526862",
-    url = "https://github.com/bazelbuild/buildtools/archive/f2aed9ee205d62d45c55cfabbfd26342f8526862.zip",
-)
-
-http_archive(
     name = "com_google_protobuf",
     sha256 = "4e176116949be52b0408dfd24f8925d1eb674a781ae242a75296b17a1c721395",
     strip_prefix = "protobuf-23.3",
@@ -339,18 +332,19 @@ all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//v
 # External dependencies
 
 http_archive(
-    name = "prysm_web_ui",
-    build_file_content = """
-filegroup(
-    name = "site",
-    srcs = glob(["**/*"]),
-    visibility = ["//visibility:public"],
-)
-""",
-    sha256 = "5006614c33e358699b4e072c649cd4c3866f7d41a691449d5156f6c6e07a4c60",
+    name = "googleapis",
+    sha256 = "9d1a930e767c93c825398b8f8692eca3fe353b9aaadedfbcf1fca2282c85df88",
+    strip_prefix = "googleapis-64926d52febbf298cb82a8f472ade4a3969ba922",
     urls = [
-        "https://github.com/prysmaticlabs/prysm-web-ui/releases/download/v2.0.3/prysm-web-ui.tar.gz",
+        "https://github.com/googleapis/googleapis/archive/64926d52febbf298cb82a8f472ade4a3969ba922.zip",
     ],
+)
+
+load("@googleapis//:repository_rules.bzl", "switched_rules_by_language")
+
+switched_rules_by_language(
+    name = "com_google_googleapis_imports",
+    go = True,
 )
 
 load("//:deps.bzl", "prysm_deps")
@@ -384,9 +378,7 @@ load(
 
 _cc_image_repos()
 
-load("@io_bazel_rules_go//extras:embed_data_deps.bzl", "go_embed_data_dependencies")
-
-go_embed_data_dependencies()
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 load("@com_github_atlassian_bazel_tools//gometalinter:deps.bzl", "gometalinter_dependencies")
 
@@ -395,10 +387,6 @@ gometalinter_dependencies()
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
-
-load("@com_github_bazelbuild_buildtools//buildifier:deps.bzl", "buildifier_dependencies")
-
-buildifier_dependencies()
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 

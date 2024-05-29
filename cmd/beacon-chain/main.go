@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	runtimeDebug "runtime/debug"
 
-	gethlog "github.com/ethereum/go-ethereum/log"
 	golog "github.com/ipfs/go-log/v2"
 	joonix "github.com/joonix/log"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/builder"
@@ -33,7 +32,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/runtime/version"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"gopkg.in/natefinch/lumberjack.v2"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 var appFlags = []cli.Flag{
@@ -226,9 +225,9 @@ func startNode(ctx *cli.Context) error {
 		// libp2p specific logging.
 		golog.SetAllLoggers(golog.LevelDebug)
 		// Geth specific logging.
-		glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
-		glogger.Verbosity(gethlog.LvlTrace)
-		gethlog.Root().SetHandler(glogger)
+		//glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
+		//glogger.Verbosity(gethlog.LvlTrace)
+		//gethlog.Root().SetHandler(glogger)
 	}
 
 	format := ctx.String(cmd.LogFormat.Name)
