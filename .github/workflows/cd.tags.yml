@@ -4,7 +4,7 @@ on:
   push:
     tags:
       # parse names from tags v{version}_{name}
-      - 'v*_*'
+      - "v*_*"
 
 env:
   S3_BUCKET_NAME: over-protocol-dist
@@ -30,14 +30,21 @@ jobs:
     needs: extract_name
     strategy:
       matrix:
-        symbol-list:  [chronos_osx_amd64, chronos_osx_arm64, chronos_windows, chronos_linux_amd64, chronos_linux_arm64]
+        symbol-list:
+          [
+            chronos_osx_amd64,
+            chronos_osx_arm64,
+            chronos_windows,
+            chronos_linux_amd64,
+            chronos_linux_arm64,
+          ]
     uses: ./.github/workflows/dist.upload.yml
     name: build
     with:
       build_type: ${{ matrix.symbol-list }}
       tag_name: ${{ needs.extract_name.outputs.tag_name }}
       version_name: ${{ needs.extract_name.outputs.version_name }}
-  
+
   node-pack-lipo:
     needs: [extract_name, build]
     runs-on: [self-hosted, macmini-local]
@@ -62,15 +69,65 @@ jobs:
           name: chronos-dist-${{ github.sha }}-chronos_osx
           path: dist/bin
 
-  node-pack:
+  codesign-osx:
     needs: [extract_name, build, node-pack-lipo]
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, macmini-local]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download osx artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_osx
+          path: dist/bin
+      - name: Run codesign script for chronos
+        run: sh ~/codesign/osx/codesign.sh
+        env:
+          BINARY_PATH: ${{ github.workspace }}/dist/bin/mac/chronos
+      - name: Run codesign script for validator
+        run: sh ~/codesign/osx/codesign.sh
+        env:
+          BINARY_PATH: ${{ github.workspace }}/dist/bin/mac/validator
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_osx_with_codesign
+          path: dist/bin
+
+  codesign-win:
+    needs: [extract_name, build]
+    runs-on: [self-hosted, macmini-local]
     steps:
       - uses: actions/checkout@v3
       - name: Download windows artifact
         uses: actions/download-artifact@v3
         with:
           name: chronos-dist-${{ github.sha }}-chronos_windows
+          path: dist/bin
+      - name: Run codesign script for chronos
+        run: sh ~/codesign/win/codesign.sh
+        env:
+          BINARY_PATH: ${{ github.workspace }}/dist/bin/win/chronos.exe
+          TOKEN_PASSWORD: ${{ secrets.WINDOWS_SIGN_TOKEN_PASSWORD }}
+      - name: Run codesign script for validator
+        run: sh ~/codesign/win/codesign.sh
+        env:
+          BINARY_PATH: ${{ github.workspace }}/dist/bin/win/validator.exe
+          TOKEN_PASSWORD: ${{ secrets.WINDOWS_SIGN_TOKEN_PASSWORD }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_windows_with_codesign
+          path: dist/bin
+
+  node-pack:
+    needs: [extract_name, build, codesign-osx, codesign-win]
+    runs-on: [arc-runner-set]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download windows artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: chronos-dist-${{ github.sha }}-chronos_windows_with_codesign
           path: dist/bin
       - name: Download linux artifact
         uses: actions/download-artifact@v3
@@ -80,7 +137,7 @@ jobs:
       - name: Download osx artifact
         uses: actions/download-artifact@v3
         with:
-          name: chronos-dist-${{ github.sha }}-chronos_osx
+          name: chronos-dist-${{ github.sha }}-chronos_osx_with_codesign
           path: dist/bin
       - run: mv dist/bin/linux/amd64/chronos dist/bin/linux/chronos
       - run: mv dist/bin/linux/amd64/validator dist/bin/linux/validator
