@@ -62,6 +62,7 @@ func (s *Service) ReceiveBlock(ctx context.Context, block interfaces.ReadOnlySig
 	// Save current justified and finalized epochs for future use.
 	currStoreJustifiedEpoch := s.CurrentJustifiedCheckpt().Epoch
 	currStoreFinalizedEpoch := s.FinalizedCheckpt().Epoch
+	currentEpoch := ctime.CurrentEpoch(preState)
 
 	preStateVersion, preStateHeader, err := getStateVersionAndPayload(preState)
 	if err != nil {
@@ -90,13 +91,20 @@ func (s *Service) ReceiveBlock(ctx context.Context, block interfaces.ReadOnlySig
 		return errors.Wrap(err, "could not save post state info")
 	}
 
-	// Apply state transition on the new block.
 	if err := s.postBlockProcess(ctx, blockCopy, blockRoot, postState, isValidPayload); err != nil {
 		err := errors.Wrap(err, "could not process block")
 		tracing.AnnotateError(span, err)
 		return err
 	}
-
+	if ctime.CurrentEpoch(postState) > currentEpoch {
+		headSt, err := s.HeadState(ctx)
+		if err != nil {
+			return errors.Wrap(err, "could not get head state")
+		}
+		if err := reportEpochMetrics(ctx, postState, headSt); err != nil {
+			log.WithError(err).Error("could not report epoch metrics")
+		}
+	}
 	if err := s.updateJustificationOnBlock(ctx, preState, postState, currStoreJustifiedEpoch); err != nil {
 		return errors.Wrap(err, "could not update justified checkpoint")
 	}

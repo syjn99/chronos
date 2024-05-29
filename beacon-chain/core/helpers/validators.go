@@ -303,6 +303,7 @@ func BeaconProposerIndex(ctx context.Context, state state.ReadOnlyBeaconState) (
 		if err != nil {
 			return 0, err
 		}
+
 		if r != nil && !bytes.Equal(r, params.BeaconConfig().ZeroHash[:]) {
 			proposerIndices, err := proposerIndicesCache.ProposerIndices(bytesutil.ToBytes32(r))
 			if err != nil {
@@ -332,7 +333,6 @@ func BeaconProposerIndex(ctx context.Context, state state.ReadOnlyBeaconState) (
 	if err != nil {
 		return 0, errors.Wrap(err, "could not get active indices")
 	}
-
 	return ComputeProposerIndex(state, indices, seedWithSlotHash)
 }
 
