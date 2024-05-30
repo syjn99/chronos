@@ -251,7 +251,7 @@ func TestProcessFinalUpdates_CanProcess(t *testing.T) {
 	require.NoError(t, s.SetEth1DataVotes([]*ethpb.Eth1Data{}))
 	balances := s.Balances()
 	balances[0] = 255.75 * 1e9
-	balances[1] = 255.74 * 1e9
+	balances[1] = 250 * 1e9
 	require.NoError(t, s.SetBalances(balances))
 
 	slashings := s.Slashings()
@@ -265,7 +265,7 @@ func TestProcessFinalUpdates_CanProcess(t *testing.T) {
 
 	// Verify effective balance is correctly updated.
 	assert.Equal(t, params.BeaconConfig().MaxEffectiveBalance, newS.Validators()[0].EffectiveBalance, "Effective balance incorrectly updated")
-	assert.Equal(t, uint64(255*1e9), newS.Validators()[1].EffectiveBalance, "Effective balance incorrectly updated")
+	assert.Equal(t, uint64(248*1e9), newS.Validators()[1].EffectiveBalance, "Effective balance incorrectly updated")
 
 	// Verify slashed balances correctly updated.
 	assert.Equal(t, newS.Slashings()[ce], newS.Slashings()[ne], "Unexpected slashed balance")
@@ -481,6 +481,9 @@ func TestProcessHistoricalDataUpdate(t *testing.T) {
 		{
 			name: "before capella can process and get historical root",
 			st: func() state.BeaconState {
+				params.BeaconConfig().AltairForkEpoch = 9998
+				params.BeaconConfig().BellatrixForkEpoch = 9999
+				params.BeaconConfig().CapellaForkEpoch = 10000
 				st, _ := util.DeterministicGenesisState(t, 1)
 				st, err := transition.ProcessSlots(context.Background(), st, params.BeaconConfig().SlotsPerHistoricalRoot-1)
 				require.NoError(t, err)

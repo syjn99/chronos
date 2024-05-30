@@ -50,11 +50,11 @@ func TestProcessRewardsAndPenaltiesPrecompute(t *testing.T) {
 	require.Equal(t, true, processedState.Version() == version.Phase0)
 
 	// Indices that voted everything except for head, lost a bit money
-	wanted := uint64(255942922375)
+	wanted := uint64(255910816213)
 	assert.Equal(t, wanted, beaconState.Balances()[4], "Unexpected balance")
 
 	// Indices that did not vote, lost more money. but it's proposer
-	wanted = uint64(255961948247)
+	wanted = uint64(255940544141)
 	assert.Equal(t, wanted, beaconState.Balances()[0], "Unexpected balance")
 }
 
@@ -378,7 +378,7 @@ func baseReward(state state.ReadOnlyBeaconState, index primitives.ValidatorIndex
 	effectiveBalanceInc := val.EffectiveBalance() / params.BeaconConfig().EffectiveBalanceIncrement
 	totalBalanceInc := totalBalance / params.BeaconConfig().EffectiveBalanceIncrement
 
-	reward, _, _ := helpers.TotalRewardWithReserveUsage(state)
+	reward, _ := helpers.TotalRewardWithReserveUsage(state)
 	baseReward := effectiveBalanceInc * reward / totalBalanceInc / params.BeaconConfig().BaseRewardsPerEpoch
 	return baseReward, nil
 }

@@ -233,13 +233,23 @@ func (s *Server) GetEpochReward(w http.ResponseWriter, r *http.Request) {
 	var requestedEpoch primitives.Epoch
 	segments := strings.Split(r.URL.Path, "/")
 	epoch := segments[len(segments)-1]
+	curEpoch := slots.ToEpoch(s.GenesisTimeFetcher.CurrentSlot())
 	if epoch == "latest" {
-		requestedEpoch = slots.ToEpoch(s.GenesisTimeFetcher.CurrentSlot())
+		requestedEpoch = curEpoch
 	} else {
 		uintEpoch, err := strconv.ParseUint(epoch, 10, 64)
 		if err != nil {
 			errJson := &network.DefaultErrorJson{
 				Message: errors.Wrapf(err, "parse int error").Error(),
+				Code:    http.StatusBadRequest,
+			}
+			network.WriteError(w, errJson)
+			return
+		}
+
+		if uintEpoch > uint64(curEpoch) {
+			errJson := &network.DefaultErrorJson{
+				Message: errors.Wrapf(err, "Cannot retrieve information for an future epoch, current epoch %d, requesting %d", curEpoch, uintEpoch).Error(),
 				Code:    http.StatusBadRequest,
 			}
 			network.WriteError(w, errJson)
@@ -271,7 +281,7 @@ func (s *Server) GetEpochReward(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reward, _, _ := helpers.TotalRewardWithReserveUsage(reqState)
+	reward, _ := helpers.TotalRewardWithReserveUsage(reqState)
 
 	response := &EpochReward{Reward: strconv.FormatUint(reward, 10)}
 	network.WriteJson(w, response)

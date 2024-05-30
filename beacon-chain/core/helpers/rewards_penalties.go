@@ -230,21 +230,22 @@ func FinalityDelay(prevEpoch, finalizedEpoch primitives.Epoch) primitives.Epoch 
 // EpochIssuance returns the total amount of ETH(in Gwei) to be issued in the given epoch.
 func EpochIssuance(epoch primitives.Epoch) uint64 {
 	cfg := params.BeaconConfig()
-	issuanceRateIndex := epoch.Div(cfg.EpochsPerYear)
-	// After year 10 issuance rate is fixed to 1.5%
-	if issuanceRateIndex >= primitives.Epoch(len(cfg.IssuanceRate)) {
-		issuanceRateIndex = primitives.Epoch(len(cfg.IssuanceRate)) - 1
+	year := uint64(epoch.Div(cfg.EpochsPerYear))
+
+	// After year 10, no more issuance left.
+	if year > 9 {
+		return 0
 	}
-	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[issuanceRateIndex] / cfg.EpochsPerYear / uint64(100)
+	return cfg.EpochIssuance
 }
 
 // TargetDepositPlan returns the target deposit plan for the given epoch.
 func TargetDepositPlan(epoch primitives.Epoch) uint64 {
 	cfg := params.BeaconConfig()
 	e := uint64(epoch)
-	if e < cfg.EpochsPerYear*2 {
+	if e < cfg.EpochsPerYear*cfg.DepositPlanEarlyEnd {
 		return cfg.DepositPlanEarlySlope*e + cfg.DepositPlanEarlyOffset
-	} else if e < cfg.EpochsPerYear*6 {
+	} else if e < cfg.EpochsPerYear*cfg.DepositPlanLaterEnd {
 		return cfg.DepositPlanLaterSlope*e + cfg.DepositPlanLaterOffset
 	} else {
 		return cfg.DepositPlanFinal
@@ -257,43 +258,39 @@ func ProcessRewardfactorUpdate(state state.BeaconState) error {
 	if err != nil {
 		return err
 	}
-	err = SetRewardAdjustmentFactor(state, calculatedFactor)
+	err = state.SetRewardAdjustmentFactor(calculatedFactor)
 	if err != nil {
 		return err
 	}
 
-	// update current epoch reserve
+	// update previous epoch reserve
 	err = state.SetPreviousEpochReserve(state.CurrentEpochReserve())
 	if err != nil {
 		return err
 	}
 
-	// send over to reserve if there is any remaining reward
-	_, sign, reserve := TotalRewardWithReserveUsage(state)
-	if sign < 0 {
-		return IncreaseCurrentReserve(state, reserve)
-	}
 	return nil
 }
 
-// TotalRewardWithReserveUsage returns the total reward and reserve usage(sign, amount) in the given epoch.
-// if sign is 1, it means to use following amount uses reserve.
-// if sign is -1, it means to use following amount to be added to reserve.
-func TotalRewardWithReserveUsage(s state.ReadOnlyBeaconState) (uint64, int, uint64) {
-	cfg := params.BeaconConfig()
+// TotalRewardWithReserveUsage returns the total reward and total reserve usage in the given epoch.
+// Reserve is always depleted in Over tokenomics.
+func TotalRewardWithReserveUsage(s state.ReadOnlyBeaconState) (uint64, uint64) {
 	epochIssuance := EpochIssuance(time.CurrentEpoch(s))
-	rewardAdjustmentFactor := GetRewardAdjustmentFactor(s)
-	validatorReward := cfg.MaxTargetDeposit / cfg.RewardFeedbackPrecision * uint64(cfg.TargetYield+rewardAdjustmentFactor) / cfg.EpochsPerYear
-	if validatorReward >= epochIssuance {
-		remainingReserve := s.PreviousEpochReserve()
-		if remainingReserve < validatorReward-epochIssuance {
-			return epochIssuance + remainingReserve, 1, remainingReserve
-		} else {
-			return validatorReward, 1, validatorReward - epochIssuance
-		}
-	} else {
-		return validatorReward, -1, epochIssuance - validatorReward
+	feedbackBoost := EpochFeedbackBoost(s)
+
+	return epochIssuance + feedbackBoost, feedbackBoost
+}
+
+// EpochFeedbackBoost returns the boost reward from feedback model in tokenomics.
+func EpochFeedbackBoost(s state.ReadOnlyBeaconState) uint64 {
+	cfg := params.BeaconConfig()
+	rewardAdjustmentFactor := s.RewardAdjustmentFactor()
+	feedbackBoost := cfg.MaxTokenSupply / cfg.RewardFeedbackPrecision * rewardAdjustmentFactor / cfg.EpochsPerYear
+
+	if reserve := s.PreviousEpochReserve(); feedbackBoost > reserve {
+		return reserve
 	}
+	return feedbackBoost
 }
 
 // CalcutateRewardAdjustmentFactor returns the adjustment factor for the next epoch.
@@ -321,7 +318,7 @@ func TotalRewardWithReserveUsage(s state.ReadOnlyBeaconState) (uint64, int, uint
 //		bias = min(bias, INCENIVE_LIMIT * TARGET_YIELD)
 //
 //		return bias
-func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (int64, error) {
+func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (uint64, error) {
 	cfg := params.BeaconConfig()
 	futureDeposit, err := TotalBalanceWithQueue(state)
 	if err != nil {
@@ -345,81 +342,36 @@ func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (int64, er
 
 	// Calculate the change rate
 	targetChangeRate := big.NewInt(int64(cfg.TargetChangeRate))
-	changeRate := new(big.Int).Div(new(big.Int).Mul(targetChangeRate, mitigatingFactor), bigRewardPrecision)
-	if changeRate.Uint64() >= math.MaxInt64 {
-		return 0, errors.New("changeRate exceeds max int64, cannot calculate reward adjustment factor")
+	changeRate := new(big.Int).Div(new(big.Int).Mul(targetChangeRate, mitigatingFactor), bigRewardPrecision).Uint64()
+	if changeRate >= math.MaxUint64 {
+		return 0, errors.New("changeRate exceeds max uint64, cannot calculate reward adjustment factor")
 	}
 
-	biasDelta := int64(0)
+	bias := state.RewardAdjustmentFactor()
 	if futureDeposit >= targetDeposit {
-		biasDelta = -changeRate.Int64() // lint:ignore uintcast -- changeRate will not exceed int64 because of truncation.
+		if bias <= changeRate {
+			bias = 0
+		} else {
+			bias -= changeRate
+		}
 	} else {
-		biasDelta = changeRate.Int64() // lint:ignore uintcast -- changeRate will not exceed int64 because of truncation.
+		bias += changeRate
 	}
 
-	bias := GetRewardAdjustmentFactor(state) + biasDelta
 	return TruncateRewardAdjustmentFactor(bias), nil
-}
-
-// GetRewardAdjustmentFactor returns the reward adjustment factor.
-// The reward adjustment factor is a uint64, if factor is negative, it will be read to -(reward adjustment factor - RewardFeedbackPrecision).
-func GetRewardAdjustmentFactor(state state.ReadOnlyBeaconState) int64 {
-	cfg := params.BeaconConfig()
-	factor := state.RewardAdjustmentFactor()
-	if factor > cfg.RewardFeedbackPrecision {
-		return -int64(factor - cfg.RewardFeedbackPrecision) // lint:ignore uintcast -- factor will not exceed int64 because of truncation.
-	} else {
-		return int64(factor) // lint:ignore uintcast -- factor will not exceed int64 because of truncation.
-	}
-}
-
-// SetRewardAdjustmentFactor sets the reward adjustment factor to the given value.
-// Because the reward adjustment factor is a uint64, if factor is negative, it will be set to RewardFeedbackPrecision - factor.
-// And input factor is bounded by RewardFeedbackPrecision.
-func SetRewardAdjustmentFactor(state state.BeaconState, factor int64) error {
-	cfg := params.BeaconConfig()
-
-	if factor < 0 {
-		return state.SetRewardAdjustmentFactor(cfg.RewardFeedbackPrecision + uint64(-factor))
-	} else if factor > int64(cfg.RewardFeedbackPrecision) {
-		return state.SetRewardAdjustmentFactor(cfg.RewardFeedbackPrecision)
-	} else {
-		return state.SetRewardAdjustmentFactor(uint64(factor))
-	}
 }
 
 // TruncateRewardAdjustmentFactor truncates the given bias to the min and max bounds.
 // The min and max bounds are defined in the spec.
-func TruncateRewardAdjustmentFactor(bias int64) int64 {
+func TruncateRewardAdjustmentFactor(bias uint64) uint64 {
 	cfg := params.BeaconConfig()
-
-	lowerBound := cfg.MinYield - cfg.TargetYield
-	upperBound := cfg.IncentiveLimit / int64(cfg.RewardFeedbackPrecision) * cfg.TargetYield
-	if lowerBound > bias {
-		bias = lowerBound
+	if 0 > bias {
+		bias = 0
 	}
-	if upperBound < bias {
-		bias = upperBound
+	if cfg.TargetYield < bias {
+		bias = cfg.TargetYield
 	}
 	return bias
-}
-
-// IncreaseCurrentReserve increases the current reserve by the given amount.
-// If the reserve is more than the maximum uint64, it sets the reserve to the maximum uint64.
-// But real reserve is bounded by 51,200,000,000,000,000
-func IncreaseCurrentReserve(state state.BeaconState, add uint64) error {
-	if mathutil.MaxUint64-add < state.CurrentEpochReserve() {
-		err := state.SetCurrentEpochReserve(mathutil.MaxUint64)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := state.SetCurrentEpochReserve(state.CurrentEpochReserve() + add)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // DecreaseCurrentReserve reduces the current reserve by the given amount.

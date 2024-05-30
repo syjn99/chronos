@@ -380,14 +380,14 @@ func TestChurnLimit_OK(t *testing.T) {
 		isExit         bool
 		wantedChurn    uint64
 	}{
-		{validatorCount: 190002, epoch: 41063, isExit: false, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
-		{validatorCount: 190002, epoch: 41063, isExit: true, wantedChurn: 4},    // exit_churn when deposit < plan = chrun_limit
-		{validatorCount: 190003, epoch: 41063, isExit: false, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
-		{validatorCount: 190003, epoch: 41063, isExit: true, wantedChurn: 5},    // exit_churn when deposit > plan = chrun_limit++
-		{validatorCount: 812500, epoch: 287438, isExit: false, wantedChurn: 13}, // pending_churn when deposit < plan = chrun_limit++
-		{validatorCount: 812500, epoch: 287438, isExit: true, wantedChurn: 12},  // exit_churn when deposit < plan = chrun_limit
-		{validatorCount: 812501, epoch: 287438, isExit: false, wantedChurn: 12}, // pending_churn when deposit > plan = chrun_limit
-		{validatorCount: 812501, epoch: 287438, isExit: true, wantedChurn: 13},  // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 234375, epoch: 41063, isExit: false, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 234375, epoch: 41063, isExit: true, wantedChurn: 4},    // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 234376, epoch: 41063, isExit: false, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 234376, epoch: 41063, isExit: true, wantedChurn: 5},    // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 703125, epoch: 287438, isExit: false, wantedChurn: 11}, // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 703125, epoch: 287438, isExit: true, wantedChurn: 10},  // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 703126, epoch: 287438, isExit: false, wantedChurn: 10}, // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 703126, epoch: 287438, isExit: true, wantedChurn: 11},  // exit_churn when deposit > plan = chrun_limit++
 	}
 	defer ClearCache()
 	for _, test := range tests {

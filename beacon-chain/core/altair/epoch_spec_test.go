@@ -124,9 +124,9 @@ func TestProcessSlashings_SlashedLess(t *testing.T) {
 						EffectiveBalance:  params.BeaconConfig().MaxEffectiveBalance},
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance}},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance},
-				Slashings: []uint64{0, 1e9},
+				Slashings: []uint64{0, 8e9},
 			},
-			want: uint64(254000000000),
+			want: uint64(240000000000),
 		},
 		{
 			state: &ethpb.BeaconStateAltair{
@@ -138,9 +138,9 @@ func TestProcessSlashings_SlashedLess(t *testing.T) {
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance},
 				},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance},
-				Slashings: []uint64{0, 1e9},
+				Slashings: []uint64{0, 8e9},
 			},
-			want: uint64(255000000000),
+			want: uint64(248000000000),
 		},
 		{
 			state: &ethpb.BeaconStateAltair{
@@ -152,9 +152,9 @@ func TestProcessSlashings_SlashedLess(t *testing.T) {
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance},
 				},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance},
-				Slashings: []uint64{0, 2 * 1e9},
+				Slashings: []uint64{0, 2 * 8e9},
 			},
-			want: uint64(254000000000),
+			want: uint64(240000000000),
 		},
 		{
 			state: &ethpb.BeaconStateAltair{
@@ -164,9 +164,9 @@ func TestProcessSlashings_SlashedLess(t *testing.T) {
 						EffectiveBalance:  params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement},
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement}},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement, params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement},
-				Slashings: []uint64{0, 1e9},
+				Slashings: []uint64{0, 8e9},
 			},
-			want: uint64(253000000000),
+			want: uint64(232000000000),
 		},
 	}
 

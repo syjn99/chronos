@@ -101,7 +101,7 @@ func UnderDevnetSpecConfig() *BeaconChainConfig {
 	// Ethereum PoW parameters.
 	underConfig.DepositChainID = 820   // Chain ID of eth1 under.
 	underConfig.DepositNetworkID = 820 // Network ID of eth1 under.
-	underConfig.DepositContractAddress = "000000000000000000000000000000000000beef"
+	underConfig.DepositContractAddress = "000000000000000000000000000000000beac017"
 	// 2**256-2**10 for fake minimal network
 	underConfig.TerminalTotalDifficulty = "500"
 

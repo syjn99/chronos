@@ -25,18 +25,6 @@ func isMinimal(lines []string) bool {
 	return false
 }
 
-func isUnder(lines []string) bool {
-	for _, l := range lines {
-		if strings.HasPrefix(l, "PRESET_BASE: 'under'") ||
-			strings.HasPrefix(l, `PRESET_BASE: "under"`) ||
-			strings.HasPrefix(l, "PRESET_BASE: under") ||
-			strings.HasPrefix(l, "# Under preset") {
-			return true
-		}
-	}
-	return false
-}
-
 func isUnderDevnet(lines []string) bool {
 	for _, l := range lines {
 		if strings.HasPrefix(l, "PRESET_BASE: 'under-devnet'") ||
@@ -60,9 +48,6 @@ func UnmarshalConfig(yamlFile []byte, conf *BeaconChainConfig) (*BeaconChainConf
 		} else if isUnderDevnet(lines) {
 			conf = UnderDevnetSpecConfig().Copy()
 			fmt.Println("Under devnet spec config applied")
-		} else if isUnder(lines) {
-			conf = UnderSpecConfig().Copy()
-			fmt.Println("Under spec config applied")
 		} else {
 			// Default to using mainnet.
 			conf = MainnetConfig().Copy()

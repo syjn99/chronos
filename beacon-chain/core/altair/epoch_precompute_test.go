@@ -248,9 +248,9 @@ func TestAttestationsDelta(t *testing.T) {
 	// Last index should have 0 penalty.
 	require.Equal(t, uint64(0), penalties[len(penalties)-1])
 
-	want := []uint64{0, 5479452036, 12785388084, 15829528104}
+	want := []uint64{0, 8561643835, 19977168949, 24733637746}
 	require.DeepEqual(t, want, rewards)
-	want = []uint64{21917808144, 14611872096, 0, 0}
+	want = []uint64{34246575342, 22831050228, 0, 0}
 	require.DeepEqual(t, want, penalties)
 }
 
@@ -288,9 +288,9 @@ func TestAttestationsDeltaBellatrix(t *testing.T) {
 	// Last index should have 0 penalty.
 	require.Equal(t, uint64(0), penalties[len(penalties)-1])
 
-	want := []uint64{0, 5479452036, 12785388084, 15829528104}
+	want := []uint64{0, 8561643835, 19977168949, 24733637746}
 	require.DeepEqual(t, want, rewards)
-	want = []uint64{21917808144, 14611872096, 0, 0}
+	want = []uint64{34246575342, 22831050228, 0, 0}
 	require.DeepEqual(t, want, penalties)
 }
 
@@ -355,8 +355,8 @@ func TestProcessRewardsAndPenaltiesPrecompute_InactivityLeak(t *testing.T) {
 	balances := s.Balances()
 	inactivityBalances := sCopy.Balances()
 	// Balances decreased to 0 due to inactivity
-	require.Equal(t, uint64(12785388084), balances[2])
-	require.Equal(t, uint64(15829528104), balances[3]) // 80265410946
+	require.Equal(t, uint64(19977168949), balances[2])
+	require.Equal(t, uint64(24733637746), balances[3]) // 80265410946
 	require.Equal(t, uint64(0), inactivityBalances[2])
 	require.Equal(t, uint64(0), inactivityBalances[3])
 }

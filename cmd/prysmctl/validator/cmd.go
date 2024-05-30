@@ -166,8 +166,7 @@ var Commands = []*cli.Command{
 					flags.ForceExitFlag,
 					flags.VoluntaryExitJSONOutputPath,
 					features.Mainnet,
-					features.PraterTestnet,
-					features.SepoliaTestnet,
+					features.DolphinTestnet,
 					cmd.AcceptTosFlag,
 				}),
 				Before: func(cliCtx *cli.Context) error {

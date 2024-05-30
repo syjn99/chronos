@@ -94,7 +94,7 @@ func attestationDelta(state state.ReadOnlyBeaconState, pBal *Balance, v *Validat
 	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
 	currentEpochIncrement := pBal.ActiveCurrentEpoch / effectiveBalanceIncrement
 	vb := v.CurrentEpochEffectiveBalance / effectiveBalanceIncrement
-	totalReward, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(state)
+	totalReward, reserveUsage := helpers.TotalRewardWithReserveUsage(state)
 	br := vb * totalReward / currentEpochIncrement / baseRewardsPerEpoch
 	r, p, ru := uint64(0), uint64(0), uint64(0)
 
@@ -158,9 +158,8 @@ func attestationDelta(state state.ReadOnlyBeaconState, pBal *Balance, v *Validat
 		}
 	}
 
-	if sign > 0 {
-		ru = r * deltaReserve / totalReward
-	}
+	ru = r * reserveUsage / totalReward
+
 	return r, p, ru
 }
 
@@ -169,12 +168,12 @@ func attestationDelta(state state.ReadOnlyBeaconState, pBal *Balance, v *Validat
 func ProposersDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Validator) ([]uint64, []uint64, error) {
 	numofVals := state.NumValidators()
 	rewards := make([]uint64, numofVals)
-	reserveUsage := make([]uint64, numofVals)
+	reserveUsages := make([]uint64, numofVals)
 
 	baseRewardsPerEpoch := params.BeaconConfig().BaseRewardsPerEpoch
 	proposerRewardQuotient := params.BeaconConfig().ProposerRewardQuotient
 	effectiveBalanceIncrement := params.BeaconConfig().EffectiveBalanceIncrement
-	totalReward, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(state)
+	totalReward, reserveUsage := helpers.TotalRewardWithReserveUsage(state)
 	for _, v := range vp {
 		if uint64(v.ProposerIndex) >= uint64(len(rewards)) {
 			// This should never happen with a valid state / validator.
@@ -187,12 +186,10 @@ func ProposersDelta(state state.ReadOnlyBeaconState, pBal *Balance, vp []*Valida
 			baseReward := vBalanceIncrement * totalReward / currentEpochIncrement / baseRewardsPerEpoch
 			proposerReward := baseReward / proposerRewardQuotient
 			rewards[v.ProposerIndex] += proposerReward
-			if sign > 0 {
-				reserveUsage[v.ProposerIndex] += proposerReward * deltaReserve / totalReward
-			}
+			reserveUsages[v.ProposerIndex] += proposerReward * reserveUsage / totalReward
 		}
 	}
-	return rewards, reserveUsage, nil
+	return rewards, reserveUsages, nil
 }
 
 // EligibleForRewards for validator.

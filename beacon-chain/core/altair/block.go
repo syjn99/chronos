@@ -153,13 +153,11 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 // Since SyncRewardWeight is equal to zero, this will return zeros.
 func SyncRewards(s state.BeaconState) (proposerReward, participantReward, perRewardReserveUsage uint64, err error) {
 	cfg := params.BeaconConfig()
-	totalBaseRewards, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(s)
+	totalBaseRewards, reserveUsage := helpers.TotalRewardWithReserveUsage(s)
 	maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
 	participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
 	proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)
-	perRewardReserveUsage = uint64(0)
-	if sign > 1 {
-		perRewardReserveUsage = (proposerReward + participantReward) * deltaReserve / totalBaseRewards
-	}
+	perRewardReserveUsage = (proposerReward + participantReward) * reserveUsage / totalBaseRewards
+
 	return proposerReward, participantReward, perRewardReserveUsage, nil
 }

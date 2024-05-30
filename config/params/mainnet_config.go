@@ -13,6 +13,8 @@ func MainnetConfig() *BeaconChainConfig {
 	if mainnetBeaconConfig.ForkVersionSchedule == nil {
 		mainnetBeaconConfig.InitializeForkSchedule()
 	}
+	mainnetBeaconConfig.InitializeEpochIssuance()
+	mainnetBeaconConfig.InitializeDepositPlan()
 	return mainnetBeaconConfig
 }
 
@@ -20,9 +22,11 @@ const (
 	// Genesis Fork Epoch for the mainnet config.
 	genesisForkEpoch = 0
 	// Altair Fork Epoch for mainnet config.
-	mainnetAltairForkEpoch = 74240 // Oct 27, 2021, 10:56:23am UTC
+	mainnetAltairForkEpoch = 2 // epoch 2
 	// Bellatrix Fork Epoch for mainnet config.
-	mainnetBellatrixForkEpoch = 144896 // Sept 6, 2022, 11:34:47am UTC
+	mainnetBellatrixForkEpoch = 4 // epoch 4
+	// Capella Fork Epoch for mainnet config.
+	mainnetCapellaForkEpoch = 10 // epoch 10
 )
 
 var mainnetNetworkConfig = &NetworkConfig{
@@ -42,28 +46,9 @@ var mainnetNetworkConfig = &NetworkConfig{
 	AttSubnetKey:                    "attnets",
 	SyncCommsSubnetKey:              "syncnets",
 	MinimumPeersInSubnetSearch:      20,
-	ContractDeploymentBlock:         11184524, // Note: contract was deployed in block 11052984 but no transactions were sent until 11184524.
+	ContractDeploymentBlock:         0, // Note: contract was deployed in genesis block.
 	BootstrapNodes: []string{
-		// Teku team's bootnode
-		// "enr:-KG4QOtcP9X1FbIMOe17QNMKqDxCpm14jcX5tiOE4_TyMrFqbmhPZHK_ZPG2Gxb1GE2xdtodOfx9-cgvNtxnRyHEmC0ghGV0aDKQ9aX9QgAAAAD__________4JpZIJ2NIJpcIQDE8KdiXNlY3AyNTZrMaEDhpehBDbZjM_L9ek699Y7vhUJ-eAdMyQW_Fil522Y0fODdGNwgiMog3VkcIIjKA",
-		// "enr:-KG4QL-eqFoHy0cI31THvtZjpYUu_Jdw_MO7skQRJxY1g5HTN1A0epPCU6vi0gLGUgrzpU-ygeMSS8ewVxDpKfYmxMMGhGV0aDKQtTA_KgAAAAD__________4JpZIJ2NIJpcIQ2_DUbiXNlY3AyNTZrMaED8GJ2vzUqgL6-KD1xalo1CsmY4X1HaDnyl6Y_WayCo9GDdGNwgiMog3VkcIIjKA",
-		// // Prylab team's bootnodes
-		// "enr:-Ku4QImhMc1z8yCiNJ1TyUxdcfNucje3BGwEHzodEZUan8PherEo4sF7pPHPSIB1NNuSg5fZy7qFsjmUKs2ea1Whi0EBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpD1pf1CAAAAAP__________gmlkgnY0gmlwhBLf22SJc2VjcDI1NmsxoQOVphkDqal4QzPMksc5wnpuC3gvSC8AfbFOnZY_On34wIN1ZHCCIyg",
-		// "enr:-Ku4QP2xDnEtUXIjzJ_DhlCRN9SN99RYQPJL92TMlSv7U5C1YnYLjwOQHgZIUXw6c-BvRg2Yc2QsZxxoS_pPRVe0yK8Bh2F0dG5ldHOIAAAAAAAAAACEZXRoMpD1pf1CAAAAAP__________gmlkgnY0gmlwhBLf22SJc2VjcDI1NmsxoQMeFF5GrS7UZpAH2Ly84aLK-TyvH-dRo0JM1i8yygH50YN1ZHCCJxA",
-		// "enr:-Ku4QPp9z1W4tAO8Ber_NQierYaOStqhDqQdOPY3bB3jDgkjcbk6YrEnVYIiCBbTxuar3CzS528d2iE7TdJsrL-dEKoBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpD1pf1CAAAAAP__________gmlkgnY0gmlwhBLf22SJc2VjcDI1NmsxoQMw5fqqkw2hHC4F5HZZDPsNmPdB1Gi8JPQK7pRc9XHh-oN1ZHCCKvg",
-		// // Lighthouse team's bootnodes
-		// "enr:-Jq4QItoFUuug_n_qbYbU0OY04-np2wT8rUCauOOXNi0H3BWbDj-zbfZb7otA7jZ6flbBpx1LNZK2TDebZ9dEKx84LYBhGV0aDKQtTA_KgEAAAD__________4JpZIJ2NIJpcISsaa0ZiXNlY3AyNTZrMaEDHAD2JKYevx89W0CcFJFiskdcEzkH_Wdv9iW42qLK79ODdWRwgiMo",
-		// "enr:-Jq4QN_YBsUOqQsty1OGvYv48PMaiEt1AzGD1NkYQHaxZoTyVGqMYXg0K9c0LPNWC9pkXmggApp8nygYLsQwScwAgfgBhGV0aDKQtTA_KgEAAAD__________4JpZIJ2NIJpcISLosQxiXNlY3AyNTZrMaEDBJj7_dLFACaxBfaI8KZTh_SSJUjhyAyfshimvSqo22WDdWRwgiMo",
-		// // EF bootnodes
-		// "enr:-Ku4QHqVeJ8PPICcWk1vSn_XcSkjOkNiTg6Fmii5j6vUQgvzMc9L1goFnLKgXqBJspJjIsB91LTOleFmyWWrFVATGngBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhAMRHkWJc2VjcDI1NmsxoQKLVXFOhp2uX6jeT0DvvDpPcU8FWMjQdR4wMuORMhpX24N1ZHCCIyg",
-		// "enr:-Ku4QG-2_Md3sZIAUebGYT6g0SMskIml77l6yR-M_JXc-UdNHCmHQeOiMLbylPejyJsdAPsTHJyjJB2sYGDLe0dn8uYBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhBLY-NyJc2VjcDI1NmsxoQORcM6e19T1T9gi7jxEZjk_sjVLGFscUNqAY9obgZaxbIN1ZHCCIyg",
-		// "enr:-Ku4QPn5eVhcoF1opaFEvg1b6JNFD2rqVkHQ8HApOKK61OIcIXD127bKWgAtbwI7pnxx6cDyk_nI88TrZKQaGMZj0q0Bh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhDayLMaJc2VjcDI1NmsxoQK2sBOLGcUb4AwuYzFuAVCaNHA-dy24UuEKkeFNgCVCsIN1ZHCCIyg",
-		// "enr:-Ku4QEWzdnVtXc2Q0ZVigfCGggOVB2Vc1ZCPEc6j21NIFLODSJbvNaef1g4PxhPwl_3kax86YPheFUSLXPRs98vvYsoBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhDZBrP2Jc2VjcDI1NmsxoQM6jr8Rb1ktLEsVcKAPa08wCsKUmvoQ8khiOl_SLozf9IN1ZHCCIyg",
-		// // Nimbus bootnodes
-		// "enr:-LK4QA8FfhaAjlb_BXsXxSfiysR7R52Nhi9JBt4F8SPssu8hdE1BXQQEtVDC3qStCW60LSO7hEsVHv5zm8_6Vnjhcn0Bh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhAN4aBKJc2VjcDI1NmsxoQJerDhsJ-KxZ8sHySMOCmTO6sHM3iCFQ6VMvLTe948MyYN0Y3CCI4yDdWRwgiOM",
-		// "enr:-LK4QKWrXTpV9T78hNG6s8AM6IO4XH9kFT91uZtFg1GcsJ6dKovDOr1jtAAFPnS2lvNltkOGA9k29BUN7lFh_sjuc9QBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhANAdd-Jc2VjcDI1NmsxoQLQa6ai7y9PMN5hpLe5HmiJSlYzMuzP7ZhwRiwHvqNXdoN0Y3CCI4yDdWRwgiOM",
-
-		// Under Devnet Bootnode
+		// Over Mainnet Bootnodes
 		"enr:-MK4QAyA5sVdEIquksykdH07kUGAAw40mqe7tIoGUVVxx0kCd2TOmoa_dWKUucfpBrYfDKCbfS6UXOwQ2XHb0lMMvjqGAYkkvmrch2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEAyT5xoRvdmVykIDJGRQgAACS_v________-Jc2VjcDI1NmsxoQO9Ml07M1f1OIotRTv6PsCMA6IkjStrY0Q6cX5odCWZBYhzeW5jbmV0cwCDdGNwgjLIg3VkcIIu4A", // AWS ConDevNet Step2 Bootnode 1
 	},
 }
@@ -74,7 +59,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	FarFutureSlot:            math.MaxUint64,
 	BaseRewardsPerEpoch:      4,
 	DepositContractTreeDepth: 32,
-	GenesisDelay:             604800, // 1 week.
+	GenesisDelay:             30, // 5 minutes
 
 	// Misc constant.
 	TargetCommitteeSize:               128,
@@ -90,27 +75,20 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	HysteresisQuotient:                4,
 	HysteresisDownwardMultiplier:      1,
 	HysteresisUpwardMultiplier:        5,
-	IssuanceRate:                      [11]uint64{20, 55, 75, 65, 50, 40, 30, 25, 23, 17, 15},
-	IssuancePrecision:                 10,
-	DepositPlanEarlySlope:             uint64((700000-20000)*256*1e9) / (82125 * 2),
-	DepositPlanEarlyOffset:            20000 * 256 * 1e9,
-	DepositPlanLaterSlope:             uint64((1000000-700000)*256*1e9) / (82125 * 4),
-	DepositPlanLaterOffset:            1100000 * 128 * 1e9,
-	DepositPlanFinal:                  1000000 * 256 * 1e9,
-	MaxTargetDeposit:                  1000000 * 256 * 1e9,
+	DepositPlanEarlyEnd:               4,
+	DepositPlanLaterEnd:               10,
 	RewardFeedbackPrecision:           1000000000000,
 	RewardFeedbackThresholdReciprocal: 10,
 	TargetChangeRate:                  1500000,
-	MinYield:                          20000000000,
-	TargetYield:                       50000000000,
-	IncentiveLimit:                    2000000000000,
+	TargetYield:                       20000000000,
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,
 	MaxEffectiveBalance:       256 * 1e9,
 	EjectionBalance:           128 * 1e9,
-	EffectiveBalanceIncrement: 1 * 1e9,
+	EffectiveBalanceIncrement: 8 * 1e9,
 	MaxTokenSupply:            1000000000 * 1e9,
+	IssuancePerYear:           20000000 * 1e9,
 
 	// Initial value constants.
 	BLSWithdrawalPrefixByte:         byte(0),
@@ -125,12 +103,12 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	EpochsPerYear:                    82125, // 365(Days)*24(Hours)*60(minutes)*60(Seconds)/12(Seconds per slot)/32(Slots per epoch)
 	MinSeedLookahead:                 1,
 	MaxSeedLookahead:                 4,
-	EpochsPerEth1VotingPeriod:        16, // 512 slots
+	EpochsPerEth1VotingPeriod:        64,
 	SlotsPerHistoricalRoot:           8192,
 	MinValidatorWithdrawabilityDelay: 256,
 	ShardCommitteePeriod:             256,
 	MinEpochsToInactivityPenalty:     4,
-	Eth1FollowDistance:               32,
+	Eth1FollowDistance:               1024,
 
 	// Fork choice algorithm constants.
 	ProposerScoreBoost:              40,
@@ -140,9 +118,9 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	IntervalsPerSlot:                3,
 
 	// Ethereum PoW parameters.
-	DepositChainID:         1, // Chain ID of eth1 mainnet.
-	DepositNetworkID:       1, // Network ID of eth1 mainnet.
-	DepositContractAddress: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+	DepositChainID:         54176, // Chain ID of over mainnet.
+	DepositNetworkID:       54176, // Network ID of over mainnet.
+	DepositContractAddress: "000000000000000000000000000000000beac017",
 
 	// Validator params.
 	RandomSubnetsPerValidator:         1 << 0,
@@ -231,7 +209,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	BellatrixForkVersion: []byte{2, 0, 0, 0},
 	BellatrixForkEpoch:   mainnetBellatrixForkEpoch,
 	CapellaForkVersion:   []byte{3, 0, 0, 0},
-	CapellaForkEpoch:     194048,
+	CapellaForkEpoch:     mainnetCapellaForkEpoch,
 
 	// New values introduced in Altair hard fork 1.
 	// Participation flag indices.
@@ -274,7 +252,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Bellatrix
 	TerminalBlockHashActivationEpoch: 18446744073709551615,
 	TerminalBlockHash:                [32]byte{},
-	TerminalTotalDifficulty:          "58750000000000000000000", // Estimated: Sept 15, 2022
+	TerminalTotalDifficulty:          "500",
 	EthBurnAddressHex:                "0x0000000000000000000000000000000000000000",
 	DefaultBuilderGasLimit:           uint64(30000000),
 

@@ -63,10 +63,7 @@ func BaseRewardPerIncrement(s state.ReadOnlyBeaconState, activeBalance uint64) (
 		return 0, 0, errors.New("active balance can't be lower than effective balance increment")
 	}
 	totalActiveIncrement := activeBalance / cfg.EffectiveBalanceIncrement
-	totalReward, sign, deltaReserve := helpers.TotalRewardWithReserveUsage(s)
-	reserveUsage := uint64(0)
-	if sign > 0 {
-		reserveUsage = deltaReserve
-	}
+	totalReward, reserveUsage := helpers.TotalRewardWithReserveUsage(s)
+
 	return totalReward / totalActiveIncrement, reserveUsage / totalActiveIncrement, nil
 }
