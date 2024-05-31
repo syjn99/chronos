@@ -5,8 +5,7 @@ func UseDolphinNetworkConfig() {
 	cfg := BeaconNetworkConfig().Copy()
 	cfg.BootstrapNodes = []string{
 		// Dolphin testnet boot nodes
-		"enr:-Iq4QMCTfIMXnow27baRUb35Q8iiFHSIDBJh6hQM5Axohhf4b6Kr_cOCu0htQ5WvVqKvFgY28893DHAg8gnBAXsAVqmGAX53x8JggmlkgnY0gmlwhLKAlv6Jc2VjcDI1NmsxoQK6S-Cii_KmfFdUJL2TANL3ksaKUnNXvTCv1tLwXs0QgIN1ZHCCIyk",
-		"enr:-KG4QE5OIg5ThTjkzrlVF32WT_-XT14WeJtIz2zoTqLLjQhYAmJlnk4ItSoH41_2x0RX0wTFIe5GgjRzU2u7Q1fN4vADhGV0aDKQqP7o7pAAAHAyAAAAAAAAAIJpZIJ2NIJpcISlFsStiXNlY3AyNTZrMaEC-Rrd_bBZwhKpXzFCrStKp1q_HmGOewxY3KwM8ofAj_ODdGNwgiMog3VkcIIjKA",
+		"enr:-LG4QP-_uY01P5mD4-RrJzpuZlvLpyedCtkMU0q5Le69m60OY6sE5Bz0VI_592ujVjvxuvaJe_twOrpbq4GW0hTpXVGGAY_NUtwah2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEIkBUf4RvdmVykPWl_UIAAAAA__________-Jc2VjcDI1NmsxoQOp3abawRE7r3d9Kjn7qKrBzMMqc5p8AVpb7a81_MYkcYN1ZHCCyyA",
 	}
 	OverrideBeaconNetworkConfig(cfg)
 }
@@ -15,15 +14,16 @@ func UseDolphinNetworkConfig() {
 func DolphinConfig() *BeaconChainConfig {
 	cfg := MainnetConfig().Copy()
 	cfg.ConfigName = DolphinName
-	cfg.GenesisForkVersion = []byte{0x0, 0x00, 0x00, 0x10}
+	cfg.PresetBase = "dolphin"
 	cfg.DepositChainID = 541761
 	cfg.DepositNetworkID = 541761
+	cfg.GenesisForkVersion = []byte{0x00, 0x00, 0x00, 0x28}
 	cfg.AltairForkEpoch = 2
-	cfg.AltairForkVersion = []byte{0x1, 0x00, 0x00, 0x10}
+	cfg.AltairForkVersion = []byte{0x01, 0x00, 0x00, 0x28}
 	cfg.BellatrixForkEpoch = 4
-	cfg.BellatrixForkVersion = []byte{0x2, 0x00, 0x00, 0x10}
+	cfg.BellatrixForkVersion = []byte{0x02, 0x00, 0x00, 0x28}
 	cfg.CapellaForkEpoch = 10
-	cfg.CapellaForkVersion = []byte{0x3, 0x00, 0x00, 0x10}
+	cfg.CapellaForkVersion = []byte{0x03, 0x00, 0x00, 0x28}
 	cfg.InitializeForkSchedule()
 	return cfg
 }

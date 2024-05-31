@@ -203,12 +203,12 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 
 	// Fork related values.
 	GenesisEpoch:         genesisForkEpoch,
-	GenesisForkVersion:   []byte{0, 0, 0, 0},
-	AltairForkVersion:    []byte{1, 0, 0, 0},
+	GenesisForkVersion:   []byte{0, 0, 0, 18},
+	AltairForkVersion:    []byte{1, 0, 0, 18},
 	AltairForkEpoch:      mainnetAltairForkEpoch,
-	BellatrixForkVersion: []byte{2, 0, 0, 0},
+	BellatrixForkVersion: []byte{2, 0, 0, 18},
 	BellatrixForkEpoch:   mainnetBellatrixForkEpoch,
-	CapellaForkVersion:   []byte{3, 0, 0, 0},
+	CapellaForkVersion:   []byte{3, 0, 0, 18},
 	CapellaForkEpoch:     mainnetCapellaForkEpoch,
 
 	// New values introduced in Altair hard fork 1.
