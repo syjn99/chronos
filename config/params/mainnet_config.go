@@ -80,7 +80,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	RewardFeedbackPrecision:           1000000000000,
 	RewardFeedbackThresholdReciprocal: 10,
 	TargetChangeRate:                  1500000,
-	TargetYield:                       20000000000,
+	MaxBoostYield:                     10000000000,
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,

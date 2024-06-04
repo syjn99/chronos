@@ -15,8 +15,8 @@ func DolphinConfig() *BeaconChainConfig {
 	cfg := MainnetConfig().Copy()
 	cfg.ConfigName = DolphinName
 	cfg.PresetBase = "dolphin"
-	cfg.DepositChainID = 541761
-	cfg.DepositNetworkID = 541761
+	cfg.DepositChainID = 541762
+	cfg.DepositNetworkID = 541762
 	cfg.GenesisForkVersion = []byte{0x00, 0x00, 0x00, 0x28}
 	cfg.AltairForkEpoch = 2
 	cfg.AltairForkVersion = []byte{0x01, 0x00, 0x00, 0x28}

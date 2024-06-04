@@ -368,8 +368,8 @@ func TruncateRewardAdjustmentFactor(bias uint64) uint64 {
 	if 0 > bias {
 		bias = 0
 	}
-	if cfg.TargetYield < bias {
-		bias = cfg.TargetYield
+	if cfg.MaxBoostYield < bias {
+		bias = cfg.MaxBoostYield
 	}
 	return bias
 }

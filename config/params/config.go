@@ -48,7 +48,7 @@ type BeaconChainConfig struct {
 	RewardFeedbackPrecision           uint64 `yaml:"REWARD_FEEDBACK_PRECISION" spec:"true"`            // RewardFeedbackPrecision defines the precision of the reward feedback.
 	RewardFeedbackThresholdReciprocal uint64 `yaml:"REWARD_FEEDBACK_THRESHOLD_RECIPROCAL" spec:"true"` // RewardFeedbackThresholdReciprocal defines the reciprocal of threshold in the reward feedback.
 	TargetChangeRate                  uint64 `yaml:"TARGET_CHANGE_RATE" spec:"true"`                   // TargetChangeRate defines the target change rate for the reward feedback.
-	TargetYield                       uint64 `yaml:"TARGET_YIELD" spec:"true"`                         // TargetYield defines the target yield for the reward feedback.
+	MaxBoostYield                     uint64 `yaml:"MAX_BOOST_YIELD" spec:"true"`                      // MaxBoostYield defines the maximum value(1%) for the reward feedback.
 
 	// Gwei value constants.
 	MinDepositAmount          uint64 `yaml:"MIN_DEPOSIT_AMOUNT" spec:"true"`          // MinDepositAmount is the minimum amount of Gwei a validator can send to the deposit contract at once (lower amounts will be reverted).
