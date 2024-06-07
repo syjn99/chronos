@@ -256,10 +256,10 @@ func ConfigureValidator(ctx *cli.Context) error {
 				"We appreciate your understanding in our desire to keep Prysm validators safe.",
 		)
 	}
-	if ctx.Bool(writeWalletPasswordOnWebOnboarding.Name) {
-		logEnabled(writeWalletPasswordOnWebOnboarding)
-		cfg.WriteWalletPasswordOnWebOnboarding = true
-	}
+	// if ctx.Bool(writeWalletPasswordOnWebOnboarding.Name) {
+	// 	logEnabled(writeWalletPasswordOnWebOnboarding)
+	// 	cfg.WriteWalletPasswordOnWebOnboarding = true
+	// }
 	if ctx.Bool(attestTimely.Name) {
 		logEnabled(attestTimely)
 		cfg.AttestTimely = true

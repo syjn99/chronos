@@ -16,7 +16,7 @@ var (
 	Mainnet = &cli.BoolFlag{
 		Value: true,
 		Name:  "mainnet",
-		Usage: "Run on Ethereum Beacon Chain Main Net. This is the default and can be omitted.",
+		Usage: "Run on Over Protocol Beacon Chain Main Net. This is the default and can be omitted.",
 	}
 	devModeFlag = &cli.BoolFlag{
 		Name:  "dev",
@@ -47,11 +47,11 @@ var (
 		Name:  "disable-check-bad-peer",
 		Usage: "(Danger): Disables checking if a peer is bad. Do NOT use this in production!",
 	}
-	writeWalletPasswordOnWebOnboarding = &cli.BoolFlag{
-		Name: "write-wallet-password-on-web-onboarding",
-		Usage: "(Danger): Writes the wallet password to the wallet directory on completing Prysm web onboarding. " +
-			"We recommend against this flag unless you are an advanced user.",
-	}
+	// writeWalletPasswordOnWebOnboarding = &cli.BoolFlag{
+	// 	Name: "write-wallet-password-on-web-onboarding",
+	// 	Usage: "(Danger): Writes the wallet password to the wallet directory on completing Prysm web onboarding. " +
+	// 		"We recommend against this flag unless you are an advanced user.",
+	// }
 	aggregateFirstInterval = &cli.DurationFlag{
 		Name:   "aggregate-first-interval",
 		Usage:  "(Advanced): Specifies the first interval in which attestations are aggregated in the slot (typically unnaggregated attestations are aggregated in this interval)",
@@ -167,7 +167,7 @@ var devModeFlags = []cli.Flag{
 
 // ValidatorFlags contains a list of all the feature flags that apply to the validator client.
 var ValidatorFlags = append(deprecatedFlags, []cli.Flag{
-	writeWalletPasswordOnWebOnboarding,
+	// writeWalletPasswordOnWebOnboarding,
 	enableExternalSlasherProtectionFlag,
 	DolphinTestnet,
 	Mainnet,

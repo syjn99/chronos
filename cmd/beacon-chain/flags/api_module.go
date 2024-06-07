@@ -2,8 +2,10 @@ package flags
 
 import "strings"
 
-const PrysmAPIModule string = "prysm"
-const EthAPIModule string = "eth"
+const (
+	PrysmAPIModule string = "prysm"
+	EthAPIModule   string = "eth"
+)
 
 func EnableHTTPPrysmAPI(httpModules string) bool {
 	return enableAPI(httpModules, PrysmAPIModule)

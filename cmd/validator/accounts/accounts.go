@@ -17,7 +17,7 @@ var log = logrus.WithField("prefix", "accounts")
 var Commands = &cli.Command{
 	Name:     "accounts",
 	Category: "accounts",
-	Usage:    "defines commands for interacting with Ethereum validator accounts",
+	Usage:    "defines commands for interacting with Over Protocol validator accounts",
 	Subcommands: []*cli.Command{
 		{
 			Name:        "delete",
@@ -151,8 +151,8 @@ var Commands = &cli.Command{
 				flags.AccountPasswordFileFlag,
 				flags.VoluntaryExitPublicKeysFlag,
 				flags.BeaconRPCProviderFlag,
-				flags.Web3SignerURLFlag,
-				flags.Web3SignerPublicValidatorKeysFlag,
+				// flags.Web3SignerURLFlag,
+				// flags.Web3SignerPublicValidatorKeysFlag,
 				flags.InteropNumValidators,
 				flags.InteropStartIndex,
 				cmd.GrpcMaxCallRecvMsgSizeFlag,

@@ -71,7 +71,7 @@ var appFlags = []cli.Flag{
 	flags.TerminalTotalDifficultyOverride,
 	flags.TerminalBlockHashOverride,
 	flags.TerminalBlockHashActivationEpochOverride,
-	flags.MevRelayEndpoint,
+	// flags.MevRelayEndpoint, // Temporarily deactivate for operational verification.
 	flags.MaxBuilderEpochMissedSlots,
 	flags.MaxBuilderConsecutiveMissedSlots,
 	flags.EngineEndpointTimeoutSeconds,
@@ -148,7 +148,7 @@ func init() {
 func main() {
 	app := cli.App{}
 	app.Name = "beacon-chain"
-	app.Usage = "this is a beacon chain implementation for Ethereum"
+	app.Usage = "this is a beacon chain implementation for Over Protocol"
 	app.Action = func(ctx *cli.Context) error {
 		if err := startNode(ctx); err != nil {
 			return cli.Exit(err.Error(), 1)
@@ -225,9 +225,9 @@ func startNode(ctx *cli.Context) error {
 		// libp2p specific logging.
 		golog.SetAllLoggers(golog.LevelDebug)
 		// Geth specific logging.
-		//glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
-		//glogger.Verbosity(gethlog.LvlTrace)
-		//gethlog.Root().SetHandler(glogger)
+		// glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
+		// glogger.Verbosity(gethlog.LvlTrace)
+		// gethlog.Root().SetHandler(glogger)
 	}
 
 	format := ctx.String(cmd.LogFormat.Name)
