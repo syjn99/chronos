@@ -3,7 +3,7 @@ set -e
 
 export PATH="$PATH:/usr/local/go/bin"
 
-cd "$GITHUB_WORKSPACE"
+cd "/github/workspace"
 
 go env -w GOPRIVATE=github.com/superblock-dev
 git config --global url."https://$1@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"

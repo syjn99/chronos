@@ -22,11 +22,11 @@ const (
 	// Genesis Fork Epoch for the mainnet config.
 	genesisForkEpoch = 0
 	// Altair Fork Epoch for mainnet config.
-	mainnetAltairForkEpoch = 2 // epoch 2
+	mainnetAltairForkEpoch = 0
 	// Bellatrix Fork Epoch for mainnet config.
-	mainnetBellatrixForkEpoch = 4 // epoch 4
+	mainnetBellatrixForkEpoch = 0
 	// Capella Fork Epoch for mainnet config.
-	mainnetCapellaForkEpoch = 10 // epoch 10
+	mainnetCapellaForkEpoch = 10
 )
 
 var mainnetNetworkConfig = &NetworkConfig{
@@ -49,7 +49,8 @@ var mainnetNetworkConfig = &NetworkConfig{
 	ContractDeploymentBlock:         0, // Note: contract was deployed in genesis block.
 	BootstrapNodes: []string{
 		// Over Mainnet Bootnodes
-		"enr:-MK4QAyA5sVdEIquksykdH07kUGAAw40mqe7tIoGUVVxx0kCd2TOmoa_dWKUucfpBrYfDKCbfS6UXOwQ2XHb0lMMvjqGAYkkvmrch2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEAyT5xoRvdmVykIDJGRQgAACS_v________-Jc2VjcDI1NmsxoQO9Ml07M1f1OIotRTv6PsCMA6IkjStrY0Q6cX5odCWZBYhzeW5jbmV0cwCDdGNwgjLIg3VkcIIu4A", // AWS ConDevNet Step2 Bootnode 1
+		"enr:-LG4QPSpG5B2-RqEPFTIqioW9FPf3zbdihMzgcjq0EoDqrKWaHSNp9_cdJu1NqW801NQqbMIbu4ulMM6etZAUuzVfuOGAZAqEhQLh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEIi9wdIRvdmVykIxhDBUAAAAS__________-Jc2VjcDI1NmsxoQKfJRWSiWQNWAC4yGT0aXhtsK9a2nHgWCtKZDSbmGAZD4N1ZHCCyyA", // Bootnode1
+		"enr:-LG4QAeEVPoRW5d6wPm64dT0-q0dLxEHKN-GJteOZ9FzRuhbIODSAz6ri5aTh8h1RVBdtZCyzjQio9EapAgHo1Zx1nWGAZAqEhaqh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEIiABaYRvdmVykIxhDBUAAAAS__________-Jc2VjcDI1NmsxoQMutqRIiYjhL4_ZMDKyZBChUA7X2i7SmEx_Pqu7o8-LOIN1ZHCCyyA", // Bootnode2
 	},
 }
 
@@ -70,7 +71,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	ChurnLimitBias:                    1,
 	ShuffleRoundCount:                 90,
 	MinGenesisActiveValidatorCount:    16384,
-	MinGenesisTime:                    1606824000, // Dec 1, 2020, 12pm UTC.
+	MinGenesisTime:                    1718690400, // Jun 19, 2024, 00 AM UTC+9.
 	TargetAggregatorsPerCommittee:     16,
 	HysteresisQuotient:                4,
 	HysteresisDownwardMultiplier:      1,
@@ -203,12 +204,12 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 
 	// Fork related values.
 	GenesisEpoch:         genesisForkEpoch,
-	GenesisForkVersion:   []byte{0, 0, 0, 18},
-	AltairForkVersion:    []byte{1, 0, 0, 18},
+	GenesisForkVersion:   []byte{0x00, 0x00, 0x00, 0x18},
+	AltairForkVersion:    []byte{0x01, 0x00, 0x00, 0x18},
 	AltairForkEpoch:      mainnetAltairForkEpoch,
-	BellatrixForkVersion: []byte{2, 0, 0, 18},
+	BellatrixForkVersion: []byte{0x02, 0x00, 0x00, 0x18},
 	BellatrixForkEpoch:   mainnetBellatrixForkEpoch,
-	CapellaForkVersion:   []byte{3, 0, 0, 18},
+	CapellaForkVersion:   []byte{0x03, 0x00, 0x00, 0x18},
 	CapellaForkEpoch:     mainnetCapellaForkEpoch,
 
 	// New values introduced in Altair hard fork 1.
@@ -252,7 +253,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Bellatrix
 	TerminalBlockHashActivationEpoch: 18446744073709551615,
 	TerminalBlockHash:                [32]byte{},
-	TerminalTotalDifficulty:          "500",
+	TerminalTotalDifficulty:          "0",
 	EthBurnAddressHex:                "0x0000000000000000000000000000000000000000",
 	DefaultBuilderGasLimit:           uint64(30000000),
 

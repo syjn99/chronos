@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"errors"
-	"math"
 	"math/big"
 
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/cache"
@@ -326,10 +325,6 @@ func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (uint64, e
 	}
 	targetDeposit := TargetDepositPlan(time.NextEpoch(state))
 
-	// Using big integers for precise calculation
-	if futureDeposit >= math.MaxInt64 || targetDeposit >= math.MaxInt64 {
-		return 0, errors.New("deposit exceeds max int64, cannot calculate reward adjustment factor")
-	}
 	bigFutureDeposit := big.NewInt(int64(futureDeposit)) // lint:ignore uintcast -- changeRate will not exceed int64 because of total issuance.
 	bigTargetDeposit := big.NewInt(int64(targetDeposit)) // lint:ignore uintcast -- changeRate will not exceed int64 because of total issuance.
 	bigRewardPrecision := big.NewInt(int64(cfg.RewardFeedbackPrecision))
@@ -342,10 +337,7 @@ func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (uint64, e
 
 	// Calculate the change rate
 	targetChangeRate := big.NewInt(int64(cfg.TargetChangeRate))
-	changeRate := new(big.Int).Div(new(big.Int).Mul(targetChangeRate, mitigatingFactor), bigRewardPrecision).Uint64()
-	if changeRate >= math.MaxUint64 {
-		return 0, errors.New("changeRate exceeds max uint64, cannot calculate reward adjustment factor")
-	}
+	changeRate := new(big.Int).Div(new(big.Int).Mul(targetChangeRate, mitigatingFactor), bigRewardPrecision).Uint64() // lint:ignore uintcast -- changeRate will not exceed int64 because of value limit.
 
 	bias := state.RewardAdjustmentFactor()
 	if futureDeposit >= targetDeposit {

@@ -11,7 +11,7 @@ env:
 
 jobs:
   extract_name:
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, Linux, docker]
     outputs:
       tag_name: ${{ steps.extract.outputs.tag_name }}
       version_name: ${{ steps.extract.outputs.version_name }}
@@ -44,6 +44,10 @@ jobs:
       build_type: ${{ matrix.symbol-list }}
       tag_name: ${{ needs.extract_name.outputs.tag_name }}
       version_name: ${{ needs.extract_name.outputs.version_name }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   node-pack-lipo:
     needs: [extract_name, build]
@@ -121,7 +125,7 @@ jobs:
 
   node-pack:
     needs: [extract_name, build, codesign-osx, codesign-win]
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, Linux, docker]
     steps:
       - uses: actions/checkout@v3
       - name: Download windows artifact
@@ -143,15 +147,21 @@ jobs:
       - run: mv dist/bin/linux/amd64/validator dist/bin/linux/validator
       - run: rm -rf dist/bin/linux/amd64
       - run: zip -r dist/over-node-chronos.zip dist/bin
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
       - name: Upload to AWS S3
         run: |
           aws s3 cp ./dist/over-node-chronos.zip \
           ${{ format('s3://{0}/{1}/{2}/over-node-chronos.zip',  env.S3_BUCKET_NAME, needs.extract_name.outputs.version_name, needs.extract_name.outputs.tag_name ) }} \
-          --acl public-read --profile over-dist
+          --acl public-read
 
   notification:
     needs: [extract_name, build, node-pack]
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, linux, tesseract]
     steps:
       - name: Drop metadata
         run: |

@@ -9,19 +9,19 @@ on:
 jobs:
   formatting:
     name: Formatting
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, Linux, docker]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Go mod tidy checker
         id: gomodtidy
-        uses: ./.github/actions/gomodtidy
-        with:
-          github_token: ${{ secrets.GH_TOKEN }}
+        run: docker build --build-arg CACHEBUST=$(date +%s) -f .github/actions/gomodtidy/Dockerfile -t gomodtidy ${{ github.workspace }}
+      - name: Run Go mod tidy checker
+        run: docker run gomodtidy ${{ secrets.GH_TOKEN }}
 
   gosec:
     name: Gosec scan
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, Linux, docker]
     env:
       GO111MODULE: on
       GOPRIVATE: github.com/superblock-dev
@@ -43,7 +43,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, Linux, docker]
     env:
       GOPRIVATE: github.com/superblock-dev
       GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -66,7 +66,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: [arc-runner-set]
+    runs-on: [self-hosted, Linux, docker]
     env:
         GOPRIVATE: github.com/superblock-dev
         GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
