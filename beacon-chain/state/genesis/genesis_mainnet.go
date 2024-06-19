@@ -5,6 +5,8 @@ package genesis
 
 import (
 	_ "embed"
+
+	"github.com/prysmaticlabs/prysm/v4/config/params"
 )
 
 var (
@@ -13,5 +15,5 @@ var (
 )
 
 func init() {
-	//embeddedStates[params.MainnetName] = &mainnetRawSSZCompressed
+	embeddedStates[params.MainnetName] = &mainnetRawSSZCompressed
 }
