@@ -480,7 +480,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{3, 3, 3, 3, 0, 0, 0, 0},
-			wantedBalance:       256038221621,
+			wantedBalance:       256044591892,
 		},
 		{
 			name:    "all participated with some flags",
@@ -490,7 +490,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   false,
 			},
 			wantedParticipation: []byte{1, 1, 1, 1, 1, 1, 1, 1},
-			wantedBalance:       256025481081,
+			wantedBalance:       256029727928,
 		},
 		{
 			name:    "all participated with all flags",
@@ -500,7 +500,7 @@ func TestSetParticipationAndRewardProposer(t *testing.T) {
 				headFlagIndex:   true,
 			},
 			wantedParticipation: []byte{7, 7, 7, 7, 7, 7, 7, 7},
-			wantedBalance:       256101924324,
+			wantedBalance:       256118911712,
 		},
 	}
 	for _, test := range tests {
@@ -632,10 +632,10 @@ func TestRewardProposer(t *testing.T) {
 		want             uint64
 	}{
 		{rewardNumerator: 1, reserveNumerator: 1, want: 0},
-		{rewardNumerator: 10000, reserveNumerator: 10000, want: 22},
-		{rewardNumerator: 1000000, reserveNumerator: 1000000, want: 2232},
-		{rewardNumerator: 1000000000, reserveNumerator: 1000000000, want: 2232142},
-		{rewardNumerator: 1000000000000, reserveNumerator: 1000000000000, want: 2232142857},
+		{rewardNumerator: 10000, reserveNumerator: 10000, want: 26},
+		{rewardNumerator: 1000000, reserveNumerator: 1000000, want: 2604},
+		{rewardNumerator: 1000000000, reserveNumerator: 1000000000, want: 2604166},
+		{rewardNumerator: 1000000000000, reserveNumerator: 1000000000000, want: 2604166666},
 	}
 	for _, test := range tests {
 		pr := beaconState.CurrentEpochReserve()
