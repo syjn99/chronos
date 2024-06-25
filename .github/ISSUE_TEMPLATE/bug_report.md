@@ -1,6 +1,6 @@
 ---
 name: "\U0001F41EBug report"
-about: Report a bug or problem with running Prysm
+about: Report a bug or problem with running Chronos
 ---
 <!--💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎
 
@@ -25,7 +25,7 @@ Existing issues often contain information about workarounds, resolution, or prog
 ## 🔬 Minimal Reproduction
 
 <!--
-Please let us know how we can reproduce this issue. Include the exact method you used to run Prysm along with any flags used in your beacon chain and/or validator. Make sure you don't upload any confidential files or private keys.
+Please let us know how we can reproduce this issue. Include the exact method you used to run Chronos along with any flags used in your beacon chain and/or validator. Make sure you don't upload any confidential files or private keys.
 -->
 
 ## 🔥 Error
@@ -47,7 +47,7 @@ Please let us know how we can reproduce this issue. Include the exact method you
   </code>
 </pre>
 
-**What version of Prysm are you running? (Which release)**
+**What version of Chronos are you running? (Which release)**
 
 <pre>
   <code>

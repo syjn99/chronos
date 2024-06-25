@@ -1,4 +1,10 @@
-# Dependency Management in Prysm
+# Dependency Management in Chronos
+
+_**Note**: Chronos is a fork of [Prysm](https://github.com/prysmaticlabs/prysm). The content below is sourced from Prysm._
+
+
+---
+
 
 Prysm is go project with many complicated dependencies, including some c++ based libraries. There
 are two parts to Prysm's dependency management. Go modules and bazel managed dependencies. Be sure 

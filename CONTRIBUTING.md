@@ -1,44 +1,40 @@
 # Contribution Guidelines
 
-Note: The latest and most up-to-date documentation can be found on our [docs portal](https://docs.prylabs.network/docs/contribute/contribution-guidelines).
-
-Excited by our work and want to get involved in building out our sharding releases? Or maybe you haven't learned as much about the Ethereum protocol but are a savvy developer? 
-
-You can explore our [Open Issues](https://github.com/prysmaticlabs/prysm/issues) in-the works for our different releases. Feel free to fork our repo and start creating PR’s after assigning yourself to an issue of interest. We are always chatting on [Discord](https://discord.gg/CTYGPUJ) drop us a line there if you want to get more involved or have any questions on our implementation!
+Feel free to fork our repo and start creating PR’s after assigning yourself to an issue of interest. We are always chatting on [Discord](https://discord.com/invite/overprotocol) drop us a line there if you want to get more involved or have any questions on our implementation!
 
 ## Contribution Steps
 
-**1. Set up Prysm following the instructions in README.md.**
+**1. Set up Chronos following the instructions in README.md.**
 
-**2. Fork the Prysm repo.**
+**2. Fork the Chronos repo.**
 
-Sign in to your GitHub account or create a new account if you do not have one already. Then navigate your browser to https://github.com/prysmaticlabs/prysm/. In the upper right hand corner of the page, click “fork”. This will create a copy of the Prysm repo in your account.
+Sign in to your GitHub account or create a new account if you do not have one already. Then navigate your browser to https://github.com/overprotocol/chronos/. In the upper right hand corner of the page, click “fork”. This will create a copy of the Chronos repo in your account.
 
-**3. Create a local clone of Prysm.**
+**3. Create a local clone of Chronos.**
 
 ```
-$ mkdir -p $GOPATH/src/github.com/prysmaticlabs
-$ cd $GOPATH/src/github.com/prysmaticlabs
-$ git clone https://github.com/prysmaticlabs/prysm.git
-$ cd $GOPATH/src/github.com/prysmaticlabs/prysm
+$ mkdir -p $GOPATH/src/github.com/overprotocol
+$ cd $GOPATH/src/github.com/overprotocol
+$ git clone https://github.com/overprotocol/chronos.git
+$ cd $GOPATH/src/github.com/overprotocol/chronos
 ```
 
 **4. Link your local clone to the fork on your GitHub repo.**
 
 ```
-$ git remote add myprysmrepo https://github.com/<your_github_user_name>/prysm.git
+$ git remote add myrepo https://github.com/<your_github_user_name>/chronos.git
 ```
 
-**5. Link your local clone to the Prysmatic Labs repo so that you can easily fetch future changes to the Prysmatic Labs repo.**
+**5. Link your local clone to the Over Protocol repo so that you can easily fetch future changes to the Over Protocol repo.**
 
 ```
-$ git remote add prysm https://github.com/prysmaticlabs/prysm.git
-$ git remote -v (you should see myrepo and prysm in the list of remotes)
+$ git remote add chronos https://github.com/overprotocol/chronos.git
+$ git remote -v (you should see myrepo and chronos in the list of remotes)
 ```
 
 **6. Find an issue to work on.**
 
-Check out open issues at https://github.com/prysmaticlabs/prysm/issues and pick one. Leave a comment to let the development team know that you would like to work on it. Or examine the code for areas that can be improved and leave a comment to the development team to ask if they would like you to work on it.
+Check out open issues at GitHub issue tab and pick one. Leave a comment to let the development team know that you would like to work on it. Or examine the code for areas that can be improved and leave a comment to the development team to ask if they would like you to work on it.
 
 **7. Create a local branch with a name that clearly identifies what you will be working on.**
 
@@ -48,7 +44,7 @@ $ git checkout -b feature-in-progress-branch
 
 **8. Make improvements to the code.**
 
-Each time you work on the code be sure that you are working on the branch that you have created as opposed to your local copy of the Prysmatic Labs repo. Keeping your changes segregated in this branch will make it easier to merge your changes into the repo later.
+Each time you work on the code be sure that you are working on the branch that you have created as opposed to your local copy of the Over Protocol repo. Keeping your changes segregated in this branch will make it easier to merge your changes into the repo later.
 
 ```
 $ git checkout feature-in-progress-branch
@@ -78,13 +74,13 @@ $ git commit  -m “Message to explain what the commit covers”
 
 You can use the –amend flag to include previous commits that have not yet been pushed to an upstream repo to the current commit.
 
-**12. Fetch any changes that have occurred in the Prysmatic Labs Prysm repo since you started work.**
+**12. Fetch any changes that have occurred in the Over Protocol Chronos repo since you started work.**
 
 ```
-$ git fetch prysm
+$ git fetch chronos
 ```
 
-**13. Pull latest version of Prysm.**
+**13. Pull latest version of Chronos.**
 
 ```
 $ git pull origin master
@@ -106,9 +102,9 @@ Your version of the conflicting code
 '>>>>> Your Commit
 ```
 
-The code from the Prysm repo is inserted between <<< and === while the change you have made is inserted between === and >>>>. Remove everything between <<<< and >>> and replace it with code that resolves the conflict. Repeat the process for all files listed by git status that have conflicts.
+The code from the Chronos repo is inserted between <<< and === while the change you have made is inserted between === and >>>>. Remove everything between <<<< and >>> and replace it with code that resolves the conflict. Repeat the process for all files listed by git status that have conflicts.
 
-**14. Push your changes to your fork of the Prysm repo.**
+**14. Push your changes to your fork of the Chronos repo.**
 
 Use git push to move your changes to your fork of the repo.
 
@@ -116,13 +112,13 @@ Use git push to move your changes to your fork of the repo.
 $ git push myrepo feature-in-progress-branch
 ```
 
-**15. Check to be sure your fork of the Prysm repo contains your feature branch with the latest edits.**
+**15. Check to be sure your fork of the Chronos repo contains your feature branch with the latest edits.**
 
 Navigate to your fork of the repo on GitHub. On the upper left where the current branch is listed, change the branch to your feature-in-progress-branch. Open the files that you have worked on and check to make sure they include your changes.
 
 **16. Create a pull request.**
 
-Navigate your browser to https://github.com/prysmaticlabs/prysm and click on the new pull request button. In the “base” box on the left, leave the default selection “base master”, the branch that you want your changes to be applied to. In the “compare” box on the right, select feature-in-progress-branch, the branch containing the changes you want to apply. You will then be asked to answer a few questions about your pull request. After you complete the questionnaire, the pull request will appear in the list of pull requests at https://github.com/prysmaticlabs/prysm/pulls.
+Navigate your browser to https://github.com/overprotocol/chronos and click on the new pull request button. In the “base” box on the left, leave the default selection “base master”, the branch that you want your changes to be applied to. In the “compare” box on the right, select feature-in-progress-branch, the branch containing the changes you want to apply. You will then be asked to answer a few questions about your pull request. After you complete the questionnaire, the pull request will appear in the list of pull requests at https://github.com/overprotocol/chronos/pulls.
 
 **17. Respond to comments by Core Contributors.**
 
@@ -130,10 +126,10 @@ Core Contributors may ask questions and request that you make edits. If you set 
 
 **18. If the number of commits becomes excessive, you may be asked to squash your commits.**
 
- You can do this with an interactive rebase. Start by running the following command to determine the commit that is the base of your branch...
+You can do this with an interactive rebase. Start by running the following command to determine the commit that is the base of your branch...
 
 ```
-$ git merge-base feature-in-progress-branch prysm/master
+$ git merge-base feature-in-progress-branch chronos/master
 ```
 
 **19. The previous command will return a commit-hash that you should use in the following command.**
@@ -166,36 +162,4 @@ Save and close the file, then a commit command will appear in the terminal that 
 $ git push myrepo feature-in-progress-branch -f
 ```
 
-**21.  Finally, again leave a comment to the Core Contributors on the pull request to let them know that the pull request has been updated.**
-
-## Contributor Responsibilities
-
-We consider two types of contributions to our repo and categorize them as follows:
-
-### Part-Time Contributors
-
-Anyone can become a part-time contributor and help out on implementing Ethereum consensus. The responsibilities of a part-time contributor include:
-
--   Engaging in Gitter conversations, asking the questions on how to begin contributing to the project
--   Opening up GitHub issues to express interest in code to implement
--   Opening up PRs referencing any open issue in the repo. PRs should include:
-    -   Detailed context of what would be required for merge
-    -   Tests that are consistent with how other tests are written in our implementation
--   Proper labels, milestones, and projects (see other closed PRs for reference)
--   Follow up on open PRs
-    -   Have an estimated timeframe to completion and let the core contributors know if a PR will take longer than expected
-
-### Core Contributors
-
-Core contributors are remote contractors of Prysmatic Labs, LLC. and are considered critical team members of our organization. Core devs have all the responsibilities of part-time contributors plus the majority of the following:
-
--   Stay up to date on the latest beacon chain specification
--   Monitor GitHub issues and PR’s to make sure owner, labels, descriptions are correct
--   Formulate independent ideas, suggest new work to do, point out improvements to existing approaches
--   Participate in code review, ensure code quality is excellent, and ensure high code coverage
--   Help with social media presence, write bi-weekly development update
--   Represent Prysmatic Labs at events to help spread the word on scalability research and solutions
-
-We love working with people that are autonomous, bring independent thoughts to the team, and are excited for their work! We believe in a merit-based approach to becoming a core contributor, and any part-time contributor that puts in the time, work, and drive can become a core member of our team.
-
-![eth](https://steemitimages.com/DQmV1NASyCJYusDjY1WCvpoWiXh32HyumQHFQhY8zYZ6WDH/source.gif)
+**21. Finally, again leave a comment to the Core Contributors on the pull request to let them know that the pull request has been updated.**

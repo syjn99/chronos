@@ -1,9 +1,30 @@
 # Chronos
-Official golang implementation of the Over protocol consensus layer. Chronos is based on [Prysm](https://github.com/prysmaticlabs/prysm) fork, A [Golang](https://golang.org/) implementation of the [Ethereum Consensus](https://ethereum.org/en/eth2/) specification.
 
-### Getting Started
+Official Go implementation of the [Over protocol](https://over.network/) consensus layer. Chronos is a fork of [Prysm](https://github.com/prysmaticlabs/prysm), a [Golang](https://golang.org/) implementation of the [Ethereum Consensus](https://ethereum.org/en/developers/docs/consensus-mechanisms/#proof-of-stake) specification.
 
-A detailed set of installation and usage instructions as well as breakdowns of each individual component are very similar to Prysm. You can check [prysm's documentation portal](https://docs.prylabs.network) for more details. If you still have questions, feel free to stop by our [Discord](https://discord.com/invite/overprotocol).
+## Getting Started
+
+A detailed set of installation and usage instructions, as well as breakdowns of each individual component, refer to [Prysm's documentation portal](https://docs.prylabs.network). If you still have questions, feel free to stop by our [Discord](https://discord.com/invite/overprotocol).
+
+### Building the Source
+
+Chronos can be installed using [Bazel](https://bazel.build/). You can install Bazel using Bazelisk, a handy tool for launching Bazel. Please refer to [Bazelisk official repository](https://github.com/bazelbuild/bazelisk?tab=readme-ov-file#installation) for installation instructions.
+
+Once the dependencies, including Bazel, are installed, run the following command:
+
+```shell
+bazel build //cmd/beacon-chain:beacon-chain //cmd/validator:validator
+```
+
+Bazel will automatically generate symlinks at `bazel-bin/`. You can find the beacon-chain binary at `bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain`, and the `validator` binary likewise.
+
+### Operating Validators
+
+To operate validators with Chronos, follow the steps outlined in [our official documentation](https://docs.over.network/operators/operate-validators).
+
+## Contributing
+
+We welcome contributions from the community. Please refer to our [contributing guidelines](CONTRIBUTING.md) to get started.
 
 ## License
 
