@@ -8,11 +8,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/blocks"
 	fieldparams "github.com/prysmaticlabs/prysm/v4/config/fieldparams"
-	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/encoding/bytesutil"
 	"github.com/prysmaticlabs/prysm/v4/io/file"
 	eth "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
@@ -154,27 +152,8 @@ func prepareAllKeys(validatingKeys [][fieldparams.BLSPubkeyLength]byte) (raw [][
 
 func displayExitInfo(rawExitedKeys [][]byte, trimmedExitedKeys []string) {
 	if len(rawExitedKeys) > 0 {
-		urlFormattedPubKeys := make([]string, len(rawExitedKeys))
-		for i, key := range rawExitedKeys {
-			var baseUrl string
-			if params.BeaconConfig().ConfigName == params.DolphinName {
-				baseUrl = "https://jun's/dora/here"
-			} else {
-				baseUrl = "https://beaconcha.in/validator/"
-			}
-			// Remove '0x' prefix
-			urlFormattedPubKeys[i] = baseUrl + hexutil.Encode(key)[2:]
-		}
-
-		ifaceKeys := make([]interface{}, len(urlFormattedPubKeys))
-		for i, k := range urlFormattedPubKeys {
-			ifaceKeys[i] = k
-		}
-
-		info := fmt.Sprintf("Voluntary exit was successful for the accounts listed. "+
-			"URLs where you can track each validator's exit:\n"+strings.Repeat("%s\n", len(ifaceKeys)), ifaceKeys...)
-
-		log.WithField("publicKeys", strings.Join(trimmedExitedKeys, ", ")).Info(info)
+		// TODO: Add beacon chain explorer links when explorer is ready
+		log.WithField("publicKeys", strings.Join(trimmedExitedKeys, ", ")).Info("Voluntary exit was successful for the accounts listed.")
 	} else {
 		log.Info("No successful voluntary exits")
 	}
