@@ -27,8 +27,7 @@ var Commands = &cli.Command{
 				flags.WalletPasswordFileFlag,
 				flags.DeletePublicKeysFlag,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {
@@ -62,8 +61,7 @@ var Commands = &cli.Command{
 				flags.GrpcRetriesFlag,
 				flags.GrpcRetryDelayFlag,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {
@@ -95,8 +93,7 @@ var Commands = &cli.Command{
 				flags.BackupPublicKeysFlag,
 				flags.BackupPasswordFile,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {
@@ -125,8 +122,7 @@ var Commands = &cli.Command{
 				flags.AccountPasswordFileFlag,
 				flags.ImportPrivateKeyFileFlag,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {
@@ -167,8 +163,7 @@ var Commands = &cli.Command{
 				flags.ForceExitFlag,
 				flags.VoluntaryExitJSONOutputPath,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {

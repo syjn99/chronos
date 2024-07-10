@@ -8,15 +8,10 @@ import (
 )
 
 var (
-	// SepoliaTestnet flag for the multiclient Ethereum consensus testnet.
-	SepoliaTestnet = &cli.BoolFlag{
-		Name:  "sepolia",
-		Usage: "Runs Prysm configured for the Sepolia test network.",
-	}
-	// HoleskyTestnet flag for the multiclient Ethereum consensus testnet.
-	HoleskyTestnet = &cli.BoolFlag{
-		Name:  "holesky",
-		Usage: "Runs Prysm configured for the Holesky test network.",
+	// DolphinTestnet flag for the multiclient Ethereum consensus testnet.
+	DolphinTestnet = &cli.BoolFlag{
+		Name:  "dolphin",
+		Usage: "Runs Prysm configured for the Dolphin test network.",
 	}
 	// Mainnet flag for easier tooling, no-op
 	Mainnet = &cli.BoolFlag{
@@ -178,8 +173,7 @@ var devModeFlags = []cli.Flag{
 // ValidatorFlags contains a list of all the feature flags that apply to the validator client.
 var ValidatorFlags = append(deprecatedFlags, []cli.Flag{
 	writeWalletPasswordOnWebOnboarding,
-	HoleskyTestnet,
-	SepoliaTestnet,
+	DolphinTestnet,
 	Mainnet,
 	dynamicKeyReloadDebounceInterval,
 	attestTimely,
@@ -202,8 +196,7 @@ var BeaconChainFlags = append(deprecatedBeaconFlags, append(deprecatedFlags, []c
 	saveInvalidBlockTempFlag,
 	saveInvalidBlobTempFlag,
 	disableGRPCConnectionLogging,
-	HoleskyTestnet,
-	SepoliaTestnet,
+	DolphinTestnet,
 	Mainnet,
 	disablePeerScorer,
 	disableBroadcastSlashingFlag,
@@ -233,6 +226,5 @@ var E2EBeaconChainFlags = []string{
 // NetworkFlags contains a list of network flags.
 var NetworkFlags = []cli.Flag{
 	Mainnet,
-	SepoliaTestnet,
-	HoleskyTestnet,
+	DolphinTestnet,
 }

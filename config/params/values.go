@@ -8,6 +8,6 @@ const (
 	MainnetName         = "mainnet"
 	MainnetTestName     = "mainnet-test"
 	MinimalName         = "minimal"
-	SepoliaName         = "sepolia"
-	HoleskyName         = "holesky"
+	DolphinName         = "dolphin"
+	UnderDevnetName     = "under-devnet"
 )

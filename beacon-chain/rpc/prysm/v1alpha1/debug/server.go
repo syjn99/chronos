@@ -5,9 +5,7 @@ package debug
 
 import (
 	"context"
-	"os"
-
-	gethlog "github.com/ethereum/go-ethereum/log"
+	//gethlog "github.com/ethereum/go-ethereum/log"
 	"github.com/golang/protobuf/ptypes/empty"
 	golog "github.com/ipfs/go-log/v2"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/blockchain"
@@ -56,9 +54,9 @@ func (_ *Server) SetLoggingLevel(_ context.Context, req *pbrpc.LoggingLevelReque
 		// Libp2p specific logging.
 		golog.SetAllLoggers(golog.LevelDebug)
 		// Geth specific logging.
-		glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
-		glogger.Verbosity(gethlog.LvlTrace)
-		gethlog.Root().SetHandler(glogger)
+		//glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
+		//glogger.Verbosity(gethlog.LvlTrace)
+		//gethlog.Root().SetHandler(glogger)
 	}
 	return &empty.Empty{}, nil
 }

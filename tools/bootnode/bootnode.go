@@ -19,11 +19,9 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
 	gcrypto "github.com/ethereum/go-ethereum/crypto"
-	gethlog "github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/p2p/discover"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/enr"
@@ -46,7 +44,7 @@ import (
 )
 
 var (
-	debug                 = flag.Bool("debug", false, "Enable debug logging")
+	//debug                 = flag.Bool("debug", false, "Enable debug logging")
 	logFileName           = flag.String("log-file", "", "Specify log filename, relative or absolute")
 	privateKey            = flag.String("private", "", "Private key to use for peer ID")
 	discv5port            = flag.Int("discv5-port", 4000, "Port to listen for discv5 connections")
@@ -77,16 +75,16 @@ func main() {
 
 	fmt.Printf("Starting bootnode. Version: %s\n", version.Version())
 
-	if *debug {
-		logrus.SetLevel(logrus.DebugLevel)
-
-		// Geth specific logging.
-		glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(false)))
-		glogger.Verbosity(gethlog.LvlTrace)
-		gethlog.Root().SetHandler(glogger)
-
-		log.Debug("Debug logging enabled.")
-	}
+	//if *debug {
+	//	logrus.SetLevel(logrus.DebugLevel)
+	//
+	//	// Geth specific logging.
+	//	glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(false)))
+	//	glogger.Verbosity(gethlog.LvlTrace)
+	//	gethlog.Root().SetHandler(glogger)
+	//
+	//	log.Debug("Debug logging enabled.")
+	//}
 	privKey := extractPrivateKey()
 	cfg := discover.Config{
 		PrivateKey: privKey,

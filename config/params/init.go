@@ -3,15 +3,15 @@ package params
 func init() {
 	defaults := []*BeaconChainConfig{
 		MainnetConfig(),
+		DolphinConfig(),
 		MinimalSpecConfig(),
 		E2ETestConfig(),
 		E2EMainnetTestConfig(),
 		InteropConfig(),
-		HoleskyConfig(),
-		SepoliaConfig(),
+		UnderDevnetSpecConfig(),
 	}
 	configs = newConfigset(defaults...)
-	// ensure that main net is always present and active by default
+	// ensure that mainnet is always present and active by default
 	if err := SetActive(MainnetConfig()); err != nil {
 		panic(err)
 	}

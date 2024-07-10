@@ -31,8 +31,7 @@ var Commands = &cli.Command{
 				flags.Mnemonic25thWordFileFlag,
 				flags.SkipMnemonic25thWordCheckFlag,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {
@@ -62,8 +61,7 @@ var Commands = &cli.Command{
 				flags.Mnemonic25thWordFileFlag,
 				flags.SkipMnemonic25thWordCheckFlag,
 				features.Mainnet,
-				features.SepoliaTestnet,
-				features.HoleskyTestnet,
+				features.DolphinTestnet,
 				cmd.AcceptTosFlag,
 			}),
 			Before: func(cliCtx *cli.Context) error {

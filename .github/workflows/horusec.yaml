@@ -8,15 +8,15 @@ on:
 jobs:
   Horusec_Scan:
     name: horusec-Scan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     if: github.ref == 'refs/heads/develop'
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-      with: # Required when commit authors is enabled
-        fetch-depth: 0
-        
-    - name: Running Security Scan
-      run: |
-        curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-        horusec start -t="10000" -p="./" -e="true" -i="**/crypto/bls/herumi/**, **/**/*_test.go, **/third_party/afl/**, **/crypto/keystore/key.go"
+      - name: Check out code
+        uses: actions/checkout@v2
+        with: # Required when commit authors is enabled
+          fetch-depth: 0
+
+      - name: Running Security Scan
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+          horusec start -t="10000" -p="./" -e="true" -i="**/crypto/bls/herumi/**, **/**/*_test.go, **/third_party/afl/**, **/crypto/keystore/key.go"

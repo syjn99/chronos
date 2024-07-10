@@ -123,25 +123,18 @@ func InitWithReset(c *Flags) func() {
 
 // configureTestnet sets the config according to specified testnet flag
 func configureTestnet(ctx *cli.Context) error {
-	if ctx.Bool(SepoliaTestnet.Name) {
-		log.Info("Running on the Sepolia Beacon Chain Testnet")
-		if err := params.SetActive(params.SepoliaConfig().Copy()); err != nil {
+	if ctx.Bool(DolphinTestnet.Name) {
+		log.Info("Running on the Dolphin Beacon Chain Testnet")
+		if err := params.SetActive(params.DolphinConfig().Copy()); err != nil {
 			return err
 		}
-		applySepoliaFeatureFlags(ctx)
-		params.UseSepoliaNetworkConfig()
-	} else if ctx.Bool(HoleskyTestnet.Name) {
-		log.Info("Running on the Holesky Beacon Chain Testnet")
-		if err := params.SetActive(params.HoleskyConfig().Copy()); err != nil {
-			return err
-		}
-		applyHoleskyFeatureFlags(ctx)
-		params.UseHoleskyNetworkConfig()
+		applyDolphinFeatureFlags(ctx)
+		params.UseDolphinNetworkConfig()
 	} else {
 		if ctx.IsSet(cmd.ChainConfigFileFlag.Name) {
-			log.Warn("Running on custom Ethereum network specified in a chain configuration yaml file")
+			log.Warn("Running on custom OVer network specified in a chain configuration yaml file")
 		} else {
-			log.Info("Running on Ethereum Mainnet")
+			log.Info("Running on Over Mainnet")
 		}
 		if err := params.SetActive(params.MainnetConfig().Copy()); err != nil {
 			return err
@@ -150,12 +143,8 @@ func configureTestnet(ctx *cli.Context) error {
 	return nil
 }
 
-// Insert feature flags within the function to be enabled for Sepolia testnet.
-func applySepoliaFeatureFlags(ctx *cli.Context) {
-}
-
-// Insert feature flags within the function to be enabled for Holesky testnet.
-func applyHoleskyFeatureFlags(ctx *cli.Context) {
+// Insert feature flags within the function to be enabled for Dolphin testnet.
+func applyDolphinFeatureFlags(ctx *cli.Context) {
 }
 
 // ConfigureBeaconChain sets the global config based

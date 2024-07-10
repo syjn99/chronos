@@ -209,12 +209,8 @@ var stateTransitionCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		if network != "" {
 			switch network {
-			case params.SepoliaName:
-				if err := params.SetActive(params.SepoliaConfig()); err != nil {
-					log.Fatal(err)
-				}
-			case params.HoleskyName:
-				if err := params.SetActive(params.HoleskyConfig()); err != nil {
+			case params.DolphinName:
+				if err := params.SetActive(params.DolphinConfig()); err != nil {
 					log.Fatal(err)
 				}
 			default:

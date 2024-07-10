@@ -53,7 +53,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
 	remoteweb3signer "github.com/prysmaticlabs/prysm/v5/validator/keymanager/remote-web3signer"
 	"github.com/prysmaticlabs/prysm/v5/validator/rpc"
-	"github.com/prysmaticlabs/prysm/v5/validator/web"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -694,10 +693,8 @@ func (c *ValidatorClient) registerRPCGatewayService(router *mux.Router) error {
 			req.URL.Path = strings.Replace(req.URL.Path, "/api", "", 1)
 			// Else, we handle with the Prysm API gateway without a middleware.
 			h(w, req)
-		} else {
-			// Finally, we handle with the web server.
-			web.Handler(w, req)
 		}
+		// Removed prysm web UI
 	}
 
 	pbHandler := &gateway.PbMux{

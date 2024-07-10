@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	runtimeDebug "runtime/debug"
 
-	gethlog "github.com/ethereum/go-ethereum/log"
 	golog "github.com/ipfs/go-log/v2"
 	joonix "github.com/joonix/log"
 	"github.com/pkg/errors"
@@ -280,9 +279,9 @@ func startNode(ctx *cli.Context, cancel context.CancelFunc) error {
 		// libp2p specific logging.
 		golog.SetAllLoggers(golog.LevelDebug)
 		// Geth specific logging.
-		glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
-		glogger.Verbosity(gethlog.LvlTrace)
-		gethlog.Root().SetHandler(glogger)
+		//glogger := gethlog.NewGlogHandler(gethlog.StreamHandler(os.Stderr, gethlog.TerminalFormat(true)))
+		//glogger.Verbosity(gethlog.LvlTrace)
+		//gethlog.Root().SetHandler(glogger)
 	}
 
 	blockchainFlagOpts, err := blockchaincmd.FlagOptions(ctx)
