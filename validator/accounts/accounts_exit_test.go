@@ -26,7 +26,7 @@ func TestDisplayExitInfo(t *testing.T) {
 
 	params.BeaconConfig().ConfigName = params.DolphinName
 	displayExitInfo([][]byte{key}, []string{string(key)})
-	assert.LogsContain(t, logHook, "https://dolphin-jun's/dora/here/3078313233343536")
+	assert.LogsContain(t, logHook, "https://dolphin-beaconcha.in/validator/3078313233343536")
 }
 
 func TestDisplayExitInfo_NoKeys(t *testing.T) {

@@ -113,6 +113,7 @@ type ExecutionData interface {
 	ParentHash() []byte
 	FeeRecipient() []byte
 	StateRoot() []byte
+	CheckpointRoot() []byte
 	ReceiptsRoot() []byte
 	LogsBloom() []byte
 	PrevRandao() []byte

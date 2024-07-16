@@ -53,6 +53,7 @@ func GenerateTestDenebBlockWithSidecar(t *testing.T, parent [32]byte, slot primi
 		o(g)
 	}
 	stateRoot := bytesutil.PadTo([]byte("stateRoot"), fieldparams.RootLength)
+	checkpointRoot := bytesutil.PadTo([]byte("checkpointRoot"), fieldparams.RootLength)
 	receiptsRoot := bytesutil.PadTo([]byte("receiptsRoot"), fieldparams.RootLength)
 	logsBloom := bytesutil.PadTo([]byte("logs"), fieldparams.LogsBloomLength)
 	parentHash := bytesutil.PadTo([]byte("parentHash"), fieldparams.RootLength)
@@ -73,23 +74,24 @@ func GenerateTestDenebBlockWithSidecar(t *testing.T, parent [32]byte, slot primi
 	require.NoError(t, err)
 	blockHash := bytesutil.ToBytes32([]byte("foo"))
 	payload := &enginev1.ExecutionPayloadDeneb{
-		ParentHash:    parentHash,
-		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:     stateRoot,
-		ReceiptsRoot:  receiptsRoot,
-		LogsBloom:     logsBloom,
-		PrevRandao:    blockHash[:],
-		BlockNumber:   0,
-		GasLimit:      0,
-		GasUsed:       0,
-		Timestamp:     0,
-		ExtraData:     make([]byte, 0),
-		BaseFeePerGas: bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
-		BlockHash:     blockHash[:],
-		Transactions:  encodedBinaryTxs,
-		Withdrawals:   make([]*enginev1.Withdrawal, 0),
-		BlobGasUsed:   0,
-		ExcessBlobGas: 0,
+		ParentHash:     parentHash,
+		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:      stateRoot,
+		CheckpointRoot: checkpointRoot,
+		ReceiptsRoot:   receiptsRoot,
+		LogsBloom:      logsBloom,
+		PrevRandao:     blockHash[:],
+		BlockNumber:    0,
+		GasLimit:       0,
+		GasUsed:        0,
+		Timestamp:      0,
+		ExtraData:      make([]byte, 0),
+		BaseFeePerGas:  bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
+		BlockHash:      blockHash[:],
+		Transactions:   encodedBinaryTxs,
+		Withdrawals:    make([]*enginev1.Withdrawal, 0),
+		BlobGasUsed:    0,
+		ExcessBlobGas:  0,
 	}
 	block := NewBeaconBlockDeneb()
 	block.Block.Body.ExecutionPayload = payload

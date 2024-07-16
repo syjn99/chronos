@@ -282,6 +282,11 @@ func TestExecutionHeaderResponseUnmarshal(t *testing.T) {
 		},
 		{
 			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+			actual:   hexutil.Encode(hr.Data.Message.Header.CheckpointRoot),
+			name:     "ExecHeaderResponse.ExecutionPayloadHeader.CheckpointRoot",
+		},
+		{
+			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
 			actual:   hexutil.Encode(hr.Data.Message.Header.ReceiptsRoot),
 			name:     "ExecHeaderResponse.ExecutionPayloadHeader.ReceiptsRoot",
 		},
@@ -381,6 +386,11 @@ func TestExecutionHeaderResponseCapellaUnmarshal(t *testing.T) {
 		},
 		{
 			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+			actual:   hexutil.Encode(hr.Data.Message.Header.CheckpointRoot),
+			name:     "ExecHeaderResponse.ExecutionPayloadHeader.CheckpointRoot",
+		},
+		{
+			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
 			actual:   hexutil.Encode(hr.Data.Message.Header.ReceiptsRoot),
 			name:     "ExecHeaderResponse.ExecutionPayloadHeader.ReceiptsRoot",
 		},
@@ -464,6 +474,8 @@ func TestExecutionHeaderResponseToProto(t *testing.T) {
 	require.NoError(t, err)
 	stateRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
+	checkpointRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
+	require.NoError(t, err)
 	receiptsRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
 	logsBloom, err := hexutil.Decode("0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
@@ -483,6 +495,7 @@ func TestExecutionHeaderResponseToProto(t *testing.T) {
 				ParentHash:       parentHash,
 				FeeRecipient:     feeRecipient,
 				StateRoot:        stateRoot,
+				CheckpointRoot:   checkpointRoot,
 				ReceiptsRoot:     receiptsRoot,
 				LogsBloom:        logsBloom,
 				PrevRandao:       prevRandao,
@@ -522,6 +535,8 @@ func TestExecutionHeaderResponseCapellaToProto(t *testing.T) {
 	require.NoError(t, err)
 	stateRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
+	checkpointRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
+	require.NoError(t, err)
 	receiptsRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
 	logsBloom, err := hexutil.Decode("0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
@@ -543,6 +558,7 @@ func TestExecutionHeaderResponseCapellaToProto(t *testing.T) {
 				ParentHash:       parentHash,
 				FeeRecipient:     feeRecipient,
 				StateRoot:        stateRoot,
+				CheckpointRoot:   checkpointRoot,
 				ReceiptsRoot:     receiptsRoot,
 				LogsBloom:        logsBloom,
 				PrevRandao:       prevRandao,
@@ -831,6 +847,11 @@ func TestExecutionPayloadResponseUnmarshal(t *testing.T) {
 		},
 		{
 			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+			actual:   hexutil.Encode(epr.Data.CheckpointRoot),
+			name:     "ExecPayloadResponse.ExecutionPayload.CheckpointRoot",
+		},
+		{
+			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
 			actual:   hexutil.Encode(epr.Data.ReceiptsRoot),
 			name:     "ExecPayloadResponse.ExecutionPayload.ReceiptsRoot",
 		},
@@ -910,6 +931,11 @@ func TestExecutionPayloadResponseCapellaUnmarshal(t *testing.T) {
 			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
 			actual:   hexutil.Encode(epr.Data.StateRoot),
 			name:     "ExecPayloadResponse.ExecutionPayload.StateRoot",
+		},
+		{
+			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+			actual:   hexutil.Encode(epr.Data.CheckpointRoot),
+			name:     "ExecPayloadResponse.ExecutionPayload.CheckpointRoot",
 		},
 		{
 			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
@@ -1002,6 +1028,11 @@ func TestExecutionPayloadResponseDenebUnmarshal(t *testing.T) {
 		},
 		{
 			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
+			actual:   hexutil.Encode(epr.Data.ExecutionPayload.CheckpointRoot),
+			name:     "ExecPayloadResponse.ExecutionPayload.CheckpointRoot",
+		},
+		{
+			expected: "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2",
 			actual:   hexutil.Encode(epr.Data.ExecutionPayload.ReceiptsRoot),
 			name:     "ExecPayloadResponse.ExecutionPayload.ReceiptsRoot",
 		},
@@ -1090,6 +1121,8 @@ func TestExecutionPayloadResponseToProto(t *testing.T) {
 	require.NoError(t, err)
 	stateRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
+	checkpointRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
+	require.NoError(t, err)
 	receiptsRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
 	logsBloom, err := hexutil.Decode("0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
@@ -1108,20 +1141,21 @@ func TestExecutionPayloadResponseToProto(t *testing.T) {
 	bfpg, err := stringToUint256("452312848583266388373324160190187140051835877600158453279131187530910662656")
 	require.NoError(t, err)
 	expected := &v1.ExecutionPayload{
-		ParentHash:    parentHash,
-		FeeRecipient:  feeRecipient,
-		StateRoot:     stateRoot,
-		ReceiptsRoot:  receiptsRoot,
-		LogsBloom:     logsBloom,
-		PrevRandao:    prevRandao,
-		BlockNumber:   1,
-		GasLimit:      1,
-		GasUsed:       1,
-		Timestamp:     1,
-		ExtraData:     extraData,
-		BaseFeePerGas: bfpg.SSZBytes(),
-		BlockHash:     blockHash,
-		Transactions:  txList,
+		ParentHash:     parentHash,
+		FeeRecipient:   feeRecipient,
+		StateRoot:      stateRoot,
+		CheckpointRoot: checkpointRoot,
+		ReceiptsRoot:   receiptsRoot,
+		LogsBloom:      logsBloom,
+		PrevRandao:     prevRandao,
+		BlockNumber:    1,
+		GasLimit:       1,
+		GasUsed:        1,
+		Timestamp:      1,
+		ExtraData:      extraData,
+		BaseFeePerGas:  bfpg.SSZBytes(),
+		BlockHash:      blockHash,
+		Transactions:   txList,
 	}
 	require.DeepEqual(t, expected, p)
 }
@@ -1137,6 +1171,8 @@ func TestExecutionPayloadResponseCapellaToProto(t *testing.T) {
 	feeRecipient, err := hexutil.Decode("0xabcf8e0d4e9587369b2301d0790347320302cc09")
 	require.NoError(t, err)
 	stateRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
+	require.NoError(t, err)
+	checkpointRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
 	receiptsRoot, err := hexutil.Decode("0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2")
 	require.NoError(t, err)
@@ -1158,20 +1194,21 @@ func TestExecutionPayloadResponseCapellaToProto(t *testing.T) {
 	bfpg, err := stringToUint256("452312848583266388373324160190187140051835877600158453279131187530910662656")
 	require.NoError(t, err)
 	expected := &v1.ExecutionPayloadCapella{
-		ParentHash:    parentHash,
-		FeeRecipient:  feeRecipient,
-		StateRoot:     stateRoot,
-		ReceiptsRoot:  receiptsRoot,
-		LogsBloom:     logsBloom,
-		PrevRandao:    prevRandao,
-		BlockNumber:   1,
-		GasLimit:      1,
-		GasUsed:       1,
-		Timestamp:     1,
-		ExtraData:     extraData,
-		BaseFeePerGas: bfpg.SSZBytes(),
-		BlockHash:     blockHash,
-		Transactions:  txList,
+		ParentHash:     parentHash,
+		FeeRecipient:   feeRecipient,
+		StateRoot:      stateRoot,
+		CheckpointRoot: checkpointRoot,
+		ReceiptsRoot:   receiptsRoot,
+		LogsBloom:      logsBloom,
+		PrevRandao:     prevRandao,
+		BlockNumber:    1,
+		GasLimit:       1,
+		GasUsed:        1,
+		Timestamp:      1,
+		ExtraData:      extraData,
+		BaseFeePerGas:  bfpg.SSZBytes(),
+		BlockHash:      blockHash,
+		Transactions:   txList,
 		Withdrawals: []*v1.Withdrawal{
 			{
 				Index:          1,
@@ -1477,6 +1514,7 @@ func pbExecutionPayloadHeader(t *testing.T) *v1.ExecutionPayloadHeader {
 		ParentHash:       ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		FeeRecipient:     ezDecode(t, "0xabcf8e0d4e9587369b2301d0790347320302cc09"),
 		StateRoot:        ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
+		CheckpointRoot:   ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		ReceiptsRoot:     ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		LogsBloom:        ezDecode(t, "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		PrevRandao:       ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
@@ -1498,6 +1536,7 @@ func pbExecutionPayloadHeaderCapella(t *testing.T) *v1.ExecutionPayloadHeaderCap
 		ParentHash:       ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		FeeRecipient:     ezDecode(t, "0xabcf8e0d4e9587369b2301d0790347320302cc09"),
 		StateRoot:        ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
+		CheckpointRoot:   ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		ReceiptsRoot:     ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		LogsBloom:        ezDecode(t, "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		PrevRandao:       ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
@@ -1520,6 +1559,7 @@ func pbExecutionPayloadHeaderDeneb(t *testing.T) *v1.ExecutionPayloadHeaderDeneb
 		ParentHash:       ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		FeeRecipient:     ezDecode(t, "0xabcf8e0d4e9587369b2301d0790347320302cc09"),
 		StateRoot:        ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
+		CheckpointRoot:   ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		ReceiptsRoot:     ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),
 		LogsBloom:        ezDecode(t, "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
 		PrevRandao:       ezDecode(t, "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"),

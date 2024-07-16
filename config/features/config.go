@@ -132,7 +132,7 @@ func configureTestnet(ctx *cli.Context) error {
 		params.UseDolphinNetworkConfig()
 	} else {
 		if ctx.IsSet(cmd.ChainConfigFileFlag.Name) {
-			log.Warn("Running on custom OVer network specified in a chain configuration yaml file")
+			log.Warn("Running on custom Over network specified in a chain configuration yaml file")
 		} else {
 			log.Info("Running on Over Mainnet")
 		}

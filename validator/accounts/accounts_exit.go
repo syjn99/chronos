@@ -171,12 +171,12 @@ func displayExitInfo(rawExitedKeys [][]byte, trimmedExitedKeys []string) {
 }
 
 func formatBeaconChaURL(key []byte) string {
-	baseURL := "https://%s-jun's/dora/here/%s"
+	baseURL := "https://%sbeaconcha.in/validator/%s"
 	keyWithout0x := hexutil.Encode(key)[2:]
 
 	switch env := params.BeaconConfig().ConfigName; env {
 	case params.DolphinName:
-		return fmt.Sprintf(baseURL, "dolphin.", keyWithout0x)
+		return fmt.Sprintf(baseURL, "dolphin-", keyWithout0x)
 	default:
 		return fmt.Sprintf(baseURL, "", keyWithout0x)
 	}

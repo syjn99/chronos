@@ -79,6 +79,7 @@ func UpgradeToCapella(state state.BeaconState) (state.BeaconState, error) {
 			ParentHash:       payloadHeader.ParentHash(),
 			FeeRecipient:     payloadHeader.FeeRecipient(),
 			StateRoot:        payloadHeader.StateRoot(),
+			CheckpointRoot:   payloadHeader.CheckpointRoot(),
 			ReceiptsRoot:     payloadHeader.ReceiptsRoot(),
 			LogsBloom:        payloadHeader.LogsBloom(),
 			PrevRandao:       payloadHeader.PrevRandao(),

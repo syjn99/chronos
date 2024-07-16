@@ -647,16 +647,17 @@ func HydrateV2BellatrixBeaconBlockBody(b *v2.BeaconBlockBodyBellatrix) *v2.Beaco
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayload{
-			ParentHash:    make([]byte, fieldparams.RootLength),
-			FeeRecipient:  make([]byte, 20),
-			StateRoot:     make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-			LogsBloom:     make([]byte, 256),
-			PrevRandao:    make([]byte, fieldparams.RootLength),
-			ExtraData:     make([]byte, 0),
-			BaseFeePerGas: make([]byte, fieldparams.RootLength),
-			BlockHash:     make([]byte, fieldparams.RootLength),
-			Transactions:  make([][]byte, 0),
+			ParentHash:     make([]byte, fieldparams.RootLength),
+			FeeRecipient:   make([]byte, 20),
+			StateRoot:      make([]byte, fieldparams.RootLength),
+			CheckpointRoot: make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+			LogsBloom:      make([]byte, 256),
+			PrevRandao:     make([]byte, fieldparams.RootLength),
+			ExtraData:      make([]byte, 0),
+			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+			BlockHash:      make([]byte, fieldparams.RootLength),
+			Transactions:   make([][]byte, 0),
 		}
 	}
 	return b
@@ -767,16 +768,17 @@ func HydrateBeaconBlockBodyBellatrix(b *ethpb.BeaconBlockBodyBellatrix) *ethpb.B
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayload{
-			ParentHash:    make([]byte, fieldparams.RootLength),
-			FeeRecipient:  make([]byte, 20),
-			StateRoot:     make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-			LogsBloom:     make([]byte, 256),
-			PrevRandao:    make([]byte, fieldparams.RootLength),
-			ExtraData:     make([]byte, 0),
-			BaseFeePerGas: make([]byte, fieldparams.RootLength),
-			BlockHash:     make([]byte, fieldparams.RootLength),
-			Transactions:  make([][]byte, 0),
+			ParentHash:     make([]byte, fieldparams.RootLength),
+			FeeRecipient:   make([]byte, 20),
+			StateRoot:      make([]byte, fieldparams.RootLength),
+			CheckpointRoot: make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+			LogsBloom:      make([]byte, 256),
+			PrevRandao:     make([]byte, fieldparams.RootLength),
+			ExtraData:      make([]byte, 0),
+			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+			BlockHash:      make([]byte, fieldparams.RootLength),
+			Transactions:   make([][]byte, 0),
 		}
 	}
 	return b
@@ -837,6 +839,7 @@ func HydrateBlindedBeaconBlockBodyBellatrix(b *ethpb.BlindedBeaconBlockBodyBella
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -904,6 +907,7 @@ func HydrateV2BlindedBeaconBlockBodyBellatrix(b *v2.BlindedBeaconBlockBodyBellat
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -968,17 +972,18 @@ func HydrateBeaconBlockBodyCapella(b *ethpb.BeaconBlockBodyCapella) *ethpb.Beaco
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayloadCapella{
-			ParentHash:    make([]byte, fieldparams.RootLength),
-			FeeRecipient:  make([]byte, 20),
-			StateRoot:     make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-			LogsBloom:     make([]byte, 256),
-			PrevRandao:    make([]byte, fieldparams.RootLength),
-			ExtraData:     make([]byte, 0),
-			BaseFeePerGas: make([]byte, fieldparams.RootLength),
-			BlockHash:     make([]byte, fieldparams.RootLength),
-			Transactions:  make([][]byte, 0),
-			Withdrawals:   make([]*enginev1.Withdrawal, 0),
+			ParentHash:     make([]byte, fieldparams.RootLength),
+			FeeRecipient:   make([]byte, 20),
+			StateRoot:      make([]byte, fieldparams.RootLength),
+			CheckpointRoot: make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+			LogsBloom:      make([]byte, 256),
+			PrevRandao:     make([]byte, fieldparams.RootLength),
+			ExtraData:      make([]byte, 0),
+			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+			BlockHash:      make([]byte, fieldparams.RootLength),
+			Transactions:   make([][]byte, 0),
+			Withdrawals:    make([]*enginev1.Withdrawal, 0),
 		}
 	}
 	return b
@@ -1039,6 +1044,7 @@ func HydrateBlindedBeaconBlockBodyCapella(b *ethpb.BlindedBeaconBlockBodyCapella
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -1107,6 +1113,7 @@ func HydrateV2BlindedBeaconBlockBodyCapella(b *v2.BlindedBeaconBlockBodyCapella)
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -1215,17 +1222,18 @@ func HydrateBeaconBlockBodyDeneb(b *ethpb.BeaconBlockBodyDeneb) *ethpb.BeaconBlo
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayloadDeneb{
-			ParentHash:    make([]byte, fieldparams.RootLength),
-			FeeRecipient:  make([]byte, 20),
-			StateRoot:     make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-			LogsBloom:     make([]byte, 256),
-			PrevRandao:    make([]byte, fieldparams.RootLength),
-			ExtraData:     make([]byte, 0),
-			BaseFeePerGas: make([]byte, fieldparams.RootLength),
-			BlockHash:     make([]byte, fieldparams.RootLength),
-			Transactions:  make([][]byte, 0),
-			Withdrawals:   make([]*enginev1.Withdrawal, 0),
+			ParentHash:     make([]byte, fieldparams.RootLength),
+			FeeRecipient:   make([]byte, 20),
+			StateRoot:      make([]byte, fieldparams.RootLength),
+			CheckpointRoot: make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+			LogsBloom:      make([]byte, 256),
+			PrevRandao:     make([]byte, fieldparams.RootLength),
+			ExtraData:      make([]byte, 0),
+			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+			BlockHash:      make([]byte, fieldparams.RootLength),
+			Transactions:   make([][]byte, 0),
+			Withdrawals:    make([]*enginev1.Withdrawal, 0),
 		}
 	}
 	return b
@@ -1257,17 +1265,18 @@ func HydrateV2BeaconBlockBodyDeneb(b *v2.BeaconBlockBodyDeneb) *v2.BeaconBlockBo
 	}
 	if b.ExecutionPayload == nil {
 		b.ExecutionPayload = &enginev1.ExecutionPayloadDeneb{
-			ParentHash:    make([]byte, fieldparams.RootLength),
-			FeeRecipient:  make([]byte, 20),
-			StateRoot:     make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
-			LogsBloom:     make([]byte, 256),
-			PrevRandao:    make([]byte, fieldparams.RootLength),
-			ExtraData:     make([]byte, 0),
-			BaseFeePerGas: make([]byte, fieldparams.RootLength),
-			BlockHash:     make([]byte, fieldparams.RootLength),
-			Transactions:  make([][]byte, 0),
-			Withdrawals:   make([]*enginev1.Withdrawal, 0),
+			ParentHash:     make([]byte, fieldparams.RootLength),
+			FeeRecipient:   make([]byte, 20),
+			StateRoot:      make([]byte, fieldparams.RootLength),
+			CheckpointRoot: make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
+			LogsBloom:      make([]byte, 256),
+			PrevRandao:     make([]byte, fieldparams.RootLength),
+			ExtraData:      make([]byte, 0),
+			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
+			BlockHash:      make([]byte, fieldparams.RootLength),
+			Transactions:   make([][]byte, 0),
+			Withdrawals:    make([]*enginev1.Withdrawal, 0),
 		}
 	}
 	return b
@@ -1354,6 +1363,7 @@ func HydrateBlindedBeaconBlockBodyDeneb(b *ethpb.BlindedBeaconBlockBodyDeneb) *e
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
@@ -1396,6 +1406,7 @@ func HydrateV2BlindedBeaconBlockBodyDeneb(b *v2.BlindedBeaconBlockBodyDeneb) *v2
 			ParentHash:       make([]byte, 32),
 			FeeRecipient:     make([]byte, 20),
 			StateRoot:        make([]byte, fieldparams.RootLength),
+			CheckpointRoot:   make([]byte, fieldparams.RootLength),
 			ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 			LogsBloom:        make([]byte, 256),
 			PrevRandao:       make([]byte, 32),
