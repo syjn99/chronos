@@ -52,6 +52,7 @@ import (
 	g "github.com/prysmaticlabs/prysm/v5/validator/graffiti"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
 	remoteweb3signer "github.com/prysmaticlabs/prysm/v5/validator/keymanager/remote-web3signer"
+	closehandler "github.com/prysmaticlabs/prysm/v5/validator/node/close-handler"
 	"github.com/prysmaticlabs/prysm/v5/validator/rpc"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -131,6 +132,16 @@ func NewValidatorClient(cliCtx *cli.Context) (*ValidatorClient, error) {
 		}
 		log.Info("Enabling web portal to manage the validator client")
 		if err := validatorClient.initializeForWeb(cliCtx, router); err != nil {
+			return nil, err
+		}
+		return validatorClient, nil
+	}
+
+	// If the --over-node flag is enabled to administer the validator
+	// client via OverNode, we start the validator client in a different way.
+	if cliCtx.IsSet(flags.EnableOverNodeFlag.Name) {
+		log.Info("Enabling OverNode APIs for OverNode to manage the validator client")
+		if err := validatorClient.initializeForOverNode(cliCtx, router); err != nil {
 			return nil, err
 		}
 		return validatorClient, nil
@@ -249,6 +260,29 @@ func (c *ValidatorClient) getLegacyDatabaseLocation(
 	}
 
 	return dataDir, dataFile, nil
+}
+
+func (c *ValidatorClient) initializeForOverNode(cliCtx *cli.Context, router *mux.Router) error {
+	if err := c.initializeDB(cliCtx); err != nil {
+		return errors.Wrapf(err, "could not initialize database")
+	}
+
+	if !cliCtx.Bool(cmd.DisableMonitoringFlag.Name) {
+		if err := c.registerPrometheusService(cliCtx); err != nil {
+			return err
+		}
+	}
+	if err := c.registerValidatorService(cliCtx); err != nil {
+		return err
+	}
+
+	if err := c.registerRPCService(router); err != nil {
+		return err
+	}
+	if err := c.registerRPCGatewayService(router); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *ValidatorClient) initializeFromCLI(cliCtx *cli.Context, router *mux.Router) error {
@@ -620,6 +654,12 @@ func (c *ValidatorClient) registerRPCService(router *mux.Router) error {
 			authTokenPath = filepath.Join(walletDir, api.AuthTokenFileName)
 		}
 	}
+
+	closeHandler := &closehandler.CloseHandler{
+		CloseFunc: c.Close,
+		CloseCh:   c.stop,
+	}
+
 	s := rpc.NewServer(c.cliCtx.Context, &rpc.Config{
 		Host:                   c.cliCtx.String(flags.RPCHost.Name),
 		Port:                   fmt.Sprintf("%d", c.cliCtx.Int(flags.RPCPort.Name)),
@@ -640,6 +680,8 @@ func (c *ValidatorClient) registerRPCService(router *mux.Router) error {
 		ValidatorService:       vs,
 		AuthTokenPath:          authTokenPath,
 		Router:                 router,
+		CloseHandler:           closeHandler,
+		UseOverNode:            c.cliCtx.Bool(flags.EnableOverNodeFlag.Name),
 	})
 	return c.services.RegisterService(s)
 }

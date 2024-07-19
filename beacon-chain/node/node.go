@@ -36,6 +36,7 @@ import (
 	doublylinkedtree "github.com/prysmaticlabs/prysm/v5/beacon-chain/forkchoice/doubly-linked-tree"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/gateway"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/monitor"
+	closehandler "github.com/prysmaticlabs/prysm/v5/beacon-chain/node/close-handler"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/node/registration"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/attestations"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/blstoexec"
@@ -966,8 +967,15 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 
 	maxMsgSize := b.cliCtx.Int(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
 	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
+	enableOverNodeRPCEndpoints := b.cliCtx.Bool(flags.EnableOverNodeRPCEndpoints.Name)
 
 	p2pService := b.fetchP2P()
+
+	closeHandler := &closehandler.CloseHandler{
+		CloseFunc: b.Close,
+		CloseCh:   b.stop,
+	}
+
 	rpcService := rpc.NewService(b.ctx, &rpc.Config{
 		ExecutionEngineCaller:         web3Service,
 		ExecutionPayloadReconstructor: web3Service,
@@ -1011,6 +1019,7 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 		OperationNotifier:             b,
 		StateGen:                      b.stateGen,
 		EnableDebugRPCEndpoints:       enableDebugRPCEndpoints,
+		EnableOverNodeRPCEndpoints:    enableOverNodeRPCEndpoints,
 		MaxMsgSize:                    maxMsgSize,
 		BlockBuilder:                  b.fetchBuilderService(),
 		Router:                        router,
@@ -1018,6 +1027,7 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 		BlobStorage:                   b.BlobStorage,
 		TrackedValidatorsCache:        b.trackedValidatorsCache,
 		PayloadIDCache:                b.payloadIDCache,
+		CloseHandler:                  closeHandler,
 	})
 
 	return b.services.RegisterService(rpcService)

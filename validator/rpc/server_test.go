@@ -58,3 +58,31 @@ func TestServer_InitializeRoutes(t *testing.T) {
 	require.NoError(t, err)
 	require.DeepEqual(t, wantRouteList, gotRouteList)
 }
+
+func TestServer_InitializeOverNodeRoutes(t *testing.T) {
+	s := Server{
+		router: mux.NewRouter(),
+	}
+	err := s.InitializeOverNodeRoutes()
+	require.NoError(t, err)
+
+	wantRouteList := map[string][]string{
+		"/over-node/close": {http.MethodPost},
+	}
+	gotRouteList := make(map[string][]string)
+	err = s.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		tpl, err1 := route.GetPathTemplate()
+		require.NoError(t, err1)
+		met, err2 := route.GetMethods()
+		require.NoError(t, err2)
+		methods, ok := gotRouteList[tpl]
+		if !ok {
+			gotRouteList[tpl] = []string{met[0]}
+		} else {
+			gotRouteList[tpl] = append(methods, met[0])
+		}
+		return nil
+	})
+	require.NoError(t, err)
+	require.DeepEqual(t, wantRouteList, gotRouteList)
+}

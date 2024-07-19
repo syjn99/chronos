@@ -64,6 +64,7 @@ var appFlags = []cli.Flag{
 	flags.InteropGenesisTimeFlag,
 	flags.SlotsPerArchivedPoint,
 	flags.EnableDebugRPCEndpoints,
+	flags.EnableOverNodeRPCEndpoints,
 	flags.SubscribeToAllSubnets,
 	flags.HistoricalSlasherNode,
 	flags.ChainID,

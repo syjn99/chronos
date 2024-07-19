@@ -27,6 +27,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/db"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/db/filesystem"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/execution"
+	closehandler "github.com/prysmaticlabs/prysm/v5/beacon-chain/node/close-handler"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/attestations"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/blstoexec"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/slashings"
@@ -115,6 +116,7 @@ type Config struct {
 	GenesisTimeFetcher            blockchain.TimeFetcher
 	GenesisFetcher                blockchain.GenesisFetcher
 	EnableDebugRPCEndpoints       bool
+	EnableOverNodeRPCEndpoints    bool
 	MockEth1Votes                 bool
 	AttestationsPool              attestations.Pool
 	ExitPool                      voluntaryexits.PoolManager
@@ -141,6 +143,7 @@ type Config struct {
 	BlobStorage                   *filesystem.BlobStorage
 	TrackedValidatorsCache        *cache.TrackedValidatorsCache
 	PayloadIDCache                *cache.PayloadIDCache
+	CloseHandler                  *closehandler.CloseHandler
 }
 
 // NewService instantiates a new RPC service instance that will
@@ -307,7 +310,7 @@ func NewService(ctx context.Context, cfg *Config) *Service {
 		CoreService:                 coreService,
 	}
 
-	endpoints := s.endpoints(s.cfg.EnableDebugRPCEndpoints, blocker, stater, rewardFetcher, validatorServer, coreService, ch)
+	endpoints := s.endpoints(s.cfg.EnableDebugRPCEndpoints, s.cfg.EnableOverNodeRPCEndpoints, blocker, stater, rewardFetcher, validatorServer, coreService, ch, s.cfg.CloseHandler)
 	for _, e := range endpoints {
 		s.cfg.Router.HandleFunc(
 			e.template,

@@ -389,6 +389,13 @@ var (
 		Usage: "To enable the use of prysm validator client in Distributed Validator Cluster",
 		Value: false,
 	}
+
+	// EnableOverNodeFlag enables controlling the validator client via the OverNode.
+	EnableOverNodeFlag = &cli.BoolFlag{
+		Name:  "over-node",
+		Usage: "Enables OverNode APIs for the validator client.",
+		Value: false,
+	}
 )
 
 // DefaultValidatorDir returns OS-specific default validator directory.

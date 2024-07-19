@@ -127,10 +127,14 @@ func Test_endpoints(t *testing.T) {
 		"/prysm/v1/validators/performance": {http.MethodPost},
 	}
 
+	overNodeRoutes := map[string][]string{
+		"/over-node/close": {http.MethodPost},
+	}
+
 	s := &Service{cfg: &Config{}}
 
-	routesMap := combineMaps(beaconRoutes, builderRoutes, configRoutes, debugRoutes, eventsRoutes, nodeRoutes, validatorRoutes, rewardsRoutes, lightClientRoutes, blobRoutes, prysmValidatorRoutes, prysmNodeRoutes, prysmBeaconRoutes)
-	actual := s.endpoints(true, nil, nil, nil, nil, nil, nil)
+	routesMap := combineMaps(beaconRoutes, builderRoutes, configRoutes, debugRoutes, eventsRoutes, nodeRoutes, validatorRoutes, rewardsRoutes, lightClientRoutes, blobRoutes, prysmValidatorRoutes, prysmNodeRoutes, prysmBeaconRoutes, overNodeRoutes)
+	actual := s.endpoints(true, true, nil, nil, nil, nil, nil, nil, nil)
 	for _, e := range actual {
 		methods, ok := routesMap[e.template]
 		assert.Equal(t, true, ok, "endpoint "+e.template+" not found")

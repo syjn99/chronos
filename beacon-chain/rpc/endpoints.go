@@ -3,6 +3,7 @@ package rpc
 import (
 	"net/http"
 
+	closehandler "github.com/prysmaticlabs/prysm/v5/beacon-chain/node/close-handler"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/core"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/beacon"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/blob"
@@ -15,6 +16,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/rewards"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/validator"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/lookup"
+	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/overnode"
 	beaconprysm "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/prysm/beacon"
 	nodeprysm "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/prysm/node"
 	validatorv1alpha1 "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/prysm/v1alpha1/validator"
@@ -31,12 +33,14 @@ type endpoint struct {
 
 func (s *Service) endpoints(
 	enableDebug bool,
+	enableOverNode bool,
 	blocker lookup.Blocker,
 	stater lookup.Stater,
 	rewardFetcher rewards.BlockRewardsFetcher,
 	validatorServer *validatorv1alpha1.Server,
 	coreService *core.Service,
 	ch *stategen.CanonicalHistory,
+	closeHandler *closehandler.CloseHandler,
 ) []endpoint {
 	endpoints := make([]endpoint, 0)
 	endpoints = append(endpoints, s.rewardsEndpoints(blocker, stater, rewardFetcher)...)
@@ -53,6 +57,9 @@ func (s *Service) endpoints(
 	endpoints = append(endpoints, s.prysmValidatorEndpoints(coreService, stater)...)
 	if enableDebug {
 		endpoints = append(endpoints, s.debugEndpoints(stater)...)
+	}
+	if enableOverNode {
+		endpoints = append(endpoints, s.overNodeEndpoints(closeHandler)...)
 	}
 	return endpoints
 }
@@ -774,6 +781,22 @@ func (s *Service) prysmValidatorEndpoints(coreService *core.Service, stater look
 			template: "/prysm/v1/validators/performance",
 			name:     namespace + ".GetValidatorPerformance",
 			handler:  server.GetValidatorPerformance,
+			methods:  []string{http.MethodPost},
+		},
+	}
+}
+
+func (s *Service) overNodeEndpoints(handler *closehandler.CloseHandler) []endpoint {
+	server := &overnode.Server{
+		CloseHandler: handler,
+	}
+
+	const namespace = "over-node"
+	return []endpoint{
+		{
+			template: "/over-node/close",
+			name:     namespace + ".Close",
+			handler:  server.CloseClient,
 			methods:  []string{http.MethodPost},
 		},
 	}

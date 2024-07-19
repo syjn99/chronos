@@ -23,6 +23,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/validator/client"
 	iface "github.com/prysmaticlabs/prysm/v5/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v5/validator/db"
+	closehandler "github.com/prysmaticlabs/prysm/v5/validator/node/close-handler"
 	"go.opencensus.io/plugin/ocgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -49,6 +50,8 @@ type Config struct {
 	ValidatorService       *client.ValidatorService
 	AuthTokenPath          string
 	Router                 *mux.Router
+	CloseHandler           *closehandler.CloseHandler
+	UseOverNode            bool
 }
 
 // Server defining a gRPC server for the remote signer API.
@@ -81,10 +84,12 @@ type Server struct {
 	wallet                    *wallet.Wallet
 	walletInitializedFeed     *event.Feed
 	walletInitialized         bool
+	useOverNode               bool
 	validatorService          *client.ValidatorService
 	router                    *mux.Router
 	logStreamer               logs.Streamer
 	logStreamerBufferSize     int
+	closeHandler              *closehandler.CloseHandler
 }
 
 // NewServer instantiates a new gRPC server.
@@ -114,6 +119,8 @@ func NewServer(ctx context.Context, cfg *Config) *Server {
 		beaconApiEndpoint:      cfg.BeaconApiEndpoint,
 		beaconNodeEndpoint:     cfg.BeaconNodeGRPCEndpoint,
 		router:                 cfg.Router,
+		closeHandler:           cfg.CloseHandler,
+		useOverNode:            cfg.UseOverNode,
 	}
 
 	if server.authTokenPath == "" && server.walletDir != "" {
@@ -132,6 +139,14 @@ func NewServer(ctx context.Context, cfg *Config) *Server {
 	if err := server.InitializeRoutes(); err != nil {
 		log.WithError(err).Fatal("Could not initialize routes")
 	}
+
+	// register OverNode API routes
+	if server.useOverNode {
+		if err := server.InitializeOverNodeRoutes(); err != nil {
+			log.WithError(err).Fatal("Could not initialize OverNode routes")
+		}
+	}
+
 	return server
 }
 
@@ -234,6 +249,19 @@ func (s *Server) InitializeRoutes() error {
 	s.router.HandleFunc(api.WebUrlPrefix+"slashing-protection/export", s.ExportSlashingProtection).Methods(http.MethodGet)
 	s.router.HandleFunc(api.WebUrlPrefix+"slashing-protection/import", s.ImportSlashingProtection).Methods(http.MethodPost)
 	log.Info("Initialized REST API routes")
+	return nil
+}
+
+// InitializeOverNodeRoutes initializes pure HTTP REST endpoints (OverNode) for the validator client.
+// needs to be called before the Serve function
+func (s *Server) InitializeOverNodeRoutes() error {
+	if s.router == nil {
+		return errors.New("no router found on server")
+	}
+
+	// OverNode API endpoints
+	s.router.HandleFunc(api.OverNodeApiPrefix+"close", s.CloseClient).Methods(http.MethodPost)
+	log.Info("Initialized OverNode REST API routes")
 	return nil
 }
 

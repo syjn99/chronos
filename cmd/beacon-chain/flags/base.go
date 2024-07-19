@@ -179,6 +179,11 @@ var (
 		Name:  "enable-debug-rpc-endpoints",
 		Usage: "Enables the debug rpc service, containing utility endpoints such as /eth/v1alpha1/beacon/state.",
 	}
+	// EnableOverNodeRPCEndpoints opens additional RPC endpoints for OverNode.
+	EnableOverNodeRPCEndpoints = &cli.BoolFlag{
+		Name:  "enable-over-node-rpc-endpoints",
+		Usage: "Enables the OverNode rpc service, containing utility endpoints for OverNode",
+	}
 	// SubscribeToAllSubnets defines a flag to specify whether to subscribe to all possible attestation/sync subnets or not.
 	SubscribeToAllSubnets = &cli.BoolFlag{
 		Name:  "subscribe-all-subnets",

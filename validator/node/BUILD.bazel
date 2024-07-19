@@ -65,6 +65,7 @@ go_library(
         "//validator/graffiti:go_default_library",
         "//validator/keymanager/local:go_default_library",
         "//validator/keymanager/remote-web3signer:go_default_library",
+        "//validator/node/close-handler:go_default_library",
         "//validator/rpc:go_default_library",
         "@com_github_ethereum_go_ethereum//common/hexutil:go_default_library",
         "@com_github_gorilla_mux//:go_default_library",

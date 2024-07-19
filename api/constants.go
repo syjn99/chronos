@@ -6,4 +6,5 @@ const (
 	KeymanagerApiPrefix = "/eth/v1"
 	SystemLogsPrefix    = "health/logs"
 	AuthTokenFileName   = "auth-token"
+	OverNodeApiPrefix   = "/over-node/"
 )

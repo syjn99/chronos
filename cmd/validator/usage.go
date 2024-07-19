@@ -124,6 +124,7 @@ var appHelpFlagGroups = []flagGroup{
 			flags.ValidatorsRegistrationBatchSizeFlag,
 			flags.EnableDistributed,
 			flags.AuthTokenPathFlag,
+			flags.EnableOverNodeFlag,
 		},
 	},
 	{
