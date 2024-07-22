@@ -35,6 +35,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/eth/debug"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/eth/events"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/eth/node"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/eth/reserves"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/eth/rewards"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/eth/validator"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/rpc/lookup"
@@ -233,6 +234,13 @@ func (s *Service) Start() {
 		Stater:                stater,
 	}
 	s.cfg.Router.HandleFunc("/eth/v1/builder/states/{state_id}/expected_withdrawals", builderServer.ExpectedWithdrawals)
+
+	reservesServer := &reserves.Server{
+		FinalizationFetcher:   s.cfg.FinalizationFetcher,
+		OptimisticModeFetcher: s.cfg.OptimisticModeFetcher,
+		Stater:                stater,
+	}
+	s.cfg.Router.HandleFunc("/over/v1/beacon/states/{state_id}/reserves", reservesServer.GetReserves)
 
 	validatorServer := &validatorv1alpha1.Server{
 		Ctx:                    s.ctx,
