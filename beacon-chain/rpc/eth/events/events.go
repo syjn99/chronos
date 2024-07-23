@@ -46,6 +46,8 @@ const (
 	PayloadAttributesTopic = "payload_attributes"
 )
 
+const chanBuffer = 1000
+
 var casesHandled = map[string]bool{
 	HeadTopic:                      true,
 	BlockTopic:                     true,
@@ -80,13 +82,13 @@ func (s *Server) StreamEvents(
 	}
 
 	// Subscribe to event feeds from information received in the beacon node runtime.
-	blockChan := make(chan *feed.Event, 1)
+	blockChan := make(chan *feed.Event, chanBuffer)
 	blockSub := s.BlockNotifier.BlockFeed().Subscribe(blockChan)
 
-	opsChan := make(chan *feed.Event, 1)
+	opsChan := make(chan *feed.Event, chanBuffer)
 	opsSub := s.OperationNotifier.OperationFeed().Subscribe(opsChan)
 
-	stateChan := make(chan *feed.Event, 1)
+	stateChan := make(chan *feed.Event, chanBuffer)
 	stateSub := s.StateNotifier.StateFeed().Subscribe(stateChan)
 
 	defer blockSub.Unsubscribe()
