@@ -48,7 +48,7 @@ func TestInitiateValidatorExit_AlreadyExited(t *testing.T) {
 	}}
 	state, err := state_native.InitializeFromProtoPhase0(base)
 	require.NoError(t, err)
-	newState, epoch, err := InitiateValidatorExit(context.Background(), state, 0, 199, 1)
+	newState, epoch, err := InitiateValidatorExit(context.Background(), state, 0, 199, 1, false)
 	require.ErrorIs(t, err, ErrValidatorAlreadyExited)
 	require.Equal(t, exitEpoch, epoch)
 	v, err := newState.ValidatorAtIndex(0)
@@ -67,12 +67,36 @@ func TestInitiateValidatorExit_ProperExit(t *testing.T) {
 	}}
 	state, err := state_native.InitializeFromProtoPhase0(base)
 	require.NoError(t, err)
-	newState, epoch, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch+2, 1)
+	newState, epoch, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch+2, 1, false)
 	require.NoError(t, err)
 	require.Equal(t, exitedEpoch+2, epoch)
 	v, err := newState.ValidatorAtIndex(idx)
 	require.NoError(t, err)
 	assert.Equal(t, exitedEpoch+2, v.ExitEpoch, "Exit epoch was not the highest")
+}
+
+func TestInitiateValidatorExitAltair_ProperExit(t *testing.T) {
+	exitedEpoch := primitives.Epoch(100)
+	idx := primitives.ValidatorIndex(3)
+	base := &ethpb.BeaconStateAltair{Validators: []*ethpb.Validator{
+		{ExitEpoch: exitedEpoch},
+		{ExitEpoch: exitedEpoch + 1},
+		{ExitEpoch: exitedEpoch + 2},
+		{ExitEpoch: params.BeaconConfig().FarFutureEpoch},
+	},
+		BailOutScores: []uint64{100, 100, 100, 100},
+	}
+	state, err := state_native.InitializeFromProtoAltair(base)
+	require.NoError(t, err)
+	newState, epoch, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch+2, 1, false)
+	require.NoError(t, err)
+	require.Equal(t, exitedEpoch+2, epoch)
+	v, err := newState.ValidatorAtIndex(idx)
+	require.NoError(t, err)
+	assert.Equal(t, exitedEpoch+2, v.ExitEpoch, "Exit epoch was not the highest")
+	bscores, err := newState.BailOutScores()
+	require.NoError(t, err)
+	assert.Equal(t, uint64(0), bscores[idx], "Bailout score should be 0 in voluntary exit")
 }
 
 func TestInitiateValidatorExit_ChurnOverflow(t *testing.T) {
@@ -87,7 +111,7 @@ func TestInitiateValidatorExit_ChurnOverflow(t *testing.T) {
 	}}
 	state, err := state_native.InitializeFromProtoPhase0(base)
 	require.NoError(t, err)
-	newState, epoch, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch+2, 4)
+	newState, epoch, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch+2, 4, false)
 	require.NoError(t, err)
 	require.Equal(t, exitedEpoch+3, epoch)
 
@@ -102,6 +126,39 @@ func TestInitiateValidatorExit_ChurnOverflow(t *testing.T) {
 	assert.Equal(t, wantedEpoch, v.ExitEpoch, "Exit epoch did not cover overflow case")
 }
 
+func TestInitiateValidatorExitAltair_ChurnOverflow(t *testing.T) {
+	exitedEpoch := primitives.Epoch(100)
+	idx := primitives.ValidatorIndex(4)
+	base := &ethpb.BeaconStateAltair{Validators: []*ethpb.Validator{
+		{ExitEpoch: exitedEpoch + 2},
+		{ExitEpoch: exitedEpoch + 2},
+		{ExitEpoch: exitedEpoch + 2},
+		{ExitEpoch: exitedEpoch + 2}, // overflow here
+		{ExitEpoch: params.BeaconConfig().FarFutureEpoch},
+	},
+		BailOutScores: []uint64{100, 100, 100, 100, 100},
+	}
+	state, err := state_native.InitializeFromProtoAltair(base)
+	require.NoError(t, err)
+	//newState, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch + 2, 4,false)
+	newState, epoch, err := InitiateValidatorExit(context.Background(), state, idx, exitedEpoch+2, 4, false)
+	require.NoError(t, err)
+	require.Equal(t, exitedEpoch+3, epoch)
+
+	// Because of exit queue overflow,
+	// validator who init exited has to wait one more epoch.
+	v, err := newState.ValidatorAtIndex(0)
+	require.NoError(t, err)
+	wantedEpoch := v.ExitEpoch + 1
+
+	v, err = newState.ValidatorAtIndex(idx)
+	require.NoError(t, err)
+	assert.Equal(t, wantedEpoch, v.ExitEpoch, "Exit epoch did not cover overflow case")
+	bscores, err := newState.BailOutScores()
+	require.NoError(t, err)
+	assert.Equal(t, uint64(0), bscores[idx], "Bailout score should be 0 in voluntary exit")
+}
+
 func TestInitiateValidatorExit_WithdrawalOverflows(t *testing.T) {
 	base := &ethpb.BeaconState{Validators: []*ethpb.Validator{
 		{ExitEpoch: params.BeaconConfig().FarFutureEpoch - 1},
@@ -109,7 +166,7 @@ func TestInitiateValidatorExit_WithdrawalOverflows(t *testing.T) {
 	}}
 	state, err := state_native.InitializeFromProtoPhase0(base)
 	require.NoError(t, err)
-	_, _, err = InitiateValidatorExit(context.Background(), state, 1, params.BeaconConfig().FarFutureEpoch-1, 1)
+	_, _, err = InitiateValidatorExit(context.Background(), state, 1, params.BeaconConfig().FarFutureEpoch-1, 1, false)
 	require.ErrorContains(t, "addition overflows", err)
 }
 

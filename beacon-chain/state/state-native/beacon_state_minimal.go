@@ -54,6 +54,8 @@ type BeaconState struct {
 	inactivityScoresMultiValue          *MultiValueInactivityScores
 	currentSyncCommittee                *ethpb.SyncCommittee
 	nextSyncCommittee                   *ethpb.SyncCommittee
+	bailoutScores                       []uint64
+	bailoutScoresMultiValue             *MultiValueBailOutScores
 	latestExecutionPayloadHeader        *enginev1.ExecutionPayloadHeader
 	latestExecutionPayloadHeaderCapella *enginev1.ExecutionPayloadHeaderCapella
 	latestExecutionPayloadHeaderDeneb   *enginev1.ExecutionPayloadHeaderDeneb
@@ -100,6 +102,7 @@ type beaconStateMarshalable struct {
 	InactivityScores                    []uint64                                `json:"inactivity_scores" yaml:"inactivity_scores"`
 	CurrentSyncCommittee                *ethpb.SyncCommittee                    `json:"current_sync_committee" yaml:"current_sync_committee"`
 	NextSyncCommittee                   *ethpb.SyncCommittee                    `json:"next_sync_committee" yaml:"next_sync_committee"`
+	BailOutScores                       []uint64                                `json:"bailout_scores" yaml:"bailout_scores"`
 	LatestExecutionPayloadHeader        *enginev1.ExecutionPayloadHeader        `json:"latest_execution_payload_header" yaml:"latest_execution_payload_header"`
 	LatestExecutionPayloadHeaderCapella *enginev1.ExecutionPayloadHeaderCapella `json:"latest_execution_payload_header_capella" yaml:"latest_execution_payload_header_capella"`
 	NextWithdrawalIndex                 uint64                                  `json:"next_withdrawal_index" yaml:"next_withdrawal_index"`
@@ -112,6 +115,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 	var mixes customtypes.RandaoMixes
 	var balances []uint64
 	var inactivityScores []uint64
+	var bailoutScores []uint64
 	var vals []*ethpb.Validator
 
 	if features.Get().EnableExperimentalState {
@@ -120,6 +124,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		mixes = b.randaoMixesMultiValue.Value(b)
 		balances = b.balancesMultiValue.Value(b)
 		inactivityScores = b.inactivityScoresMultiValue.Value(b)
+		bailoutScores = b.bailoutScoresMultiValue.Value(b)
 		vals = b.validatorsMultiValue.Value(b)
 	} else {
 		bRoots = b.blockRoots
@@ -127,6 +132,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		mixes = b.randaoMixes
 		balances = b.balances
 		inactivityScores = b.inactivityScores
+		bailoutScores = b.bailoutScores
 		vals = b.validators
 	}
 
@@ -159,6 +165,7 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		InactivityScores:                    inactivityScores,
 		CurrentSyncCommittee:                b.currentSyncCommittee,
 		NextSyncCommittee:                   b.nextSyncCommittee,
+		BailOutScores:                       bailoutScores,
 		LatestExecutionPayloadHeader:        b.latestExecutionPayloadHeader,
 		LatestExecutionPayloadHeaderCapella: b.latestExecutionPayloadHeaderCapella,
 		NextWithdrawalIndex:                 b.nextWithdrawalIndex,

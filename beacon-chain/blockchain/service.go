@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/bailout"
 	"go.opencensus.io/trace"
 
 	"github.com/prysmaticlabs/prysm/v5/async/event"
@@ -80,6 +81,7 @@ type config struct {
 	TrackedValidatorsCache  *cache.TrackedValidatorsCache
 	AttPool                 attestations.Pool
 	ExitPool                voluntaryexits.PoolManager
+	BailoutPool             bailout.PoolManager
 	SlashingPool            slashings.PoolManager
 	BLSToExecPool           blstoexec.PoolManager
 	P2p                     p2p.Broadcaster

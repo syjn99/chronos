@@ -163,6 +163,7 @@ func CopyBeaconBlockBodyAltair(body *BeaconBlockBodyAltair) *BeaconBlockBodyAlta
 		Deposits:          CopyDeposits(body.Deposits),
 		VoluntaryExits:    CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:     CopySyncAggregate(body.SyncAggregate),
+		BailOuts:          CopyBailOuts(body.BailOuts),
 	}
 }
 
@@ -367,6 +368,20 @@ func CopySyncCommitteeContribution(c *SyncCommitteeContribution) *SyncCommitteeC
 	}
 }
 
+// CopyBailOuts copies the provided BailOut.
+func CopyBailOuts(out []*BailOut) []*BailOut {
+	if out == nil {
+		return nil
+	}
+	newOuts := make([]*BailOut, len(out))
+	for i, ot := range out {
+		newOuts[i] = &BailOut{
+			ValidatorIndex: ot.ValidatorIndex,
+		}
+	}
+	return newOuts
+}
+
 // CopySyncAggregate copies the provided sync aggregate object.
 func CopySyncAggregate(a *SyncAggregate) *SyncAggregate {
 	if a == nil {
@@ -418,6 +433,7 @@ func CopyBeaconBlockBodyBellatrix(body *BeaconBlockBodyBellatrix) *BeaconBlockBo
 		Deposits:          CopyDeposits(body.Deposits),
 		VoluntaryExits:    CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:     CopySyncAggregate(body.SyncAggregate),
+		BailOuts:          CopyBailOuts(body.BailOuts),
 		ExecutionPayload:  CopyExecutionPayload(body.ExecutionPayload),
 	}
 }
@@ -462,6 +478,7 @@ func CopyBeaconBlockBodyCapella(body *BeaconBlockBodyCapella) *BeaconBlockBodyCa
 		Deposits:              CopyDeposits(body.Deposits),
 		VoluntaryExits:        CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:         CopySyncAggregate(body.SyncAggregate),
+		BailOuts:              CopyBailOuts(body.BailOuts),
 		ExecutionPayload:      CopyExecutionPayloadCapella(body.ExecutionPayload),
 		BlsToExecutionChanges: CopyBLSToExecutionChanges(body.BlsToExecutionChanges),
 	}
@@ -507,6 +524,7 @@ func CopyBlindedBeaconBlockBodyCapella(body *BlindedBeaconBlockBodyCapella) *Bli
 		Deposits:               CopyDeposits(body.Deposits),
 		VoluntaryExits:         CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:          CopySyncAggregate(body.SyncAggregate),
+		BailOuts:               CopyBailOuts(body.BailOuts),
 		ExecutionPayloadHeader: CopyExecutionPayloadHeaderCapella(body.ExecutionPayloadHeader),
 		BlsToExecutionChanges:  CopyBLSToExecutionChanges(body.BlsToExecutionChanges),
 	}
@@ -552,6 +570,7 @@ func CopyBlindedBeaconBlockBodyDeneb(body *BlindedBeaconBlockBodyDeneb) *Blinded
 		Deposits:               CopyDeposits(body.Deposits),
 		VoluntaryExits:         CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:          CopySyncAggregate(body.SyncAggregate),
+		BailOuts:               CopyBailOuts(body.BailOuts),
 		ExecutionPayloadHeader: CopyExecutionPayloadHeaderDeneb(body.ExecutionPayloadHeader),
 		BlsToExecutionChanges:  CopyBLSToExecutionChanges(body.BlsToExecutionChanges),
 		BlobKzgCommitments:     CopyBlobKZGs(body.BlobKzgCommitments),
@@ -698,6 +717,7 @@ func CopyBlindedBeaconBlockBodyBellatrix(body *BlindedBeaconBlockBodyBellatrix) 
 		Deposits:               CopyDeposits(body.Deposits),
 		VoluntaryExits:         CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:          CopySyncAggregate(body.SyncAggregate),
+		BailOuts:               CopyBailOuts(body.BailOuts),
 		ExecutionPayloadHeader: CopyExecutionPayloadHeader(body.ExecutionPayloadHeader),
 	}
 }
@@ -794,6 +814,7 @@ func CopyBeaconBlockBodyDeneb(body *BeaconBlockBodyDeneb) *BeaconBlockBodyDeneb 
 		Deposits:              CopyDeposits(body.Deposits),
 		VoluntaryExits:        CopySignedVoluntaryExits(body.VoluntaryExits),
 		SyncAggregate:         CopySyncAggregate(body.SyncAggregate),
+		BailOuts:              CopyBailOuts(body.BailOuts),
 		ExecutionPayload:      CopyExecutionPayloadDeneb(body.ExecutionPayload),
 		BlsToExecutionChanges: CopyBLSToExecutionChanges(body.BlsToExecutionChanges),
 		BlobKzgCommitments:    CopyBlobKZGs(body.BlobKzgCommitments),

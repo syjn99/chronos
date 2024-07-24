@@ -166,6 +166,11 @@ func (c beaconApiBeaconBlockConverter) ConvertRESTAltairBlockToProto(block *stru
 		return nil, errors.Wrapf(err, "failed to decode sync committee signature `%s`", block.Body.SyncAggregate.SyncCommitteeSignature)
 	}
 
+	bailOuts, err := convertBailOutsToProto(block.Body.BailOuts)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get bail outs")
+	}
+
 	return &ethpb.BeaconBlockAltair{
 		Slot:          phase0Block.Slot,
 		ProposerIndex: phase0Block.ProposerIndex,
@@ -184,6 +189,7 @@ func (c beaconApiBeaconBlockConverter) ConvertRESTAltairBlockToProto(block *stru
 				SyncCommitteeBits:      syncCommitteeBits,
 				SyncCommitteeSignature: syncCommitteeSignature,
 			},
+			BailOuts: bailOuts,
 		},
 	}, nil
 }
@@ -211,6 +217,7 @@ func (c beaconApiBeaconBlockConverter) ConvertRESTBellatrixBlockToProto(block *s
 			Deposits:          block.Body.Deposits,
 			VoluntaryExits:    block.Body.VoluntaryExits,
 			SyncAggregate:     block.Body.SyncAggregate,
+			BailOuts:          block.Body.BailOuts,
 		},
 	})
 	if err != nil {
@@ -311,6 +318,7 @@ func (c beaconApiBeaconBlockConverter) ConvertRESTBellatrixBlockToProto(block *s
 			Deposits:          altairBlock.Body.Deposits,
 			VoluntaryExits:    altairBlock.Body.VoluntaryExits,
 			SyncAggregate:     altairBlock.Body.SyncAggregate,
+			BailOuts:          altairBlock.Body.BailOuts,
 			ExecutionPayload: &enginev1.ExecutionPayload{
 				ParentHash:     parentHash,
 				FeeRecipient:   feeRecipient,
@@ -359,6 +367,7 @@ func (c beaconApiBeaconBlockConverter) ConvertRESTCapellaBlockToProto(block *str
 			Deposits:          block.Body.Deposits,
 			VoluntaryExits:    block.Body.VoluntaryExits,
 			SyncAggregate:     block.Body.SyncAggregate,
+			BailOuts:          block.Body.BailOuts,
 			ExecutionPayload: &structs.ExecutionPayload{
 				ParentHash:     block.Body.ExecutionPayload.ParentHash,
 				FeeRecipient:   block.Body.ExecutionPayload.FeeRecipient,
@@ -407,6 +416,7 @@ func (c beaconApiBeaconBlockConverter) ConvertRESTCapellaBlockToProto(block *str
 			Deposits:          bellatrixBlock.Body.Deposits,
 			VoluntaryExits:    bellatrixBlock.Body.VoluntaryExits,
 			SyncAggregate:     bellatrixBlock.Body.SyncAggregate,
+			BailOuts:          bellatrixBlock.Body.BailOuts,
 			ExecutionPayload: &enginev1.ExecutionPayloadCapella{
 				ParentHash:     bellatrixBlock.Body.ExecutionPayload.ParentHash,
 				FeeRecipient:   bellatrixBlock.Body.ExecutionPayload.FeeRecipient,

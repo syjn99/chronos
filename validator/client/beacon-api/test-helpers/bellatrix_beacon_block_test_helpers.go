@@ -217,6 +217,14 @@ func GenerateProtoBellatrixBeaconBlock() *ethpb.BeaconBlockBellatrix {
 				SyncCommitteeBits:      FillByteSlice(64, 110),
 				SyncCommitteeSignature: FillByteSlice(96, 111),
 			},
+			BailOuts: []*ethpb.BailOut{
+				{
+					ValidatorIndex: 128,
+				},
+				{
+					ValidatorIndex: 129,
+				},
+			},
 			ExecutionPayload: &enginev1.ExecutionPayload{
 				ParentHash:     FillByteSlice(32, 112),
 				FeeRecipient:   FillByteSlice(20, 113),
@@ -451,6 +459,14 @@ func GenerateProtoBlindedBellatrixBeaconBlock() *ethpb.BlindedBeaconBlockBellatr
 				SyncCommitteeBits:      FillByteSlice(64, 110),
 				SyncCommitteeSignature: FillByteSlice(96, 111),
 			},
+			BailOuts: []*ethpb.BailOut{
+				{
+					ValidatorIndex: 128,
+				},
+				{
+					ValidatorIndex: 129,
+				},
+			},
 			ExecutionPayloadHeader: &enginev1.ExecutionPayloadHeader{
 				ParentHash:       FillByteSlice(32, 112),
 				FeeRecipient:     FillByteSlice(20, 113),
@@ -681,6 +697,14 @@ func GenerateJsonBellatrixBeaconBlock() *structs.BeaconBlockBellatrix {
 			SyncAggregate: &structs.SyncAggregate{
 				SyncCommitteeBits:      FillEncodedByteSlice(64, 110),
 				SyncCommitteeSignature: FillEncodedByteSlice(96, 111),
+			},
+			BailOuts: []*structs.BailOut{
+				{
+					ValidatorIndex: "128",
+				},
+				{
+					ValidatorIndex: "129",
+				},
 			},
 			ExecutionPayload: &structs.ExecutionPayload{
 				ParentHash:     FillEncodedByteSlice(32, 112),
@@ -915,6 +939,14 @@ func GenerateJsonBlindedBellatrixBeaconBlock() *structs.BlindedBeaconBlockBellat
 			SyncAggregate: &structs.SyncAggregate{
 				SyncCommitteeBits:      FillEncodedByteSlice(64, 110),
 				SyncCommitteeSignature: FillEncodedByteSlice(96, 111),
+			},
+			BailOuts: []*structs.BailOut{
+				{
+					ValidatorIndex: "128",
+				},
+				{
+					ValidatorIndex: "129",
+				},
 			},
 			ExecutionPayloadHeader: &structs.ExecutionPayloadHeader{
 				ParentHash:       FillEncodedByteSlice(32, 112),

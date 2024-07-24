@@ -81,6 +81,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:            b.inactivityScoresVal(),
 			CurrentSyncCommittee:        b.currentSyncCommittee,
 			NextSyncCommittee:           b.nextSyncCommittee,
+			BailOutScores:               b.bailoutScoresVal(),
 		}
 	case version.Bellatrix:
 		return &ethpb.BeaconStateBellatrix{
@@ -108,6 +109,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:             b.inactivityScoresVal(),
 			CurrentSyncCommittee:         b.currentSyncCommittee,
 			NextSyncCommittee:            b.nextSyncCommittee,
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeader,
 		}
 	case version.Capella:
@@ -136,6 +138,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:             b.inactivityScoresVal(),
 			CurrentSyncCommittee:         b.currentSyncCommittee,
 			NextSyncCommittee:            b.nextSyncCommittee,
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderCapella,
 			NextWithdrawalIndex:          b.nextWithdrawalIndex,
 			NextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,
@@ -167,6 +170,7 @@ func (b *BeaconState) ToProtoUnsafe() interface{} {
 			InactivityScores:             b.inactivityScoresVal(),
 			CurrentSyncCommittee:         b.currentSyncCommittee,
 			NextSyncCommittee:            b.nextSyncCommittee,
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderDeneb,
 			NextWithdrawalIndex:          b.nextWithdrawalIndex,
 			NextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,
@@ -247,6 +251,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:            inactivityScores,
 			CurrentSyncCommittee:        b.currentSyncCommitteeVal(),
 			NextSyncCommittee:           b.nextSyncCommitteeVal(),
+			BailOutScores:               b.bailoutScoresVal(),
 		}
 	case version.Bellatrix:
 		return &ethpb.BeaconStateBellatrix{
@@ -274,6 +279,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:             inactivityScores,
 			CurrentSyncCommittee:         b.currentSyncCommitteeVal(),
 			NextSyncCommittee:            b.nextSyncCommitteeVal(),
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderVal(),
 		}
 	case version.Capella:
@@ -302,6 +308,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:             inactivityScores,
 			CurrentSyncCommittee:         b.currentSyncCommitteeVal(),
 			NextSyncCommittee:            b.nextSyncCommitteeVal(),
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderCapellaVal(),
 			NextWithdrawalIndex:          b.nextWithdrawalIndex,
 			NextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,
@@ -333,6 +340,7 @@ func (b *BeaconState) ToProto() interface{} {
 			InactivityScores:             b.inactivityScoresVal(),
 			CurrentSyncCommittee:         b.currentSyncCommitteeVal(),
 			NextSyncCommittee:            b.nextSyncCommitteeVal(),
+			BailOutScores:                b.bailoutScoresVal(),
 			LatestExecutionPayloadHeader: b.latestExecutionPayloadHeaderDenebVal(),
 			NextWithdrawalIndex:          b.nextWithdrawalIndex,
 			NextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,

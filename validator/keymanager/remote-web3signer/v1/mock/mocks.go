@@ -322,6 +322,11 @@ func GetMockSignRequest(t string) *validatorpb.SignRequest {
 							SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 							SyncCommitteeBits:      SyncComitteeBits(),
 						},
+						BailOuts: []*eth.BailOut{
+							{
+								ValidatorIndex: 0,
+							},
+						},
 					},
 				},
 			},
@@ -751,6 +756,11 @@ func BeaconBlockAltair() *v1.BeaconBlockAltair {
 			SyncAggregate: &v1.SyncAggregate{
 				SyncCommitteeSignature: make([]byte, fieldparams.BLSSignatureLength),
 				SyncCommitteeBits:      SyncComitteeBits(),
+			},
+			BailOuts: []*v1.BailOut{
+				{
+					ValidatorIndex: "0",
+				},
 			},
 		},
 	}

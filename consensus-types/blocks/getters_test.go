@@ -392,6 +392,15 @@ func Test_BeaconBlockBody_SyncAggregate(t *testing.T) {
 	assert.DeepEqual(t, result, sa)
 }
 
+func Test_BeaconBlockBody_BailOuts(t *testing.T) {
+	bo := make([]*eth.BailOut, 0)
+	bb := &SignedBeaconBlock{version: version.Altair, block: &BeaconBlock{version: version.Altair, body: &BeaconBlockBody{version: version.Altair}}}
+	require.NoError(t, bb.SetBailOuts(bo))
+	result, err := bb.Block().Body().BailOuts()
+	require.NoError(t, err)
+	assert.DeepSSZEqual(t, bo, result)
+}
+
 func Test_BeaconBlockBody_BLSToExecutionChanges(t *testing.T) {
 	changes := []*eth.SignedBLSToExecutionChange{{Message: &eth.BLSToExecutionChange{ToExecutionAddress: []byte("address")}}}
 	bb := &SignedBeaconBlock{version: version.Capella, block: &BeaconBlock{body: &BeaconBlockBody{version: version.Capella}}}

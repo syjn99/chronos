@@ -379,7 +379,7 @@ func TestGetBlockV2BlindedSignRequest(t *testing.T) {
 				genesisValidatorsRoot: make([]byte, fieldparams.RootLength),
 			},
 			want: mock.BlockV2BlindedSignRequest(func(t *testing.T) []byte {
-				bytevalue, err := hexutil.Decode("0xcd7c49966ebe72b1214e6d4733adf6bf06935c5fbc3b3ad08e84e3085428b82f")
+				bytevalue, err := hexutil.Decode("0x0274f4f86073eb9964d01f64878da22f8ba26fc0e787bddd00f4d1bbc0188791")
 				require.NoError(t, err)
 				return bytevalue
 			}(t), "BELLATRIX"),
@@ -392,7 +392,7 @@ func TestGetBlockV2BlindedSignRequest(t *testing.T) {
 				genesisValidatorsRoot: make([]byte, fieldparams.RootLength),
 			},
 			want: mock.BlockV2BlindedSignRequest(func(t *testing.T) []byte {
-				bytevalue, err := hexutil.Decode("0xbabb9c2d10dd3f16dc50e31fd6eb270c9c5e95a6dcb5a1eb34389ef28194285b")
+				bytevalue, err := hexutil.Decode("0x4bd3d5398b7d223ef6513a0e8035e921a1244ce314f889ce8fb491c0a2e505b1")
 				require.NoError(t, err)
 				return bytevalue
 			}(t), "BELLATRIX"),
@@ -405,7 +405,7 @@ func TestGetBlockV2BlindedSignRequest(t *testing.T) {
 				genesisValidatorsRoot: make([]byte, fieldparams.RootLength),
 			},
 			want: mock.BlockV2BlindedSignRequest(func(t *testing.T) []byte {
-				bytevalue, err := hexutil.Decode("0x74b4bb048d39c75f175fbb2311062eb9867d79b712907f39544fcaf2d7e1b433")
+				bytevalue, err := hexutil.Decode("0x19250bfde8325302eb2b4272987be470b2d84b98b504bcba1617c8e8393801a8")
 				require.NoError(t, err)
 				return bytevalue
 			}(t), "CAPELLA"),
@@ -418,7 +418,7 @@ func TestGetBlockV2BlindedSignRequest(t *testing.T) {
 				genesisValidatorsRoot: make([]byte, fieldparams.RootLength),
 			},
 			want: mock.BlockV2BlindedSignRequest(func(t *testing.T) []byte {
-				bytevalue, err := hexutil.Decode("0x54797f27f45a91d2cf4d73e509c62e464d648ec34e07ddba946adee742039e76")
+				bytevalue, err := hexutil.Decode("0x9854bb9a8f46898ba9a28beaf6e15a527a7e355341164f8e1721fbe80730f370")
 				require.NoError(t, err)
 				return bytevalue
 			}(t), "CAPELLA"),
@@ -431,7 +431,7 @@ func TestGetBlockV2BlindedSignRequest(t *testing.T) {
 				genesisValidatorsRoot: make([]byte, fieldparams.RootLength),
 			},
 			want: mock.BlockV2BlindedSignRequest(func(t *testing.T) []byte {
-				bytevalue, err := hexutil.Decode("0xbce73ee2c617851846af2b3ea2287e3b686098e18ae508c7271aaa06ab1d06cd")
+				bytevalue, err := hexutil.Decode("0x06d18092c0699a5e9f07471c022f76dd72d8e9969cfef1646d653159fdb5f373")
 				require.NoError(t, err)
 				return bytevalue
 			}(t), "DENEB"),
@@ -444,7 +444,7 @@ func TestGetBlockV2BlindedSignRequest(t *testing.T) {
 				genesisValidatorsRoot: make([]byte, fieldparams.RootLength),
 			},
 			want: mock.BlockV2BlindedSignRequest(func(t *testing.T) []byte {
-				bytevalue, err := hexutil.Decode("0xfeb1f7e4f704e72544f4f097b36cb3f3af83043765ad9ad3c3a6cd7fac605055")
+				bytevalue, err := hexutil.Decode("0x4315e8061f5380621b6ef99527f7fa88ca92dafed14a51f548407a5b5afa273b")
 				require.NoError(t, err)
 				return bytevalue
 			}(t), "DENEB"),

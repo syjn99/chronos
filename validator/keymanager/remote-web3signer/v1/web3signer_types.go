@@ -248,6 +248,10 @@ type VoluntaryExit struct {
 	ValidatorIndex string `json:"validator_index"` /* uint64 */
 }
 
+type BailOut struct {
+	ValidatorIndex string `json:"validator_index"` /* uint64 */
+}
+
 // BeaconBlockAltairBlockV2 a sub property of BlockAltairSignRequest.
 type BeaconBlockAltairBlockV2 struct {
 	Version string             `json:"version" enum:"true"`
@@ -274,6 +278,7 @@ type BeaconBlockBodyAltair struct {
 	Deposits          []*Deposit             `json:"deposits"`
 	VoluntaryExits    []*SignedVoluntaryExit `json:"voluntary_exits"`
 	SyncAggregate     *SyncAggregate         `json:"sync_aggregate"`
+	BailOuts          []*BailOut             `json:"bail_outs"`
 }
 
 // BeaconBlockV2Blinded a field of BlockV2BlindedSignRequest.

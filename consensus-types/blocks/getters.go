@@ -268,6 +268,7 @@ func (b *SignedBeaconBlock) ToBlinded() (interfaces.ReadOnlySignedBeaconBlock, e
 						Deposits:               b.block.body.deposits,
 						VoluntaryExits:         b.block.body.voluntaryExits,
 						SyncAggregate:          b.block.body.syncAggregate,
+						BailOuts:               b.block.body.bailOuts,
 						ExecutionPayloadHeader: header,
 					},
 				},
@@ -295,6 +296,7 @@ func (b *SignedBeaconBlock) ToBlinded() (interfaces.ReadOnlySignedBeaconBlock, e
 						Deposits:               b.block.body.deposits,
 						VoluntaryExits:         b.block.body.voluntaryExits,
 						SyncAggregate:          b.block.body.syncAggregate,
+						BailOuts:               b.block.body.bailOuts,
 						ExecutionPayloadHeader: header,
 						BlsToExecutionChanges:  b.block.body.blsToExecutionChanges,
 					},
@@ -323,6 +325,7 @@ func (b *SignedBeaconBlock) ToBlinded() (interfaces.ReadOnlySignedBeaconBlock, e
 						Deposits:               b.block.body.deposits,
 						VoluntaryExits:         b.block.body.voluntaryExits,
 						SyncAggregate:          b.block.body.syncAggregate,
+						BailOuts:               b.block.body.bailOuts,
 						ExecutionPayloadHeader: header,
 						BlsToExecutionChanges:  b.block.body.blsToExecutionChanges,
 						BlobKzgCommitments:     b.block.body.blobKzgCommitments,
@@ -1052,6 +1055,14 @@ func (b *BeaconBlockBody) SyncAggregate() (*eth.SyncAggregate, error) {
 		return nil, consensus_types.ErrNotSupported("SyncAggregate", b.version)
 	}
 	return b.syncAggregate, nil
+}
+
+// BailOuts returns the voluntary exits in the block.
+func (b *BeaconBlockBody) BailOuts() ([]*eth.BailOut, error) {
+	if b.version == version.Phase0 {
+		return nil, consensus_types.ErrNotSupported("BailOuts", b.version)
+	}
+	return b.bailOuts, nil
 }
 
 // Execution returns the execution payload of the block body.

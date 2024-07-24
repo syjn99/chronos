@@ -19,6 +19,7 @@ import (
 	mockExecution "github.com/prysmaticlabs/prysm/v5/beacon-chain/execution/testing"
 	doublylinkedtree "github.com/prysmaticlabs/prysm/v5/beacon-chain/forkchoice/doubly-linked-tree"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/attestations"
+	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/bailout"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/slashings"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/operations/voluntaryexits"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/startup"
@@ -95,6 +96,7 @@ func setupBeaconChain(t *testing.T, beaconDB db.Database) *Service {
 		WithAttestationPool(attestations.NewPool()),
 		WithSlashingPool(slashings.NewPool()),
 		WithExitPool(voluntaryexits.NewPool()),
+		WithBailoutPool(bailout.NewPool()),
 		WithP2PBroadcaster(&mockBroadcaster{}),
 		WithStateNotifier(&mockBeaconNode{}),
 		WithForkChoiceStore(fc),

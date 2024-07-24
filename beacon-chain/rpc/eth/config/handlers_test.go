@@ -131,6 +131,8 @@ func TestGetSpec(t *testing.T) {
 	config.MaxWithdrawalsPerPayload = 74
 	config.MaxBlsToExecutionChanges = 75
 	config.MaxValidatorsPerWithdrawalsSweep = 76
+	config.BailOutScoreBias = 77
+	config.BailOutScoreThreshold = 78
 
 	var dbp [4]byte
 	copy(dbp[:], []byte{'0', '0', '0', '1'})
@@ -170,7 +172,7 @@ func TestGetSpec(t *testing.T) {
 	data, ok := resp.Data.(map[string]interface{})
 	require.Equal(t, true, ok)
 
-	assert.Equal(t, 129, len(data))
+	assert.Equal(t, 131, len(data))
 	for k, v := range data {
 		switch k {
 		case "CONFIG_NAME":
@@ -454,6 +456,10 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "1024", v)
 		case "MAX_REQUEST_BLOCKS_DENEB":
 			assert.Equal(t, "128", v)
+		case "BAILOUT_SCORE_BIAS":
+			assert.Equal(t, "77", v)
+		case "BAILOUT_SCORE_THRESHOLD":
+			assert.Equal(t, "78", v)
 		default:
 			t.Errorf("Incorrect key: %s", k)
 		}

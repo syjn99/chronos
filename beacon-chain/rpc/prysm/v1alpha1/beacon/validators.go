@@ -765,6 +765,7 @@ func (bs *Server) GetIndividualVotes(
 			InclusionSlot:                    v[index].InclusionSlot,
 			InclusionDistance:                v[index].InclusionDistance,
 			InactivityScore:                  v[index].InactivityScore,
+			BailOutScore:                     v[index].BailOutScore,
 		})
 	}
 

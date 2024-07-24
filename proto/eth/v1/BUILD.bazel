@@ -58,6 +58,7 @@ ssz_gen_marshal(
         "SignedBeaconBlockHeader",
         "SignedVoluntaryExit",
         "SyncAggregate",
+        "BailOut",
         "Validator",
         "VoluntaryExit",
     ],

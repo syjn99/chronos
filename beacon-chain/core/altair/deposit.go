@@ -43,6 +43,9 @@ func ProcessDeposit(beaconState state.BeaconState, deposit *ethpb.Deposit, verif
 		if err := beaconState.AppendInactivityScore(0); err != nil {
 			return nil, err
 		}
+		if err := beaconState.AppendBailOutScore(0); err != nil {
+			return nil, err
+		}
 		if err := beaconState.AppendPreviousParticipationBits(0); err != nil {
 			return nil, err
 		}

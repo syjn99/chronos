@@ -13,7 +13,9 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/primitives"
+	mathutil "github.com/prysmaticlabs/prysm/v5/math"
 	ethpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
+	"github.com/prysmaticlabs/prysm/v5/runtime/version"
 	"github.com/prysmaticlabs/prysm/v5/time/slots"
 )
 
@@ -65,7 +67,7 @@ func MaxExitEpochAndChurn(s state.BeaconState) (maxExitEpoch primitives.Epoch, c
 //	  # Set validator exit epoch and withdrawable epoch
 //	  validator.exit_epoch = exit_queue_epoch
 //	  validator.withdrawable_epoch = Epoch(validator.exit_epoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
-func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primitives.ValidatorIndex, exitQueueEpoch primitives.Epoch, churn uint64) (state.BeaconState, primitives.Epoch, error) {
+func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primitives.ValidatorIndex, exitQueueEpoch primitives.Epoch, churn uint64, isBailOut bool) (state.BeaconState, primitives.Epoch, error) {
 	exitableEpoch := helpers.ActivationExitEpoch(time.CurrentEpoch(s))
 	if exitableEpoch > exitQueueEpoch {
 		exitQueueEpoch = exitableEpoch
@@ -98,6 +100,23 @@ func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primiti
 	if err := s.UpdateValidatorAtIndex(idx, validator); err != nil {
 		return nil, 0, err
 	}
+
+	if s.Version() >= version.Altair {
+		bailoutScores, err := s.BailOutScores()
+		if err != nil {
+			return nil, 0, err
+		}
+		if isBailOut {
+			bailoutScores[idx] = mathutil.MaxUint64
+		} else {
+			bailoutScores[idx] = 0
+		}
+
+		if err := s.SetBailOutScores(bailoutScores); err != nil {
+			return nil, 0, err
+		}
+	}
+
 	return s, exitQueueEpoch, nil
 }
 
@@ -135,7 +154,7 @@ func SlashValidator(
 	penaltyQuotient uint64,
 	proposerRewardQuotient uint64) (state.BeaconState, error) {
 	maxExitEpoch, churn := MaxExitEpochAndChurn(s)
-	s, _, err := InitiateValidatorExit(ctx, s, slashedIdx, maxExitEpoch, churn)
+	s, _, err := InitiateValidatorExit(ctx, s, slashedIdx, maxExitEpoch, churn, false)
 	if err != nil && !errors.Is(err, ErrValidatorAlreadyExited) {
 		return nil, errors.Wrapf(err, "could not initiate validator %d exit", slashedIdx)
 	}

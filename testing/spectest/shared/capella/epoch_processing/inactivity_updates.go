@@ -37,7 +37,7 @@ func processInactivityUpdates(t *testing.T, st state.BeaconState) (state.BeaconS
 	vp, _, err = altair.ProcessEpochParticipation(ctx, st, bp, vp)
 	require.NoError(t, err)
 
-	st, _, err = altair.ProcessInactivityScores(ctx, st, vp)
+	st, _, err = altair.ProcessInactivityAndBailOutScores(ctx, st, vp)
 	require.NoError(t, err, "Could not process reward")
 
 	return st, nil

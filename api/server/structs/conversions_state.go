@@ -174,6 +174,15 @@ func BeaconStateAltairFromConsensus(st beaconState.BeaconState) (*BeaconStateAlt
 		return nil, err
 	}
 
+	srcBo, err := st.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
+	bo := make([]string, len(srcBo))
+	for i, s := range srcBo {
+		bo[i] = fmt.Sprintf("%d", s)
+	}
+
 	return &BeaconStateAltair{
 		GenesisTime:                 fmt.Sprintf("%d", st.GenesisTime()),
 		GenesisValidatorsRoot:       hexutil.Encode(st.GenesisValidatorsRoot()),
@@ -199,6 +208,7 @@ func BeaconStateAltairFromConsensus(st beaconState.BeaconState) (*BeaconStateAlt
 		InactivityScores:            is,
 		CurrentSyncCommittee:        SyncCommitteeFromConsensus(currSc),
 		NextSyncCommittee:           SyncCommitteeFromConsensus(nextSc),
+		BailOutScores:               bo,
 	}, nil
 }
 
@@ -270,6 +280,14 @@ func BeaconStateBellatrixFromConsensus(st beaconState.BeaconState) (*BeaconState
 	for i, s := range srcIs {
 		is[i] = fmt.Sprintf("%d", s)
 	}
+	srcBo, err := st.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
+	bo := make([]string, len(srcBo))
+	for i, s := range srcBo {
+		bo[i] = fmt.Sprintf("%d", s)
+	}
 	currSc, err := st.CurrentSyncCommittee()
 	if err != nil {
 		return nil, err
@@ -316,6 +334,7 @@ func BeaconStateBellatrixFromConsensus(st beaconState.BeaconState) (*BeaconState
 		InactivityScores:             is,
 		CurrentSyncCommittee:         SyncCommitteeFromConsensus(currSc),
 		NextSyncCommittee:            SyncCommitteeFromConsensus(nextSc),
+		BailOutScores:                bo,
 		LatestExecutionPayloadHeader: payload,
 	}, nil
 }
@@ -388,6 +407,14 @@ func BeaconStateCapellaFromConsensus(st beaconState.BeaconState) (*BeaconStateCa
 	for i, s := range srcIs {
 		is[i] = fmt.Sprintf("%d", s)
 	}
+	srcBo, err := st.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
+	bo := make([]string, len(srcBo))
+	for i, s := range srcBo {
+		bo[i] = fmt.Sprintf("%d", s)
+	}
 	currSc, err := st.CurrentSyncCommittee()
 	if err != nil {
 		return nil, err
@@ -450,6 +477,7 @@ func BeaconStateCapellaFromConsensus(st beaconState.BeaconState) (*BeaconStateCa
 		InactivityScores:             is,
 		CurrentSyncCommittee:         SyncCommitteeFromConsensus(currSc),
 		NextSyncCommittee:            SyncCommitteeFromConsensus(nextSc),
+		BailOutScores:                bo,
 		LatestExecutionPayloadHeader: payload,
 		NextWithdrawalIndex:          fmt.Sprintf("%d", nwi),
 		NextWithdrawalValidatorIndex: fmt.Sprintf("%d", nwvi),
@@ -525,6 +553,14 @@ func BeaconStateDenebFromConsensus(st beaconState.BeaconState) (*BeaconStateDene
 	for i, s := range srcIs {
 		is[i] = fmt.Sprintf("%d", s)
 	}
+	srcBo, err := st.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
+	bo := make([]string, len(srcBo))
+	for i, s := range srcBo {
+		bo[i] = fmt.Sprintf("%d", s)
+	}
 	currSc, err := st.CurrentSyncCommittee()
 	if err != nil {
 		return nil, err
@@ -587,6 +623,7 @@ func BeaconStateDenebFromConsensus(st beaconState.BeaconState) (*BeaconStateDene
 		InactivityScores:             is,
 		CurrentSyncCommittee:         SyncCommitteeFromConsensus(currSc),
 		NextSyncCommittee:            SyncCommitteeFromConsensus(nextSc),
+		BailOutScores:                bo,
 		LatestExecutionPayloadHeader: payload,
 		NextWithdrawalIndex:          fmt.Sprintf("%d", nwi),
 		NextWithdrawalValidatorIndex: fmt.Sprintf("%d", nwvi),

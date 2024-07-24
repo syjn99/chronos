@@ -218,6 +218,14 @@ func GenerateProtoDenebBeaconBlockContents() *ethpb.BeaconBlockContentsDeneb {
 					SyncCommitteeBits:      FillByteSlice(64, 110),
 					SyncCommitteeSignature: FillByteSlice(96, 111),
 				},
+				BailOuts: []*ethpb.BailOut{
+					{
+						ValidatorIndex: 128,
+					},
+					{
+						ValidatorIndex: 129,
+					},
+				},
 				ExecutionPayload: &enginev1.ExecutionPayloadDeneb{
 					ParentHash:     FillByteSlice(32, 112),
 					FeeRecipient:   FillByteSlice(20, 113),
@@ -490,6 +498,14 @@ func GenerateProtoBlindedDenebBeaconBlock() *ethpb.BlindedBeaconBlockDeneb {
 				SyncCommitteeBits:      FillByteSlice(64, 110),
 				SyncCommitteeSignature: FillByteSlice(96, 111),
 			},
+			BailOuts: []*ethpb.BailOut{
+				{
+					ValidatorIndex: 128,
+				},
+				{
+					ValidatorIndex: 129,
+				},
+			},
 			ExecutionPayloadHeader: &enginev1.ExecutionPayloadHeaderDeneb{
 				ParentHash:       FillByteSlice(32, 112),
 				FeeRecipient:     FillByteSlice(20, 113),
@@ -743,6 +759,14 @@ func GenerateJsonDenebBeaconBlockContents() *structs.BeaconBlockContentsDeneb {
 				SyncAggregate: &structs.SyncAggregate{
 					SyncCommitteeBits:      FillEncodedByteSlice(64, 110),
 					SyncCommitteeSignature: FillEncodedByteSlice(96, 111),
+				},
+				BailOuts: []*structs.BailOut{
+					{
+						ValidatorIndex: "128",
+					},
+					{
+						ValidatorIndex: "129",
+					},
 				},
 				ExecutionPayload: &structs.ExecutionPayloadDeneb{
 					ParentHash:     FillEncodedByteSlice(32, 112),
@@ -1015,6 +1039,14 @@ func GenerateJsonBlindedDenebBeaconBlock() *structs.BlindedBeaconBlockDeneb {
 			SyncAggregate: &structs.SyncAggregate{
 				SyncCommitteeBits:      FillEncodedByteSlice(64, 110),
 				SyncCommitteeSignature: FillEncodedByteSlice(96, 111),
+			},
+			BailOuts: []*structs.BailOut{
+				{
+					ValidatorIndex: "128",
+				},
+				{
+					ValidatorIndex: "129",
+				},
 			},
 			ExecutionPayloadHeader: &structs.ExecutionPayloadHeaderDeneb{
 				ParentHash:       FillEncodedByteSlice(32, 112),

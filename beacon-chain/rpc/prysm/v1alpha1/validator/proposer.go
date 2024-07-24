@@ -221,6 +221,9 @@ func (vs *Server) BuildBlockParallel(ctx context.Context, sBlk interfaces.Signed
 		// Set sync aggregate. New in Altair.
 		vs.setSyncAggregate(ctx, sBlk)
 
+		// Set bail out. New in Altair.
+		vs.SetBailouts(ctx, head, sBlk)
+
 		// Set bls to execution change. New in Capella.
 		vs.setBlsToExecData(sBlk, head)
 	}()
