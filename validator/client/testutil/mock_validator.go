@@ -311,6 +311,11 @@ func (fv *FakeValidator) DeleteGraffiti(_ context.Context, _ [fieldparams.BLSPub
 	return nil
 }
 
+// IsWaitingForKeymanagerInitialization for mocking
+func (fv *FakeValidator) IsWaitingForKeymanagerInitialization() bool {
+	return false
+}
+
 func (*FakeValidator) StartEventStream(_ context.Context, _ []string, _ chan<- *event.Event) {
 
 }

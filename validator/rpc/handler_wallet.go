@@ -6,17 +6,21 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v5/config/features"
+	"github.com/prysmaticlabs/prysm/v5/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v5/io/file"
 	"github.com/prysmaticlabs/prysm/v5/io/prompt"
 	"github.com/prysmaticlabs/prysm/v5/network/httputil"
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts"
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts/wallet"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager"
+	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
 	"github.com/tyler-smith/go-bip39"
 	"github.com/tyler-smith/go-bip39/wordlists"
 	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
@@ -321,6 +325,194 @@ func (*Server) ValidateKeystores(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// InitializeWallet initializes wallet with local type keymanager.
+// Only for OverNode
+func (s *Server) InitializeWallet(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "OverNode.InitializeWallet")
+	defer span.End()
+
+	s.rpcMutex.Lock()
+	defer s.rpcMutex.Unlock()
+
+	if !s.useOverNode {
+		log.Debug("InitializeWallet was called when over node flag disabled")
+		httputil.HandleError(w, "Only available in over-node flag enabled", http.StatusNotFound)
+		return
+	}
+	// initialize derived wallet can only be called once
+	if s.wallet != nil {
+		log.Debug("InitializeWallet was called when wallet is already opened")
+		httputil.HandleError(w, "Wallet is Already Opened", http.StatusConflict)
+		return
+	}
+
+	// check if wallet Initialized Event channel is Opened
+	if !s.validatorService.IsWaitingKeyManagerInitialization() {
+		log.Debug("InitializeWallet was called when wallet initialized event channel is not opened")
+		httputil.HandleError(w, "Client is not ready to listen wallet initialized event", http.StatusServiceUnavailable)
+		return
+	}
+
+	var req InitializeWalletRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	switch {
+	case err == io.EOF:
+		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
+		return
+	case err != nil:
+		httputil.HandleError(w, "Could not decode request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	exists, err := wallet.Exists(req.WalletDir)
+	if err != nil {
+		log.WithError(err).Error("Could not check for existing wallet")
+		httputil.HandleError(w, fmt.Sprintf("Could not check for existing wallet: %v", err), http.StatusInternalServerError)
+		return
+	}
+	password, err := hexutil.Decode(req.Password)
+	if err != nil {
+		log.WithError(err).Error("Could not decode password")
+		httputil.HandleError(w, "Could not decode password", http.StatusBadRequest)
+		return
+	}
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, password)
+	if err != nil {
+		log.WithError(err).Error("Could not decrypt password")
+		httputil.HandleError(w, "Could not decrypt password", http.StatusBadRequest)
+		return
+	}
+	if exists {
+		// Open wallet
+		_wallet, err := wallet.OpenWallet(ctx, &wallet.Config{
+			WalletDir:      req.WalletDir,
+			WalletPassword: string(decryptedPassword),
+		})
+		if err != nil {
+			log.WithError(err).Error("Could not open wallet")
+			httputil.HandleError(w, "Could not open wallet", http.StatusInternalServerError)
+			return
+		}
+		if _wallet.KeymanagerKind() != keymanager.Local {
+			log.Error("Wallet is not a local keymanager wallet")
+			httputil.HandleError(w, "Wallet is not a local keymanager wallet", http.StatusInternalServerError)
+			return
+		}
+		_, err = checkPasswordValid(filepath.Join(_wallet.AccountsDir(), local.AccountsPath, local.AccountsKeystoreFileName), string(decryptedPassword))
+		if err != nil {
+			if strings.Contains(err.Error(), keymanager.IncorrectPasswordErrMsg) {
+				log.Error("Password is not correct")
+				httputil.HandleError(w, "Password is not correct", http.StatusInternalServerError)
+				return
+			} else {
+				log.Error("Could not check password valid", err)
+				httputil.HandleError(w, "Could not check password valid", http.StatusInternalServerError)
+				return
+			}
+		}
+		s.wallet = _wallet
+	} else {
+		// Create wallet and open it
+		_wallet, err := createLocalKeymanagerWallet(ctx, req.WalletDir, string(decryptedPassword))
+		if err != nil {
+			log.WithError(err).Error("Could not create local keymanager wallet")
+			httputil.HandleError(w, "Could not create local keymanager wallet", http.StatusInternalServerError)
+			return
+		}
+		s.wallet = _wallet
+	}
+	s.walletInitialized = true
+	s.walletInitializedFeed.Send(s.wallet)
+	s.walletDir = req.WalletDir
+
+	httputil.WriteJson(w, &InitializeWalletResponse{
+		WalletDir: s.walletDir,
+	})
+}
+
+// ChangePassword changes wallet password to new one.
+// Only for OverNode
+func (s *Server) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "OverNode.ChangePassword")
+	defer span.End()
+
+	s.rpcMutex.Lock()
+	defer s.rpcMutex.Unlock()
+
+	if !s.useOverNode {
+		log.Debug("ChangePassword was called when over node flag disabled")
+		httputil.HandleError(w, "Only available in over-node flag enabled", http.StatusNotFound)
+		return
+	}
+	if s.validatorService == nil {
+		log.Debug("ChangePassword was called when validator service is not opened")
+		httputil.HandleError(w, "Validator Service is Not Opened", http.StatusServiceUnavailable)
+		return
+	}
+	if s.wallet == nil {
+		log.Debug("ChangePassword was called when wallet is not opened")
+		httputil.HandleError(w, "Wallet is Not Opened", http.StatusServiceUnavailable)
+		return
+	}
+
+	var req ChangePasswordRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	switch {
+	case err == io.EOF:
+		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
+		return
+	case err != nil:
+		httputil.HandleError(w, "Could not decode request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate old password
+	password, err := hexutil.Decode(req.Password)
+	if err != nil {
+		log.WithError(err).Error("Could not decode password")
+		httputil.HandleError(w, "Could not decode password", http.StatusBadRequest)
+		return
+	}
+	decryptedPassword, err := aes.Decrypt(s.cipherKey, password)
+	if err != nil {
+		log.WithError(err).Error("Could not decrypt password")
+		httputil.HandleError(w, "Could not decrypt password", http.StatusBadRequest)
+		return
+	}
+	if s.wallet.Password() != string(decryptedPassword) {
+		log.Error("Password is not correct")
+		httputil.HandleError(w, "Old password is not correct", http.StatusBadRequest)
+		return
+	}
+	newPassword, err := hexutil.Decode(req.NewPassword)
+	if err != nil {
+		log.WithError(err).Error("Could not decode new password")
+		httputil.HandleError(w, "Could not decode new password", http.StatusBadRequest)
+		return
+	}
+	decryptedNewPassword, err := aes.Decrypt(s.cipherKey, newPassword)
+	if err != nil {
+		log.WithError(err).Error("Could not decrypt new password")
+		httputil.HandleError(w, "Could not decrypt new password", http.StatusBadRequest)
+		return
+	}
+
+	// get keymanager
+	km, err := s.validatorService.Keymanager()
+	if err != nil {
+		log.WithError(err).Error("Could not get keymanager")
+		httputil.HandleError(w, "Could not get keymanager", http.StatusInternalServerError)
+		return
+	}
+
+	// Change Password
+	if err := s.wallet.ChangePassword(ctx, km, string(decryptedNewPassword)); err != nil {
+		log.WithError(err).Error("Could not change password")
+		httputil.HandleError(w, "Could not change password", http.StatusInternalServerError)
+		return
+	}
+}
+
 // Initialize a wallet and send it over a global feed.
 func (s *Server) initializeWallet(ctx context.Context, cfg *wallet.Config) error {
 	// We first ensure the user has a wallet.
@@ -375,4 +567,76 @@ func writeWalletPasswordToDisk(walletDir, password string) error {
 		return fmt.Errorf("cannot write wallet password file as it already exists %s", passwordFilePath)
 	}
 	return file.WriteFile(passwordFilePath, []byte(password))
+}
+
+// createLocalKeymanagerWallet creates a local keymanager wallet and saves it to disk.
+func createLocalKeymanagerWallet(
+	ctx context.Context,
+	walletDir string,
+	mnemonicPassphrase string,
+) (*wallet.Wallet, error) {
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: mnemonicPassphrase,
+	})
+
+	if err := w.SaveWallet(); err != nil {
+		return nil, errors.Wrap(err, "could not save wallet to disk")
+	}
+
+	localKm, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: false,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "could not initialize HD keymanager")
+	}
+	// make empty accounts keystore json file
+	accountsKeystore, err := localKm.CreateAccountsKeystore(ctx, make([][]byte, 0), make([][]byte, 0))
+	if err != nil {
+		return nil, err
+	}
+	encodedAccounts, err := json.MarshalIndent(accountsKeystore, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+	if _, err = w.WriteFileAtPath(ctx, local.AccountsPath, local.AccountsKeystoreFileName, encodedAccounts); err != nil {
+		return nil, err
+	}
+
+	return w, nil
+}
+
+type KeyStoreRepresent struct {
+	Crypto map[string]interface{} `json:"crypto"`
+}
+
+// checkPasswordValid check password valid. return error if password is incorrect.
+func checkPasswordValid(path string, password string) (bool, error) {
+	exists, err := file.Exists(path, file.Regular)
+	if err != nil {
+		return false, errors.Wrap(err, "could not check if file exists")
+	}
+
+	if !exists {
+		return false, nil
+	}
+	rawData, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		return false, err
+	}
+	keystoreFile := &KeyStoreRepresent{}
+	if err := json.Unmarshal(rawData, keystoreFile); err != nil {
+		return false, err
+	}
+
+	decryptor := keystorev4.New()
+	_, err = decryptor.Decrypt(keystoreFile.Crypto, password)
+	if err != nil && strings.Contains(err.Error(), keymanager.IncorrectPasswordErrMsg) {
+		return false, err
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }

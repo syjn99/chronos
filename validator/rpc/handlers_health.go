@@ -162,3 +162,48 @@ func (s *Server) StreamValidatorLogs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+// GetStatus returns current status of validator client.
+// Only for OverNode
+func (s *Server) GetStatus(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "OverNode.GetStatus")
+	defer span.End()
+
+	if !s.useOverNode {
+		log.Debug("GetStatus was called when over node flag disabled")
+		httputil.HandleError(w, "Only available in over-node flag enabled", http.StatusNotFound)
+		return
+	}
+
+	var isConnectionWithBeaconNode bool
+	var isBeaconNodeSyncing bool
+
+	syncStatus, err := s.nodeClient.GetSyncStatus(ctx, &emptypb.Empty{})
+	if err != nil || s.validatorService.Status() != nil {
+		isConnectionWithBeaconNode = false
+		isBeaconNodeSyncing = false
+	} else {
+		isConnectionWithBeaconNode = true
+		isBeaconNodeSyncing = syncStatus.Syncing
+	}
+
+	isWalletInitialized := s.walletInitialized
+	var canInitializeWallet bool
+	if !isWalletInitialized && s.validatorService != nil {
+		canInitializeWallet = s.validatorService.IsWaitingKeyManagerInitialization()
+	} else {
+		canInitializeWallet = false
+	}
+
+	httputil.WriteJson(w, struct {
+		IsConnectedWithBeaconNode bool `json:"isConnectedWithBeaconNode"`
+		IsBeaconNodeSyncing       bool `json:"isBeaconNodeSyncing"`
+		IsWalletInitialized       bool `json:"isWalletInitialized"`
+		CanInitializeWallet       bool `json:"canInitializeWallet"`
+	}{
+		IsConnectedWithBeaconNode: isConnectionWithBeaconNode,
+		IsBeaconNodeSyncing:       isBeaconNodeSyncing,
+		IsWalletInitialized:       isWalletInitialized,
+		CanInitializeWallet:       canInitializeWallet,
+	})
+}

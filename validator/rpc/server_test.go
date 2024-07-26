@@ -67,7 +67,12 @@ func TestServer_InitializeOverNodeRoutes(t *testing.T) {
 	require.NoError(t, err)
 
 	wantRouteList := map[string][]string{
-		"/over-node/close": {http.MethodPost},
+		"/over-node/close":                                {http.MethodPost},
+		"/v2/validator/health/status":                     {http.MethodPost},
+		"/v2/validator/wallet/initialize-wallet":          {http.MethodPost},
+		"/v2/validator/wallet/change-password":            {http.MethodPost},
+		"/v2/validator/accounts/create-deposit-data-list": {http.MethodPost},
+		"/v2/validator/accounts/import":                   {http.MethodPost},
 	}
 	gotRouteList := make(map[string][]string)
 	err = s.router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {

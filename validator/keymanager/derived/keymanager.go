@@ -172,3 +172,7 @@ func (km *Keymanager) ListKeymanagerAccounts(ctx context.Context, cfg keymanager
 	}
 	return nil
 }
+
+func (km *Keymanager) ChangeKeystorePassword(ctx context.Context, newPassword string) error {
+	return km.localKM.ChangeKeystorePassword(ctx, newPassword)
+}

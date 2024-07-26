@@ -153,6 +153,20 @@ type ValidateKeystoresRequest struct {
 	KeystoresPassword string   `json:"keystores_password"`
 }
 
+type InitializeWalletRequest struct {
+	WalletDir string `json:"wallet_dir"`
+	Password  string `json:"password"`
+}
+
+type InitializeWalletResponse struct {
+	WalletDir string `json:"wallet_dir"`
+}
+
+type ChangePasswordRequest struct {
+	Password    string `json:"password"`
+	NewPassword string `json:"new_password"`
+}
+
 type RecoverWalletRequest struct {
 	Mnemonic         string `json:"mnemonic"`
 	NumAccounts      uint64 `json:"num_accounts"`
@@ -197,6 +211,40 @@ type Account struct {
 
 type VoluntaryExitResponse struct {
 	ExitedKeys [][]byte `protobuf:"bytes,1,rep,name=exited_keys,json=exitedKeys,proto3" json:"exited_keys,omitempty"`
+}
+
+type CreateDepositDataListRequest struct {
+	DepositDataInputs []*DepositDataRequest `json:"deposit_data_inputs"`
+}
+
+type DepositDataRequest struct {
+	Pubkey      []byte `json:"pubkey"`
+	WithdrawKey []byte `json:"withdraw_key"`
+	AmountGwei  string `json:"amount_gwei"`
+}
+
+type CreateDepositDataListResponse struct {
+	DepositDataList []*DepositDataResponse `json:"deposit_data_list"`
+}
+
+type DepositDataResponse struct {
+	Pubkey                []byte `json:"pubkey"`
+	WithdrawalCredentials []byte `json:"withdrawal_credentials"`
+	Signature             []byte `json:"signature"`
+	DepositDataRoot       []byte `json:"deposit_data_root"`
+}
+
+type ImportAccountsWithPrivateKeyRequest struct {
+	PrivateKeys []string `json:"private_keys"`
+}
+
+type ImportAccountsWithPrivateKeyResponse struct {
+	Data []*KeystoreStatusData `json:"data"`
+}
+
+type KeystoreStatusData struct {
+	PublicKey string                `json:"public_key"`
+	Status    *keymanager.KeyStatus `json:"status"`
 }
 
 type InitializeAuthResponse struct {

@@ -69,51 +69,52 @@ var (
 )
 
 type validator struct {
-	duties                             *ethpb.DutiesResponse
-	ticker                             slots.Ticker
-	genesisTime                        uint64
-	highestValidSlot                   primitives.Slot
-	slotFeed                           *event.Feed
-	startBalances                      map[[fieldparams.BLSPubkeyLength]byte]uint64
-	prevEpochBalances                  map[[fieldparams.BLSPubkeyLength]byte]uint64
-	blacklistedPubkeys                 map[[fieldparams.BLSPubkeyLength]byte]bool
-	pubkeyToValidatorIndex             map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex
-	wallet                             *wallet.Wallet
-	walletInitializedChan              chan *wallet.Wallet
-	walletInitializedFeed              *event.Feed
-	graffiti                           []byte
-	graffitiStruct                     *graffiti.Graffiti
-	graffitiOrderedIndex               uint64
-	validatorClient                    iface.ValidatorClient
-	chainClient                        iface.ChainClient
-	nodeClient                         iface.NodeClient
-	prysmChainClient                   iface.PrysmChainClient
-	db                                 db.Database
-	km                                 keymanager.IKeymanager
-	web3SignerConfig                   *remoteweb3signer.SetupConfig
-	proposerSettings                   *proposer.Settings
-	signedValidatorRegistrations       map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1
-	validatorsRegBatchSize             int
-	interopKeysConfig                  *local.InteropKeymanagerConfig
-	attSelections                      map[attSelectionKey]iface.BeaconCommitteeSelection
-	aggregatedSlotCommitteeIDCache     *lru.Cache
-	domainDataCache                    *ristretto.Cache
-	voteStats                          voteStats
-	syncCommitteeStats                 syncCommitteeStats
-	submittedAtts                      map[submittedAttKey]*submittedAtt
-	submittedAggregates                map[submittedAttKey]*submittedAtt
-	logValidatorPerformance            bool
-	emitAccountMetrics                 bool
-	useWeb                             bool
-	distributed                        bool
-	domainDataLock                     sync.RWMutex
-	attLogsLock                        sync.Mutex
-	aggregatedSlotCommitteeIDCacheLock sync.Mutex
-	highestValidSlotLock               sync.Mutex
-	prevEpochBalancesLock              sync.RWMutex
-	blacklistedPubkeysLock             sync.RWMutex
-	attSelectionLock                   sync.Mutex
-	dutiesLock                         sync.RWMutex
+	duties                               *ethpb.DutiesResponse
+	ticker                               slots.Ticker
+	genesisTime                          uint64
+	highestValidSlot                     primitives.Slot
+	slotFeed                             *event.Feed
+	startBalances                        map[[fieldparams.BLSPubkeyLength]byte]uint64
+	prevEpochBalances                    map[[fieldparams.BLSPubkeyLength]byte]uint64
+	blacklistedPubkeys                   map[[fieldparams.BLSPubkeyLength]byte]bool
+	pubkeyToValidatorIndex               map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex
+	wallet                               *wallet.Wallet
+	walletInitializedChan                chan *wallet.Wallet
+	walletInitializedFeed                *event.Feed
+	graffiti                             []byte
+	graffitiStruct                       *graffiti.Graffiti
+	graffitiOrderedIndex                 uint64
+	validatorClient                      iface.ValidatorClient
+	chainClient                          iface.ChainClient
+	nodeClient                           iface.NodeClient
+	prysmChainClient                     iface.PrysmChainClient
+	db                                   db.Database
+	km                                   keymanager.IKeymanager
+	web3SignerConfig                     *remoteweb3signer.SetupConfig
+	proposerSettings                     *proposer.Settings
+	signedValidatorRegistrations         map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1
+	validatorsRegBatchSize               int
+	interopKeysConfig                    *local.InteropKeymanagerConfig
+	attSelections                        map[attSelectionKey]iface.BeaconCommitteeSelection
+	aggregatedSlotCommitteeIDCache       *lru.Cache
+	domainDataCache                      *ristretto.Cache
+	voteStats                            voteStats
+	syncCommitteeStats                   syncCommitteeStats
+	submittedAtts                        map[submittedAttKey]*submittedAtt
+	submittedAggregates                  map[submittedAttKey]*submittedAtt
+	logValidatorPerformance              bool
+	emitAccountMetrics                   bool
+	useWeb                               bool
+	distributed                          bool
+	isWaitingForKeymanagerInitialization bool // used to check if validator is waiting for keymanager to be initialized. Only for OverNode
+	domainDataLock                       sync.RWMutex
+	attLogsLock                          sync.Mutex
+	aggregatedSlotCommitteeIDCacheLock   sync.Mutex
+	highestValidSlotLock                 sync.Mutex
+	prevEpochBalancesLock                sync.RWMutex
+	blacklistedPubkeysLock               sync.RWMutex
+	attSelectionLock                     sync.Mutex
+	dutiesLock                           sync.RWMutex
 }
 
 type validatorStatus struct {
@@ -132,6 +133,14 @@ func (v *validator) Done() {
 	v.ticker.Done()
 }
 
+// IsWaitingForKeymanagerInitialization returns true if the validator is waiting for the keymanager to be initialized. Only for OverNode
+func (v *validator) IsWaitingForKeymanagerInitialization() bool {
+	if v.useWeb && v.wallet == nil {
+		return v.isWaitingForKeymanagerInitialization
+	}
+	return false
+}
+
 // WaitForKmInitialization checks if the validator needs to wait for keymanager initialization.
 func (v *validator) WaitForKeymanagerInitialization(ctx context.Context) error {
 	genesisRoot, err := v.db.GenesisValidatorsRoot(ctx)
@@ -140,12 +149,16 @@ func (v *validator) WaitForKeymanagerInitialization(ctx context.Context) error {
 	}
 
 	if v.useWeb && v.wallet == nil {
+		if !v.isWaitingForKeymanagerInitialization {
+			v.isWaitingForKeymanagerInitialization = true
+		}
 		log.Info("Waiting for keymanager to initialize validator client with web UI")
 		// if wallet is not set, wait for it to be set through the UI
 		km, err := waitForWebWalletInitialization(ctx, v.walletInitializedFeed, v.walletInitializedChan)
 		if err != nil {
 			return err
 		}
+		v.isWaitingForKeymanagerInitialization = false
 		v.km = km
 	} else {
 		if v.interopKeysConfig != nil {

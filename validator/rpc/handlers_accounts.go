@@ -3,6 +3,7 @@ package rpc
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -13,19 +14,28 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v5/api/pagination"
+	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/signing"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/shared"
 	"github.com/prysmaticlabs/prysm/v5/cmd"
 	fieldparams "github.com/prysmaticlabs/prysm/v5/config/fieldparams"
+	"github.com/prysmaticlabs/prysm/v5/config/params"
+	"github.com/prysmaticlabs/prysm/v5/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v5/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v5/encoding/bytesutil"
 	"github.com/prysmaticlabs/prysm/v5/network/httputil"
+	ethpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
+	validatorpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1/validator-client"
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts"
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts/petnames"
+	"github.com/prysmaticlabs/prysm/v5/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/derived"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
+	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 	"go.opencensus.io/trace"
 )
+
+var tempPassword = "temp-password"
 
 // ListAccounts allows retrieval of validating keys and their petnames
 // for a user's wallet via RPC.
@@ -271,4 +281,272 @@ func (s *Server) VoluntaryExit(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteJson(w, &VoluntaryExitResponse{
 		ExitedKeys: rawExitedKeys,
 	})
+}
+
+// CreateDepositDataList creates DepositData list with given request.
+// NOTE: Validator client does not store these values.
+// Only for OverNode
+func (s *Server) CreateDepositDataList(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "OverNode.CreateDepositDataList")
+	defer span.End()
+
+	if !s.useOverNode {
+		log.Debug("CreateDepositDataList was called when over node flag disabled")
+		httputil.HandleError(w, "Only available in over-node flag enabled", http.StatusNotFound)
+		return
+	}
+	if s.validatorService == nil {
+		log.Debug("CreateDepositDataList was called when validator service is not opened")
+		httputil.HandleError(w, "Validator Service is Not Opened", http.StatusServiceUnavailable)
+		return
+	}
+	if s.wallet == nil {
+		log.Debug("CreateDepositDataList was called when wallet is not opened")
+		httputil.HandleError(w, "Wallet is Not Opened", http.StatusServiceUnavailable)
+		return
+	}
+
+	var req CreateDepositDataListRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	switch {
+	case err == io.EOF:
+		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
+		return
+	case err != nil:
+		httputil.HandleError(w, "Could not decode request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(req.DepositDataInputs) == 0 {
+		log.Debug("CreateDepositDataList was called with empty Deposit Data")
+		httputil.HandleError(w, "Deposit Data Keys is Empty", http.StatusBadRequest)
+		return
+	}
+	km, err := s.validatorService.Keymanager()
+	if err != nil {
+		log.WithError(err).Error("Could not get keymanager")
+		httputil.HandleError(w, "Could not get keymanager", http.StatusInternalServerError)
+		return
+	}
+
+	datas := make([]*DepositDataResponse, len(req.DepositDataInputs))
+
+	for i, key := range req.DepositDataInputs {
+		pubKey, err := bls.PublicKeyFromBytes(key.Pubkey)
+		if err != nil {
+			log.WithError(err).Error("Could not parse public key")
+			httputil.HandleError(w, "Could not parse public key", http.StatusInternalServerError)
+			return
+		}
+		amountGwei, err := strconv.ParseUint(key.AmountGwei, 10, 64)
+		if err != nil {
+			log.WithError(err).Error("Could not parse amount gwei")
+			httputil.HandleError(w, "Could not parse amount gwei", http.StatusInternalServerError)
+			return
+		}
+		dd, err := createDepositData(ctx, pubKey, key.WithdrawKey, amountGwei, km.Sign)
+		if err != nil {
+			log.WithError(err).Error("Could not create deposit data")
+			httputil.HandleError(w, "Could not create deposit data", http.StatusInternalServerError)
+			return
+		}
+		datas[i] = dd
+	}
+
+	httputil.WriteJson(w, &CreateDepositDataListResponse{
+		DepositDataList: datas,
+	})
+}
+
+// ImportAccountsWithPrivateKey import accounts to keystore.
+// private keys are encrypted with cipher key provided by OverNode.
+// Only For OverNode.
+func (s *Server) ImportAccountsWithPrivateKey(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "OverNode.ImportAccountsWithPrivateKey")
+	defer span.End()
+
+	s.rpcMutex.Lock()
+	defer s.rpcMutex.Unlock()
+	if !s.useOverNode {
+		log.Debug("ImportAccountsWithPrivateKey was called when over node flag disabled")
+		httputil.HandleError(w, "Only available in over-node flag enabled", http.StatusNotFound)
+		return
+	}
+	if s.validatorService == nil {
+		log.Debug("ImportAccountsWithPrivateKey was called when validator service is not opened")
+		httputil.HandleError(w, "Validator Service is Not Opened", http.StatusServiceUnavailable)
+		return
+	}
+	if s.wallet == nil {
+		log.Debug("ImportAccountsWithPrivateKey was called when wallet is not opened")
+		httputil.HandleError(w, "Wallet is Not Opened", http.StatusServiceUnavailable)
+		return
+	}
+	if !s.walletInitialized {
+		httputil.HandleError(w, "Wallet is not initialized", http.StatusBadRequest)
+		return
+	}
+
+	var req ImportAccountsWithPrivateKeyRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	switch {
+	case err == io.EOF:
+		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
+		return
+	case err != nil:
+		httputil.HandleError(w, "Could not decode request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(req.PrivateKeys) == 0 {
+		log.Debug("ImportAccounts was called with empty Deposit Data")
+		httputil.HandleError(w, "Deposit Data Keys is Empty", http.StatusBadRequest)
+		return
+	}
+	km, err := s.validatorService.Keymanager()
+	if err != nil {
+		log.WithError(err).Error("Could not get keymanager")
+		httputil.HandleError(w, "Could not get keymanager", http.StatusInternalServerError)
+		return
+	}
+
+	importer, ok := km.(keymanager.Importer)
+	if !ok {
+		log.WithError(err).Error("Keymanager cannot import local keys")
+		httputil.HandleError(w, "Keymanager cannot import local keys", http.StatusInternalServerError)
+		return
+	}
+
+	// Decrypt PrivateKeys with cipherKey
+	secretKeys := make([]bls.SecretKey, 0)
+	for _, encodedPrivateKey := range req.PrivateKeys {
+		privateKey, err := hexutil.Decode(encodedPrivateKey)
+		if err != nil {
+			log.Debug("Could not decrypt private key", err)
+			httputil.HandleError(w, "Could not decrypt private key", http.StatusBadRequest)
+			return
+		}
+		decryptedPrivateKey, err := aes.Decrypt(s.cipherKey, privateKey)
+		if err != nil {
+			log.Debug("Could not decrypt private key", err)
+			httputil.HandleError(w, "Could not decrypt private key", http.StatusBadRequest)
+			return
+		}
+
+		secretKey, err := bls.SecretKeyFromBytes(decryptedPrivateKey)
+		if err != nil {
+			log.Debug("Could not decrypt private key", err)
+			httputil.HandleError(w, "Could not decrypt private key", http.StatusBadRequest)
+			return
+		}
+		secretKeys = append(secretKeys, secretKey)
+	}
+
+	// Make keystore for each secret key
+	keystores := make([]*keymanager.Keystore, len(secretKeys))
+	passwords := make([]string, len(secretKeys))
+	encryptor := keystorev4.New()
+	for i := 0; i < len(secretKeys); i++ {
+		pubkey := secretKeys[i].PublicKey()
+		cryptoFields, err := encryptor.Encrypt(secretKeys[i].Marshal(), tempPassword)
+		if err != nil {
+			log.WithError(err).Error("Could not encrypt secret key when wrapping it in a keystore")
+			httputil.HandleError(w, "Could not encrypt secret key when wrapping it in a keystore", http.StatusInternalServerError)
+			return
+		}
+		k := &keymanager.Keystore{
+			Crypto:      cryptoFields,
+			ID:          fmt.Sprint(i), // temporary keystore ID
+			Pubkey:      fmt.Sprintf("%x", pubkey.Marshal()),
+			Version:     encryptor.Version(),
+			Description: encryptor.Name(),
+		}
+		keystores[i] = k
+		passwords[i] = tempPassword
+	}
+
+	statuses, err := importer.ImportKeystores(ctx, keystores, passwords)
+	if err != nil {
+		log.WithError(err).Error("Could not import keys", err)
+		httputil.HandleError(w, "Could not import keys", http.StatusInternalServerError)
+		return
+	}
+
+	// Map the statuses to the response
+	importedStatuses := make([]*KeystoreStatusData, len(statuses))
+	for i, status := range statuses {
+		importedStatuses[i] = &KeystoreStatusData{
+			PublicKey: "0x" + keystores[i].Pubkey,
+			Status:    status,
+		}
+	}
+
+	httputil.WriteJson(w, &ImportAccountsWithPrivateKeyResponse{
+		Data: importedStatuses,
+	})
+}
+
+func createDepositData(
+	ctx context.Context,
+	depositPubkey bls.PublicKey,
+	eth1WithdrawalAddress []byte,
+	amountInGwei uint64,
+	signer iface.SigningFunc,
+) (*DepositDataResponse, error) {
+	depositMessage := &ethpb.DepositMessage{
+		PublicKey:             depositPubkey.Marshal(),
+		WithdrawalCredentials: eth1WithdrawalCredential(eth1WithdrawalAddress),
+		Amount:                amountInGwei,
+	}
+
+	sr, err := depositMessage.HashTreeRoot()
+	if err != nil {
+		return nil, err
+	}
+	domain, err := signing.ComputeDomain(
+		params.BeaconConfig().DomainDeposit,
+		nil, /*forkVersion*/
+		nil, /*genesisValidatorsRoot*/
+	)
+	if err != nil {
+		return nil, err
+	}
+	root, err := (&ethpb.SigningData{ObjectRoot: sr[:], Domain: domain}).HashTreeRoot()
+	if err != nil {
+		return nil, err
+	}
+
+	sig, err := signer(ctx, &validatorpb.SignRequest{
+		PublicKey:   depositPubkey.Marshal(),
+		SigningRoot: root[:],
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	di := &ethpb.Deposit_Data{
+		PublicKey:             depositMessage.PublicKey,
+		WithdrawalCredentials: depositMessage.WithdrawalCredentials,
+		Amount:                depositMessage.Amount,
+		Signature:             sig.Marshal(),
+	}
+
+	dr, err := di.HashTreeRoot()
+	if err != nil {
+		return nil, err
+	}
+	dd := &DepositDataResponse{
+		Pubkey:                depositMessage.PublicKey,
+		WithdrawalCredentials: depositMessage.WithdrawalCredentials,
+		Signature:             sig.Marshal(),
+		DepositDataRoot:       dr[:],
+	}
+	return dd, nil
+}
+
+// eth1WithdrawalCredential wraps eth1 address(20 bytes) into
+// eth1 withdrawal credential(32 bytes).
+func eth1WithdrawalCredential(eth1WithdrawalAddress []byte) []byte {
+	prefix := params.BeaconConfig().ETH1AddressWithdrawalPrefixByte
+	return append(append([]byte{prefix}, params.BeaconConfig().ZeroHash[1:12]...), eth1WithdrawalAddress[:20]...)[:32]
 }

@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -52,6 +53,7 @@ type Config struct {
 	Router                 *mux.Router
 	CloseHandler           *closehandler.CloseHandler
 	UseOverNode            bool
+	CipherKey              []byte
 }
 
 // Server defining a gRPC server for the remote signer API.
@@ -90,6 +92,8 @@ type Server struct {
 	logStreamer               logs.Streamer
 	logStreamerBufferSize     int
 	closeHandler              *closehandler.CloseHandler
+	cipherKey                 []byte
+	rpcMutex                  sync.Mutex
 }
 
 // NewServer instantiates a new gRPC server.
@@ -121,6 +125,7 @@ func NewServer(ctx context.Context, cfg *Config) *Server {
 		router:                 cfg.Router,
 		closeHandler:           cfg.CloseHandler,
 		useOverNode:            cfg.UseOverNode,
+		cipherKey:              cfg.CipherKey,
 	}
 
 	if server.authTokenPath == "" && server.walletDir != "" {
@@ -261,6 +266,16 @@ func (s *Server) InitializeOverNodeRoutes() error {
 
 	// OverNode API endpoints
 	s.router.HandleFunc(api.OverNodeApiPrefix+"close", s.CloseClient).Methods(http.MethodPost)
+
+	// health check
+	s.router.HandleFunc(api.OverNodeValidatorApiPrefix+"health/status", s.GetStatus).Methods(http.MethodPost)
+	// wallet management
+	s.router.HandleFunc(api.OverNodeValidatorApiPrefix+"wallet/initialize-wallet", s.InitializeWallet).Methods(http.MethodPost)
+	s.router.HandleFunc(api.OverNodeValidatorApiPrefix+"wallet/change-password", s.ChangePassword).Methods(http.MethodPost)
+	// account management
+	s.router.HandleFunc(api.OverNodeValidatorApiPrefix+"accounts/create-deposit-data-list", s.CreateDepositDataList).Methods(http.MethodPost)
+	s.router.HandleFunc(api.OverNodeValidatorApiPrefix+"accounts/import", s.ImportAccountsWithPrivateKey).Methods(http.MethodPost)
+
 	log.Info("Initialized OverNode REST API routes")
 	return nil
 }

@@ -308,6 +308,61 @@ func (km *Keymanager) SaveStoreAndReInitialize(ctx context.Context, store *accou
 	return nil
 }
 
+// ChangeKeystorePassword changes the password of the keystore file and re-initializes the keymanager.
+func (km *Keymanager) ChangeKeystorePassword(ctx context.Context, newPassword string) error {
+	lock.Lock()
+	defer lock.Unlock()
+	// 1. Read the keystore file and get the accounts store
+	fileBytes, err := km.wallet.ReadFileAtPath(ctx, AccountsPath, AccountsKeystoreFileName)
+	if err != nil {
+		// if error is due to file not found, we return nil
+		if strings.Contains(err.Error(), "no files found") {
+			return nil
+		}
+		return err
+	}
+	if fileBytes == nil {
+		return nil
+	}
+	accountsKeystore := &AccountsKeystoreRepresentation{}
+	if err := json.Unmarshal(fileBytes, accountsKeystore); err != nil {
+		return err
+	}
+	decryptor := keystorev4.New()
+	encodedAccounts, err := decryptor.Decrypt(accountsKeystore.Crypto, km.wallet.Password())
+	if err != nil {
+		return errors.Wrap(err, "could not decrypt keystore file")
+	}
+	newAccountsStore := &accountStore{}
+	if err := json.Unmarshal(encodedAccounts, newAccountsStore); err != nil {
+		return err
+	}
+	// Create New Keystore with new password
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+	cryptoFields, err := decryptor.Encrypt(encodedAccounts, newPassword)
+	if err != nil {
+		return errors.Wrap(err, "could not encrypt accounts")
+	}
+	accountsKeystore = &AccountsKeystoreRepresentation{
+		Crypto:  cryptoFields,
+		ID:      id.String(),
+		Version: decryptor.Version(),
+		Name:    decryptor.Name(),
+	}
+	encodedAccounts, err = json.MarshalIndent(accountsKeystore, "", "\t")
+	if err != nil {
+		return err
+	}
+	if _, err := km.wallet.WriteFileAtPath(ctx, AccountsPath, AccountsKeystoreFileName, encodedAccounts); err != nil {
+		return err
+	}
+	km.accountsStore = newAccountsStore
+	return nil
+}
+
 // CreateAccountsKeystoreRepresentation is a pure function that takes an accountStore and wallet password and returns the encrypted formatted json version for local writing.
 func CreateAccountsKeystoreRepresentation(
 	_ context.Context,

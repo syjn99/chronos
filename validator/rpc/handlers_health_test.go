@@ -16,6 +16,7 @@ import (
 	pb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v5/testing/require"
 	validatormock "github.com/prysmaticlabs/prysm/v5/testing/validator-mock"
+	"github.com/prysmaticlabs/prysm/v5/validator/client"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
 )
@@ -189,4 +190,32 @@ func TestServer_GetVersion(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, body)
 	require.StringContains(t, `{"beacon":"4.10.1","validator":"Prysm/Unknown/Local build. Built at: Moments ago"}`, string(body))
+}
+
+func TestServer_GetStatus(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+	mockNodeClient := validatormock.NewMockNodeClient(ctrl)
+	s := Server{
+		ctx:              ctx,
+		nodeClient:       mockNodeClient,
+		validatorService: &client.ValidatorService{},
+		useOverNode:      true,
+	}
+	mockNodeClient.EXPECT().GetSyncStatus(gomock.Any(), gomock.Any()).Return(&eth.SyncStatus{
+		Syncing: false,
+	}, nil)
+	r := httptest.NewRequest("GET", "/v2/validator/health/status", nil)
+	w := httptest.NewRecorder()
+	w.Body = &bytes.Buffer{}
+	s.GetStatus(w, r)
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status OK but got %v", resp.StatusCode)
+	}
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.NotNil(t, body)
+	require.StringContains(t, `{"isConnectedWithBeaconNode":false,"isBeaconNodeSyncing":false,"isWalletInitialized":false,"canInitializeWallet":false}`, string(body))
 }

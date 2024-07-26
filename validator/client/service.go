@@ -339,3 +339,10 @@ func (v *ValidatorService) DeleteGraffiti(ctx context.Context, pubKey [fieldpara
 	}
 	return v.validator.DeleteGraffiti(ctx, pubKey)
 }
+
+func (v *ValidatorService) IsWaitingKeyManagerInitialization() bool {
+	if v.validator == nil {
+		return false
+	}
+	return v.validator.IsWaitingForKeymanagerInitialization()
+}

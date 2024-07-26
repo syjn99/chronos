@@ -119,9 +119,7 @@ func IsValid(walletDir string) (bool, error) {
 	}
 	f, err := os.Open(expanded) // #nosec G304
 	if err != nil {
-		if strings.Contains(err.Error(), "no such file") ||
-			strings.Contains(err.Error(), "cannot find the file") ||
-			strings.Contains(err.Error(), "cannot find the path") {
+		if os.IsNotExist(err) {
 			return false, nil
 		}
 		return false, err
@@ -463,6 +461,32 @@ func (w *Wallet) WriteKeymanagerConfigToDisk(_ context.Context, encoded []byte) 
 		return errors.Wrapf(err, "could not write config to path: %s", configFilePath)
 	}
 	log.WithField("configFilePath", configFilePath).Debug("Wrote keymanager config file to disk")
+	return nil
+}
+
+// ChangePassword changes the wallet password.
+func (w *Wallet) ChangePassword(ctx context.Context, km keymanager.IKeymanager, newPassword string) error {
+	switch w.KeymanagerKind() {
+	case keymanager.Local:
+		localKm, ok := km.(*local.Keymanager)
+		if !ok {
+			return errors.New("could not cast keymanager to local keymanager")
+		}
+		err := localKm.ChangeKeystorePassword(ctx, newPassword)
+		if err != nil {
+			return err
+		}
+	case keymanager.Derived:
+		derivedKm, ok := km.(*derived.Keymanager)
+		if !ok {
+			return errors.New("could not cast keymanager to derived keymanager")
+		}
+		err := derivedKm.ChangeKeystorePassword(ctx, newPassword)
+		if err != nil {
+			return err
+		}
+	}
+	w.walletPassword = newPassword
 	return nil
 }
 

@@ -234,6 +234,11 @@ func (m *Validator) DeleteGraffiti(_ context.Context, _ [fieldparams.BLSPubkeyLe
 	return nil
 }
 
+// IsWaitingForKeymanagerInitialization for mocking
+func (m *Validator) IsWaitingForKeymanagerInitialization() bool {
+	return true
+}
+
 func (*Validator) StartEventStream(_ context.Context, _ []string, _ chan<- *event.Event) {
 	panic("implement me")
 }

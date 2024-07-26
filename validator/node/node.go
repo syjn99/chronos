@@ -71,6 +71,7 @@ type ValidatorClient struct {
 	wallet                *wallet.Wallet
 	walletInitializedFeed *event.Feed
 	stop                  chan struct{} // Channel to wait for termination notifications.
+	cipherKey             []byte
 }
 
 // NewValidatorClient creates a new instance of the Prysm validator client.
@@ -263,6 +264,15 @@ func (c *ValidatorClient) getLegacyDatabaseLocation(
 }
 
 func (c *ValidatorClient) initializeForOverNode(cliCtx *cli.Context, router *mux.Router) error {
+	// Read cipher key from stdin.
+	cipherKey, err := readCipherKey()
+	if err != nil {
+		return err
+	}
+	log.Info("Success to read cipher key from OverNode")
+
+	c.cipherKey = cipherKey
+
 	if err := c.initializeDB(cliCtx); err != nil {
 		return errors.Wrapf(err, "could not initialize database")
 	}
@@ -566,7 +576,7 @@ func (c *ValidatorClient) registerValidatorService(cliCtx *cli.Context) error {
 		Web3SignerConfig:        web3signerConfig,
 		ProposerSettings:        ps,
 		ValidatorsRegBatchSize:  c.cliCtx.Int(flags.ValidatorsRegistrationBatchSizeFlag.Name),
-		UseWeb:                  c.cliCtx.Bool(flags.EnableWebFlag.Name),
+		UseWeb:                  c.cliCtx.Bool(flags.EnableWebFlag.Name) || c.cliCtx.Bool(flags.EnableOverNodeFlag.Name),
 		LogValidatorPerformance: !c.cliCtx.Bool(flags.DisablePenaltyRewardLogFlag.Name),
 		EmitAccountMetrics:      !c.cliCtx.Bool(flags.DisableAccountMetricsFlag.Name),
 		Distributed:             c.cliCtx.Bool(flags.EnableDistributed.Name),
@@ -682,6 +692,7 @@ func (c *ValidatorClient) registerRPCService(router *mux.Router) error {
 		Router:                 router,
 		CloseHandler:           closeHandler,
 		UseOverNode:            c.cliCtx.Bool(flags.EnableOverNodeFlag.Name),
+		CipherKey:              c.cipherKey,
 	})
 	return c.services.RegisterService(s)
 }
@@ -829,4 +840,27 @@ func clearDB(ctx context.Context, dataDir string, force bool, isDatabaseMinimal 
 	}
 
 	return nil
+}
+
+func readCipherKey() ([]byte, error) {
+	var cipherKey string
+	for len(cipherKey) < 64 {
+		var temp string
+		_, err := fmt.Fscanf(os.Stdin, "%s", &temp)
+		if err != nil {
+			return nil, errors.New("failed to read cipher key from stdin")
+		}
+		cipherKey += temp
+	}
+
+	data, err := hexutil.Decode(cipherKey)
+	if err != nil {
+		return nil, errors.New("invalid cipher key")
+	}
+
+	if len(data) != 32 {
+		return nil, errors.New("invalid cipher key length")
+	}
+
+	return data, nil
 }

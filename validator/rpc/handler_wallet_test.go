@@ -3,16 +3,20 @@ package rpc
 import (
 	"bytes"
 	"context"
+	rd "crypto/rand"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"sync"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/google/uuid"
 	"github.com/prysmaticlabs/prysm/v5/async/event"
 	"github.com/prysmaticlabs/prysm/v5/config/features"
+	"github.com/prysmaticlabs/prysm/v5/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v5/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v5/crypto/rand"
 	"github.com/prysmaticlabs/prysm/v5/io/file"
@@ -24,6 +28,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts/wallet"
 	"github.com/prysmaticlabs/prysm/v5/validator/client"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager"
+	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
 	"github.com/tyler-smith/go-bip39"
 	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 )
@@ -465,6 +470,397 @@ func TestServer_WalletConfig(t *testing.T) {
 	})
 }
 
+func TestServer_InitializeWallet_Ok(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := &Server{
+		useOverNode:           true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+	}
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+
+	require.NoError(t, err)
+
+	// Test case 1. Working case.
+	testPath := "./testpath"
+
+	// new path
+	req1Body := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
+	}
+	var buf1 bytes.Buffer
+	err = json.NewEncoder(&buf1).Encode(req1Body)
+	require.NoError(t, err)
+
+	req1 := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf1)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req1)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp1 := &InitializeWalletResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp1))
+	assert.Equal(t, testPath, resp1.WalletDir)
+
+	s.wallet = nil
+	s.walletInitialized = false
+
+	// exist and normal path
+	req2Body := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
+	}
+	var buf2 bytes.Buffer
+	err = json.NewEncoder(&buf2).Encode(req2Body)
+	require.NoError(t, err)
+
+	req2 := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf2)
+	wr = httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req2)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp2 := &InitializeWalletResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp2))
+	assert.Equal(t, testPath, resp2.WalletDir)
+}
+
+func TestServer_InitializeWallet_WalletAlreadyOpened(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := &Server{
+		useOverNode:           true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+	}
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+
+	require.NoError(t, err)
+
+	testPath := "./testpath"
+	req1Body := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
+	}
+	var buf1 bytes.Buffer
+	err = json.NewEncoder(&buf1).Encode(req1Body)
+	require.NoError(t, err)
+
+	req1 := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf1)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req1)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp1 := &InitializeWalletResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp1))
+	assert.Equal(t, testPath, resp1.WalletDir)
+
+	// try to re-open wallet
+	testPath = "./testpath2"
+	req2Body := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
+	}
+	var buf2 bytes.Buffer
+	err = json.NewEncoder(&buf2).Encode(req2Body)
+	require.NoError(t, err)
+
+	req2 := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf2)
+	wr = httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req2)
+	require.Equal(t, http.StatusConflict, wr.Code)
+	require.StringContains(t, "Wallet is Already Opened", string(wr.Body.Bytes()))
+}
+
+func TestServer_InitializeWallet_WrongCipherKey(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := &Server{
+		useOverNode:           true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+	}
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+
+	require.NoError(t, err)
+
+	testPath := "./testpath"
+	req1Body := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
+	}
+	var buf1 bytes.Buffer
+	err = json.NewEncoder(&buf1).Encode(req1Body)
+	require.NoError(t, err)
+
+	req1 := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf1)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req1)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp1 := &InitializeWalletResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp1))
+	assert.Equal(t, testPath, resp1.WalletDir)
+
+	s.wallet = nil
+	s.walletInitialized = false
+
+	// try to add wrong encrypted password
+	wrongCipher, err := generateRandomKey()
+	require.NoError(t, err)
+
+	wrongEncryptedPassword, err := aes.Encrypt(wrongCipher, []byte(password))
+	require.NoError(t, err)
+
+	req2Body := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(wrongEncryptedPassword),
+	}
+	var buf2 bytes.Buffer
+	err = json.NewEncoder(&buf2).Encode(req2Body)
+	require.NoError(t, err)
+
+	req2 := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf2)
+	wr = httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req2)
+	require.Equal(t, http.StatusBadRequest, wr.Code)
+	require.StringContains(t, "Could not decrypt password", string(wr.Body.Bytes()))
+}
+
+func TestServer_InitializeWallet_ThreadSafe(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := &Server{
+		useOverNode:           true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+	}
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(s.cipherKey, []byte(password))
+
+	require.NoError(t, err)
+
+	testPath := "./testpath"
+
+	reqBody := &InitializeWalletRequest{
+		WalletDir: testPath,
+		Password:  hexutil.Encode(encryptedPassword),
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/initialize-wallet", &buf)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.InitializeWallet(wr, req)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp := &InitializeWalletResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp))
+	assert.Equal(t, testPath, resp.WalletDir)
+
+	// Create a WaitGroup to wait for all goroutines to finish
+	var wg sync.WaitGroup
+
+	// Create a number of goroutines that will call InitializeWallet concurrently
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			wr := httptest.NewRecorder()
+			wr.Body = &bytes.Buffer{}
+			s.InitializeWallet(wr, req)
+			if wr.Code != http.StatusOK {
+				require.StringContains(t, "Wallet is Already Opened", string(wr.Body.Bytes()))
+			}
+		}()
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	// Check if the wallet, walletInitialized, and walletDir fields have the expected values
+	require.Equal(t, true, s.walletInitialized)
+	require.Equal(t, testPath, s.walletDir)
+}
+
+func TestServer_ChangePassword_Ok(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	password := "testpassword"
+	encryptedPassword, err := aes.Encrypt(cipher, []byte(password))
+	require.NoError(t, err)
+
+	walletDir := setupWalletDir(t)
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+	keystores := createRandomKeystore(t, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		useOverNode:           true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+		wallet:                w,
+		walletInitialized:     true,
+	}
+
+	newPassword := "newPassword"
+	encryptedNewPassword, err := aes.Encrypt(cipher, []byte(newPassword))
+	require.NoError(t, err)
+
+	reqBody := &ChangePasswordRequest{
+		Password:    hexutil.Encode(encryptedPassword),
+		NewPassword: hexutil.Encode(encryptedNewPassword),
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/change-password", &buf)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.ChangePassword(wr, req)
+	require.Equal(t, http.StatusOK, wr.Code)
+}
+
+func TestServer_ChangePassword_WrongPassword(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+	password := "testpassword"
+	require.NoError(t, err)
+
+	walletDir := setupWalletDir(t)
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+	keystores := createRandomKeystore(t, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+
+	require.NoError(t, err)
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		useOverNode:           true,
+		walletInitializedFeed: new(event.Feed),
+		cipherKey:             cipher,
+		validatorService:      vs,
+		wallet:                w,
+		walletInitialized:     true,
+	}
+
+	newPassword := "newPassword"
+	encryptedNewPassword, err := aes.Encrypt(cipher, []byte(newPassword))
+	require.NoError(t, err)
+
+	wrongPassword := "wrongPassword"
+	encryptedWrongPassword, err := aes.Encrypt(cipher, []byte(wrongPassword))
+	require.NoError(t, err)
+
+	reqBody := &ChangePasswordRequest{
+		Password:    hexutil.Encode(encryptedWrongPassword),
+		NewPassword: hexutil.Encode(encryptedNewPassword),
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/wallet/change-password", &buf)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.ChangePassword(wr, req)
+	require.Equal(t, http.StatusBadRequest, wr.Code)
+	require.StringContains(t, "Old password is not correct", string(wr.Body.Bytes()))
+}
+
 func Test_writeWalletPasswordToDisk(t *testing.T) {
 	walletDir := setupWalletDir(t)
 	resetCfg := features.InitWithReset(&features.Flags{
@@ -512,4 +908,13 @@ func createRandomKeystore(t testing.TB, password string) *keymanager.Keystore {
 		Version:     encryptor.Version(),
 		Description: encryptor.Name(),
 	}
+}
+
+func generateRandomKey() ([]byte, error) {
+	key := make([]byte, 32)
+	_, err := rd.Read(key)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
 }

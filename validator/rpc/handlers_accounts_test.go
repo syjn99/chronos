@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	rd "crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -14,9 +15,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/prysmaticlabs/prysm/v5/crypto/bls/common"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/prysmaticlabs/prysm/v5/api"
 	"github.com/prysmaticlabs/prysm/v5/cmd/validator/flags"
+	"github.com/prysmaticlabs/prysm/v5/crypto/aes"
+	"github.com/prysmaticlabs/prysm/v5/crypto/bls"
 	ethpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v5/testing/assert"
 	"github.com/prysmaticlabs/prysm/v5/testing/require"
@@ -24,10 +30,13 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts"
 	"github.com/prysmaticlabs/prysm/v5/validator/accounts/iface"
 	mock "github.com/prysmaticlabs/prysm/v5/validator/accounts/testing"
+	"github.com/prysmaticlabs/prysm/v5/validator/accounts/wallet"
 	"github.com/prysmaticlabs/prysm/v5/validator/client"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/derived"
+	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
 	constant "github.com/prysmaticlabs/prysm/v5/validator/testing"
+	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -325,4 +334,358 @@ func TestServer_VoluntaryExit(t *testing.T) {
 		require.Equal(t, rawPubKeys[i], hexutil.Encode(res.ExitedKeys[i]))
 	}
 
+}
+
+func TestServer_CreateDepositDataList(t *testing.T) {
+	ctx := context.Background()
+	password := "testpassword"
+
+	walletDir := setupWalletDir(t)
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+	keystores := createRandomKeystore(t, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+	require.NoError(t, err)
+
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		useOverNode:       true,
+		validatorService:  vs,
+		wallet:            w,
+		walletInitialized: true,
+	}
+
+	pubkey, err := hexutil.Decode(fmt.Sprintf("0x%s", keystores.Pubkey))
+	require.NoError(t, err)
+	withdrawKey, err := generateRandomBytes(20)
+	require.NoError(t, err)
+
+	depositMsg := &DepositDataRequest{
+		Pubkey:      pubkey,
+		WithdrawKey: withdrawKey,
+		AmountGwei:  "1000000000", // 1 OVER
+	}
+
+	reqBody := &CreateDepositDataListRequest{
+		DepositDataInputs: []*DepositDataRequest{
+			depositMsg,
+		},
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/accounts/create-deposit-data-list", &buf)
+	wr := httptest.NewRecorder()
+	wr.Body = &bytes.Buffer{}
+	s.CreateDepositDataList(wr, req)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp := &CreateDepositDataListResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp))
+	require.DeepEqual(t, pubkey, resp.DepositDataList[0].Pubkey)
+	require.DeepEqual(t, eth1WithdrawalCredential(withdrawKey), resp.DepositDataList[0].WithdrawalCredentials)
+}
+
+func TestServer_ImportAccountsWithPrivateKey_Ok(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+
+	password := "testpassword"
+
+	walletDir := setupWalletDir(t)
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+	keystores := createRandomKeystore(t, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+	require.NoError(t, err)
+
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		useOverNode:       true,
+		validatorService:  vs,
+		wallet:            w,
+		walletInitialized: true,
+		cipherKey:         cipher,
+	}
+
+	// Generate random private keys
+	// and encrypt them with cipher.
+	n := 10
+
+	encryptedPrivKeys := make([]string, 0)
+	wantData := make([]*KeystoreStatusData, 0)
+
+	for i := 0; i < n; i++ {
+		// append encrypted private key
+		privKey, err := bls.RandKey()
+		require.NoError(t, err)
+		encryptedPrivKey, err := aes.Encrypt(cipher, privKey.Marshal())
+		require.NoError(t, err)
+		hexEncryptedPrivKey := hexutil.Encode(encryptedPrivKey)
+		encryptedPrivKeys = append(encryptedPrivKeys, hexEncryptedPrivKey)
+
+		// append wantData for validating response
+		pubkey := privKey.PublicKey().Marshal()
+		hexPubkey := hexutil.Encode(pubkey)
+		wantData = append(wantData, &KeystoreStatusData{
+			PublicKey: hexPubkey,
+			Status: &keymanager.KeyStatus{
+				Status:  keymanager.StatusImported,
+				Message: "",
+			},
+		})
+	}
+
+	reqBody := &ImportAccountsWithPrivateKeyRequest{
+		PrivateKeys: encryptedPrivKeys,
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/accounts/import", &buf)
+	wr := httptest.NewRecorder()
+	s.ImportAccountsWithPrivateKey(wr, req)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp := &ImportAccountsWithPrivateKeyResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp))
+	want := &ImportAccountsWithPrivateKeyResponse{
+		Data: wantData,
+	}
+	assert.DeepEqual(t, want, resp)
+}
+
+func TestServer_ImportAccountsWithPrivateKey_Duplicated(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+
+	password := "testpassword"
+
+	walletDir := setupWalletDir(t)
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+
+	privKey, err := bls.RandKey()
+	require.NoError(t, err)
+
+	keystores := createKeystoreWithSecretKey(t, privKey, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+	require.NoError(t, err)
+
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		useOverNode:       true,
+		validatorService:  vs,
+		wallet:            w,
+		walletInitialized: true,
+		cipherKey:         cipher,
+	}
+
+	// Request with already imported private key.
+	encryptedPrivKeys := make([]string, 0)
+	wantData := make([]*KeystoreStatusData, 0)
+
+	encryptedPrivKey, err := aes.Encrypt(cipher, privKey.Marshal())
+	require.NoError(t, err)
+	hexEncryptedPrivKey := hexutil.Encode(encryptedPrivKey)
+	encryptedPrivKeys = append(encryptedPrivKeys, hexEncryptedPrivKey)
+
+	pubkey := privKey.PublicKey().Marshal()
+	hexPubkey := hexutil.Encode(pubkey)
+	wantData = append(wantData, &KeystoreStatusData{
+		PublicKey: hexPubkey,
+		Status: &keymanager.KeyStatus{
+			Status:  keymanager.StatusDuplicate,
+			Message: "",
+		},
+	})
+
+	reqBody := &ImportAccountsWithPrivateKeyRequest{
+		PrivateKeys: encryptedPrivKeys,
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/accounts/import", &buf)
+	wr := httptest.NewRecorder()
+	s.ImportAccountsWithPrivateKey(wr, req)
+	require.Equal(t, http.StatusOK, wr.Code)
+	resp := &ImportAccountsWithPrivateKeyResponse{}
+	require.NoError(t, json.Unmarshal(wr.Body.Bytes(), resp))
+	want := &ImportAccountsWithPrivateKeyResponse{
+		Data: wantData,
+	}
+	assert.DeepEqual(t, want, resp)
+}
+
+func TestServer_ImportAccountsWithPrivateKey_DecryptFailed(t *testing.T) {
+	ctx := context.Background()
+	cipher, err := generateRandomKey()
+	require.NoError(t, err)
+
+	password := "testpassword"
+
+	walletDir := setupWalletDir(t)
+	w := wallet.New(&wallet.Config{
+		WalletDir:      walletDir,
+		KeymanagerKind: keymanager.Local,
+		WalletPassword: password,
+	})
+
+	km, err := local.NewKeymanager(ctx, &local.SetupConfig{
+		Wallet:           w,
+		ListenForChanges: true,
+	})
+	require.NoError(t, err)
+	keystores := createRandomKeystore(t, password)
+	_, err = km.ImportKeystores(ctx, []*keymanager.Keystore{keystores}, []string{password})
+	require.NoError(t, err)
+
+	vs, err := client.NewValidatorService(ctx, &client.Config{
+		Validator: &mock.Validator{
+			Km: km,
+		},
+	})
+	require.NoError(t, err)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a Server instance
+	s := &Server{
+		useOverNode:       true,
+		validatorService:  vs,
+		wallet:            w,
+		walletInitialized: true,
+		cipherKey:         cipher,
+	}
+
+	// Generate random private keys
+	// and encrypt them with cipher.
+	n := 3
+
+	encryptedPrivKeys := make([]string, 0)
+
+	for i := 0; i < n; i++ {
+		// append wrong encrypted private key
+		wrongCipher, err := generateRandomKey()
+		require.NoError(t, err)
+		privKey, err := bls.RandKey()
+		require.NoError(t, err)
+		encryptedPrivKey, err := aes.Encrypt(wrongCipher, privKey.Marshal())
+		require.NoError(t, err)
+		hexEncryptedPrivKey := hexutil.Encode(encryptedPrivKey)
+		encryptedPrivKeys = append(encryptedPrivKeys, hexEncryptedPrivKey)
+	}
+
+	reqBody := &ImportAccountsWithPrivateKeyRequest{
+		PrivateKeys: encryptedPrivKeys,
+	}
+	var buf bytes.Buffer
+	err = json.NewEncoder(&buf).Encode(reqBody)
+	require.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/v2/validator/accounts/import", &buf)
+	wr := httptest.NewRecorder()
+	s.ImportAccountsWithPrivateKey(wr, req)
+	require.Equal(t, http.StatusBadRequest, wr.Code)
+	require.StringContains(t, "Could not decrypt private key", string(wr.Body.Bytes()))
+}
+
+func Test_eth1WithdrawalCredential(t *testing.T) {
+	eth1Address, err := hexutil.Decode("0xa83114A443dA1CecEFC50368531cACE9F37fCCcb")
+	require.NoError(t, err)
+	require.Equal(t, 20, len(eth1Address))
+	wc := eth1WithdrawalCredential(eth1Address)
+	require.Equal(t, "0x010000000000000000000000a83114a443da1cecefc50368531cace9f37fcccb", hexutil.Encode(wc))
+	require.Equal(t, 32, len(wc))
+}
+
+func generateRandomBytes(length int) ([]byte, error) {
+	key := make([]byte, length)
+	_, err := rd.Read(key)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
+}
+
+func createKeystoreWithSecretKey(t *testing.T, secretKey common.SecretKey, password string) *keymanager.Keystore {
+	encryptor := keystorev4.New()
+	id, err := uuid.NewRandom()
+	require.NoError(t, err)
+	pubKey := secretKey.PublicKey().Marshal()
+	cryptoFields, err := encryptor.Encrypt(secretKey.Marshal(), password)
+	require.NoError(t, err)
+	return &keymanager.Keystore{
+		Crypto:      cryptoFields,
+		Pubkey:      fmt.Sprintf("%x", pubKey),
+		ID:          id.String(),
+		Version:     encryptor.Version(),
+		Description: encryptor.Name(),
+	}
 }
