@@ -1,13 +1,13 @@
 [Unit]
-Description=Prysm Ethereum Beacon Chain
+Description=OverProtocol Beacon Chain
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=prysm-beacon
-Group=prysm-beacon
+User=overprotocol-beacon
+Group=overprotocol-beacon
 Type=simple
-ExecStart=/usr/bin/beacon-chain --config-file /etc/prysm/beacon-chain.yaml --accept-terms-of-use
+ExecStart=/usr/bin/beacon-chain --config-file /etc/overprotocol/beacon-chain.yaml --accept-terms-of-use
 
 NoNewPrivileges=yes
 CapabilityBoundingSet=
@@ -19,7 +19,7 @@ PrivateUsers=yes
 PrivateTmp=yes
 
 ProtectSystem=strict
-ReadWritePaths=/var/lib/prysm/beacon-chain
+ReadWritePaths=/var/lib/overprotocol/beacon-chain
 ProtectClock=yes
 ProtectHome=true
 ProtectKernelLogs=yes

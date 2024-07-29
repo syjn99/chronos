@@ -2,4 +2,4 @@
 
 set -e
 
-chown prysm-validator:prysm-validator /etc/prysm/validator.yaml
+chown overprotocol-validator:overprotocol-validator /etc/overprotocol/validator.yaml

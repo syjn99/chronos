@@ -2,4 +2,4 @@
 
 set -e
 
-chown prysm-beacon:prysm-beacon /etc/prysm/beacon-chain.yaml
+chown overprotocol-beacon:overprotocol-beacon /etc/overprotocol/beacon-chain.yaml
