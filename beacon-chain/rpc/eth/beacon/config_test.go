@@ -105,6 +105,26 @@ func TestGetSpec(t *testing.T) {
 	config.MaxBlsToExecutionChanges = 75
 	config.MaxValidatorsPerWithdrawalsSweep = 76
 
+	// config added in chronos starts with 200
+	config.MaxTokenSupply = 200
+	config.BailOutScoreBias = 201
+	config.BailOutScoreThreshold = 202
+	config.EpochsPerYear = 203
+	config.DepositPlanEarlySlope = 204
+	config.DepositPlanEarlyOffset = 205
+	config.DepositPlanLaterSlope = 206
+	config.DepositPlanLaterOffset = 207
+	config.DepositPlanFinal = 208
+	config.ChurnLimitBias = 209
+	config.MaxBoostYield = 210
+	config.TargetChangeRate = 211
+	config.IssuancePerYear = 212
+	config.DepositPlanEarlyEnd = 213
+	config.DepositPlanLaterEnd = 214
+	config.RewardFeedbackThresholdReciprocal = 215
+	config.RewardFeedbackPrecision = 216
+	config.LightLayerWeight = 217
+
 	var dbp [4]byte
 	copy(dbp[:], []byte{'0', '0', '0', '1'})
 	config.DomainBeaconProposer = dbp
@@ -136,7 +156,7 @@ func TestGetSpec(t *testing.T) {
 	resp, err := server.GetSpec(context.Background(), &emptypb.Empty{})
 	require.NoError(t, err)
 
-	assert.Equal(t, 118, len(resp.Data))
+	assert.Equal(t, 126, len(resp.Data))
 	for k, v := range resp.Data {
 		switch k {
 		case "CONFIG_NAME":
@@ -367,26 +387,43 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "20", v)
 		case "REORG_PARENT_WEIGHT_THRESHOLD":
 			assert.Equal(t, "160", v)
+			// config added in chronos
 		case "MAX_TOKEN_SUPPLY":
-			assert.Equal(t, "1000000000000000000", v)
+			assert.Equal(t, "200", v)
 		case "BAILOUT_SCORE_BIAS":
-			assert.Equal(t, "1000000000000000", v)
+			assert.Equal(t, "201", v)
 		case "BAILOUT_SCORE_THRESHOLD":
-			assert.Equal(t, "1575000000000000000", v)
+			assert.Equal(t, "202", v)
 		case "EPOCHS_PER_YEAR":
-			assert.Equal(t, "82125", v)
+			assert.Equal(t, "203", v)
 		case "DEPOSIT_PLAN_EARLY_SLOPE":
-			assert.Equal(t, "1090920036529", v)
+			assert.Equal(t, "204", v)
 		case "DEPOSIT_PLAN_EARLY_OFFSET":
-			assert.Equal(t, "16384000000000", v)
+			assert.Equal(t, "205", v)
 		case "DEPOSIT_PLAN_LATER_SLOPE":
-			assert.Equal(t, "233789954337", v)
+			assert.Equal(t, "206", v)
 		case "DEPOSIT_PLAN_LATER_OFFSET":
-			assert.Equal(t, "140800000000000000", v)
+			assert.Equal(t, "207", v)
 		case "DEPOSIT_PLAN_FINAL":
-			assert.Equal(t, "256000000000000000", v)
+			assert.Equal(t, "208", v)
 		case "CHURN_LIMIT_BIAS":
-			assert.Equal(t, "1", v)
+			assert.Equal(t, "209", v)
+		case "MAX_BOOST_YIELD":
+			assert.Equal(t, "210", v)
+		case "TARGET_CHANGE_RATE":
+			assert.Equal(t, "211", v)
+		case "ISSUANCE_PER_YEAR":
+			assert.Equal(t, "212", v)
+		case "DEPOSIT_PLAN_EARLY_END":
+			assert.Equal(t, "213", v)
+		case "DEPOSIT_PLAN_LATER_END":
+			assert.Equal(t, "214", v)
+		case "REWARD_FEEDBACK_THRESHOLD_RECIPROCAL":
+			assert.Equal(t, "215", v)
+		case "REWARD_FEEDBACK_PRECISION":
+			assert.Equal(t, "216", v)
+		case "LIGHT_LAYER_WEIGHT":
+			assert.Equal(t, "217", v)
 		case "SAFE_SLOTS_TO_IMPORT_OPTIMISTICALLY":
 		default:
 			t.Errorf("Incorrect key: %s", k)

@@ -199,6 +199,7 @@ func hackCapellaMaxuint() (func() error, error) {
 func TestUnmarshalBlock(t *testing.T) {
 	undo, err := hackCapellaMaxuint()
 	require.NoError(t, err)
+	params.SetupForkEpochConfigForTest()
 	defer func() {
 		require.NoError(t, undo())
 	}()
@@ -273,6 +274,7 @@ func TestUnmarshalBlock(t *testing.T) {
 			require.NoError(t, err)
 			cf, err := FromForkVersion(c.version)
 			require.NoError(t, err)
+			cf.Config = params.BeaconConfig()
 			bcf, err := cf.UnmarshalBeaconBlock(marshaled)
 			if c.err != nil {
 				require.ErrorIs(t, err, c.err)
@@ -294,6 +296,7 @@ func TestUnmarshalBlindedBlock(t *testing.T) {
 	defer func() {
 		require.NoError(t, undo())
 	}()
+	params.SetupForkEpochConfigForTest()
 	genv := bytesutil.ToBytes4(params.BeaconConfig().GenesisForkVersion)
 	altairv := bytesutil.ToBytes4(params.BeaconConfig().AltairForkVersion)
 	bellav := bytesutil.ToBytes4(params.BeaconConfig().BellatrixForkVersion)
@@ -365,6 +368,7 @@ func TestUnmarshalBlindedBlock(t *testing.T) {
 			require.NoError(t, err)
 			cf, err := FromForkVersion(c.version)
 			require.NoError(t, err)
+			cf.Config = params.BeaconConfig()
 			bcf, err := cf.UnmarshalBlindedBeaconBlock(marshaled)
 			if c.err != nil {
 				require.ErrorIs(t, err, c.err)

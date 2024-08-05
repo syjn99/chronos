@@ -428,6 +428,7 @@ func TestServer_SubmitBlock(t *testing.T) {
 func TestServer_SubmitBlockSSZ(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	ctx := context.Background()
+	params.SetupForkEpochConfigForTest()
 
 	t.Run("Phase 0", func(t *testing.T) {
 		v1alpha1Server := mock2.NewMockBeaconNodeValidatorServer(ctrl)

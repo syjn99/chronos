@@ -13,6 +13,7 @@ import (
 	mockChain "github.com/prysmaticlabs/prysm/v4/beacon-chain/blockchain/testing"
 	builderTest "github.com/prysmaticlabs/prysm/v4/beacon-chain/builder/testing"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/cache"
+	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/transition"
 	dbutil "github.com/prysmaticlabs/prysm/v4/beacon-chain/db/testing"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/operations/attestations"
@@ -40,6 +41,8 @@ import (
 )
 
 func TestGetAttesterDuties(t *testing.T) {
+	helpers.ClearCache()
+
 	ctx := context.Background()
 	genesis := util.NewBeaconBlock()
 	depChainStart := params.BeaconConfig().MinGenesisActiveValidatorCount
@@ -99,13 +102,13 @@ func TestGetAttesterDuties(t *testing.T) {
 		assert.DeepEqual(t, genesisRoot[:], resp.DependentRoot)
 		require.Equal(t, 1, len(resp.Data))
 		duty := resp.Data[0]
-		assert.Equal(t, primitives.CommitteeIndex(1), duty.CommitteeIndex)
-		assert.Equal(t, primitives.Slot(0), duty.Slot)
+		assert.Equal(t, primitives.CommitteeIndex(2), duty.CommitteeIndex)
+		assert.Equal(t, primitives.Slot(22), duty.Slot)
 		assert.Equal(t, primitives.ValidatorIndex(0), duty.ValidatorIndex)
 		assert.DeepEqual(t, pubKeys[0], duty.Pubkey)
 		assert.Equal(t, uint64(171), duty.CommitteeLength)
 		assert.Equal(t, uint64(3), duty.CommitteesAtSlot)
-		assert.Equal(t, primitives.CommitteeIndex(80), duty.ValidatorCommitteeIndex)
+		assert.Equal(t, primitives.CommitteeIndex(13), duty.ValidatorCommitteeIndex)
 	})
 
 	t.Run("Multiple validators", func(t *testing.T) {
@@ -128,13 +131,13 @@ func TestGetAttesterDuties(t *testing.T) {
 		assert.DeepEqual(t, genesisRoot[:], resp.DependentRoot)
 		require.Equal(t, 1, len(resp.Data))
 		duty := resp.Data[0]
-		assert.Equal(t, primitives.CommitteeIndex(0), duty.CommitteeIndex)
-		assert.Equal(t, primitives.Slot(62), duty.Slot)
+		assert.Equal(t, primitives.CommitteeIndex(2), duty.CommitteeIndex)
+		assert.Equal(t, primitives.Slot(40), duty.Slot)
 		assert.Equal(t, primitives.ValidatorIndex(0), duty.ValidatorIndex)
 		assert.DeepEqual(t, pubKeys[0], duty.Pubkey)
 		assert.Equal(t, uint64(170), duty.CommitteeLength)
 		assert.Equal(t, uint64(3), duty.CommitteesAtSlot)
-		assert.Equal(t, primitives.CommitteeIndex(110), duty.ValidatorCommitteeIndex)
+		assert.Equal(t, primitives.CommitteeIndex(136), duty.ValidatorCommitteeIndex)
 	})
 
 	t.Run("Epoch out of bound", func(t *testing.T) {
@@ -199,6 +202,8 @@ func TestGetAttesterDuties(t *testing.T) {
 }
 
 func TestGetAttesterDuties_SyncNotReady(t *testing.T) {
+	helpers.ClearCache()
+
 	st, err := util.NewBeaconState()
 	require.NoError(t, err)
 	chainService := &mockChain.ChainService{State: st}
@@ -213,6 +218,8 @@ func TestGetAttesterDuties_SyncNotReady(t *testing.T) {
 }
 
 func TestGetProposerDuties(t *testing.T) {
+	helpers.ClearCache()
+
 	ctx := context.Background()
 	genesis := util.NewBeaconBlock()
 	depChainStart := params.BeaconConfig().MinGenesisActiveValidatorCount
@@ -267,10 +274,10 @@ func TestGetProposerDuties(t *testing.T) {
 		}
 		vid, _, has := vs.ProposerSlotIndexCache.GetProposerPayloadIDs(11, [32]byte{})
 		require.Equal(t, true, has)
-		require.Equal(t, primitives.ValidatorIndex(9982), vid)
+		require.Equal(t, primitives.ValidatorIndex(14992), vid)
 		require.NotNil(t, expectedDuty, "Expected duty for slot 11 not found")
-		assert.Equal(t, primitives.ValidatorIndex(9982), expectedDuty.ValidatorIndex)
-		assert.DeepEqual(t, pubKeys[9982], expectedDuty.Pubkey)
+		assert.Equal(t, primitives.ValidatorIndex(14992), expectedDuty.ValidatorIndex)
+		assert.DeepEqual(t, pubKeys[14992], expectedDuty.Pubkey)
 	})
 
 	t.Run("Next epoch", func(t *testing.T) {
@@ -306,10 +313,10 @@ func TestGetProposerDuties(t *testing.T) {
 		}
 		vid, _, has := vs.ProposerSlotIndexCache.GetProposerPayloadIDs(43, [32]byte{})
 		require.Equal(t, true, has)
-		require.Equal(t, primitives.ValidatorIndex(4863), vid)
+		require.Equal(t, primitives.ValidatorIndex(9261), vid)
 		require.NotNil(t, expectedDuty, "Expected duty for slot 43 not found")
-		assert.Equal(t, primitives.ValidatorIndex(4863), expectedDuty.ValidatorIndex)
-		assert.DeepEqual(t, pubKeys[4863], expectedDuty.Pubkey)
+		assert.Equal(t, primitives.ValidatorIndex(9261), expectedDuty.ValidatorIndex)
+		assert.DeepEqual(t, pubKeys[9261], expectedDuty.Pubkey)
 	})
 
 	t.Run("Prune payload ID cache ok", func(t *testing.T) {
@@ -335,7 +342,7 @@ func TestGetProposerDuties(t *testing.T) {
 		}
 		vs.ProposerSlotIndexCache.SetProposerAndPayloadIDs(1, 1, [8]byte{1}, [32]byte{2})
 		vs.ProposerSlotIndexCache.SetProposerAndPayloadIDs(31, 2, [8]byte{2}, [32]byte{3})
-		vs.ProposerSlotIndexCache.SetProposerAndPayloadIDs(32, 4309, [8]byte{3}, [32]byte{4})
+		vs.ProposerSlotIndexCache.SetProposerAndPayloadIDs(32, 12477, [8]byte{3}, [32]byte{4})
 
 		_, err = vs.GetProposerDuties(ctx, req)
 		require.NoError(t, err)
@@ -348,7 +355,7 @@ func TestGetProposerDuties(t *testing.T) {
 		require.Equal(t, primitives.ValidatorIndex(0), vid)
 		vid, _, has = vs.ProposerSlotIndexCache.GetProposerPayloadIDs(32, [32]byte{})
 		require.Equal(t, true, has)
-		require.Equal(t, primitives.ValidatorIndex(4309), vid)
+		require.Equal(t, primitives.ValidatorIndex(13919), vid)
 	})
 
 	t.Run("Epoch out of bound", func(t *testing.T) {
@@ -416,6 +423,8 @@ func TestGetProposerDuties(t *testing.T) {
 }
 
 func TestGetProposerDuties_SyncNotReady(t *testing.T) {
+	helpers.ClearCache()
+
 	st, err := util.NewBeaconState()
 	require.NoError(t, err)
 	chainService := &mockChain.ChainService{State: st}
@@ -430,6 +439,8 @@ func TestGetProposerDuties_SyncNotReady(t *testing.T) {
 }
 
 func TestGetSyncCommitteeDuties(t *testing.T) {
+	helpers.ClearCache()
+
 	ctx := context.Background()
 	genesisTime := time.Now()
 	numVals := uint64(11)
@@ -669,6 +680,8 @@ func TestGetSyncCommitteeDuties(t *testing.T) {
 }
 
 func TestGetSyncCommitteeDuties_SyncNotReady(t *testing.T) {
+	helpers.ClearCache()
+
 	st, err := util.NewBeaconState()
 	require.NoError(t, err)
 	chainService := &mockChain.ChainService{State: st}
@@ -683,6 +696,8 @@ func TestGetSyncCommitteeDuties_SyncNotReady(t *testing.T) {
 }
 
 func TestSyncCommitteeDutiesLastValidEpoch(t *testing.T) {
+	helpers.ClearCache()
+
 	t.Run("first epoch of current period", func(t *testing.T) {
 		assert.Equal(t, params.BeaconConfig().EpochsPerSyncCommitteePeriod*2-1, syncCommitteeDutiesLastValidEpoch(0))
 	})
@@ -1275,7 +1290,8 @@ func TestProduceAttestationData(t *testing.T) {
 		TimeFetcher: &mockChain.ChainService{
 			Genesis: time.Now().Add(time.Duration(-1*offset) * time.Second),
 		},
-		StateNotifier: chainService.StateNotifier(),
+		StateNotifier:         chainService.StateNotifier(),
+		OptimisticModeFetcher: chainService,
 	}
 	v1Server := &Server{
 		V1Alpha1Server: v1Alpha1Server,
@@ -1501,6 +1517,8 @@ func TestGetAggregateAttestation_SameSlotAndRoot_ReturnMostAggregationBits(t *te
 }
 
 func TestSubmitBeaconCommitteeSubscription(t *testing.T) {
+	helpers.ClearCache()
+
 	ctx := context.Background()
 	genesis := util.NewBeaconBlock()
 	depChainStart := params.BeaconConfig().MinGenesisActiveValidatorCount
@@ -1550,7 +1568,7 @@ func TestSubmitBeaconCommitteeSubscription(t *testing.T) {
 		require.NoError(t, err)
 		subnets := cache.SubnetIDs.GetAttesterSubnetIDs(1)
 		require.Equal(t, 1, len(subnets))
-		assert.Equal(t, uint64(4), subnets[0])
+		assert.Equal(t, uint64(5), subnets[0])
 	})
 
 	t.Run("Multiple subscriptions", func(t *testing.T) {
@@ -1634,6 +1652,8 @@ func TestSubmitBeaconCommitteeSubscription(t *testing.T) {
 }
 
 func TestSubmitBeaconCommitteeSubscription_SyncNotReady(t *testing.T) {
+	helpers.ClearCache()
+
 	st, err := util.NewBeaconState()
 	require.NoError(t, err)
 	chainService := &mockChain.ChainService{State: st}
@@ -1648,6 +1668,8 @@ func TestSubmitBeaconCommitteeSubscription_SyncNotReady(t *testing.T) {
 }
 
 func TestSubmitSyncCommitteeSubscription(t *testing.T) {
+	helpers.ClearCache()
+
 	ctx := context.Background()
 	genesis := util.NewBeaconBlock()
 	deposits, _, err := util.DeterministicDepositsAndKeys(64)
@@ -1793,6 +1815,8 @@ func TestSubmitSyncCommitteeSubscription(t *testing.T) {
 }
 
 func TestSubmitSyncCommitteeSubscription_SyncNotReady(t *testing.T) {
+	helpers.ClearCache()
+
 	st, err := util.NewBeaconState()
 	require.NoError(t, err)
 	chainService := &mockChain.ChainService{State: st}

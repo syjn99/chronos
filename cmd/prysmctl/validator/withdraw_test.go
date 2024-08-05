@@ -242,7 +242,7 @@ func TestCallWithdrawalEndpoint_Errors(t *testing.T) {
 				w.WriteHeader(200)
 				w.Header().Set("Content-Type", "application/json")
 				m := make(map[string]string)
-				m["CAPELLA_FORK_EPOCH"] = "1350"
+				m["CAPELLA_FORK_EPOCH"] = "10"
 				err := json.NewEncoder(w).Encode(&apimiddleware.SpecResponseJson{
 					Data: m,
 				})

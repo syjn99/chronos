@@ -95,6 +95,7 @@ func TestBlocksFetcher_InitStartStop(t *testing.T) {
 				p2p:                      p2p,
 				peerFilterCapacityWeight: 2,
 			})
+		defer fetcher.stop()
 		require.NoError(t, fetcher.start())
 		assert.Equal(t, peerFilterCapacityWeight, fetcher.capacityWeight)
 	})
@@ -258,6 +259,8 @@ func TestBlocksFetcher_RoundRobin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			params.SetupForkEpochConfigForTest()
+
 			cache.initializeRootCache(tt.expectedBlockSlots, t)
 
 			beaconDB := dbtest.SetupDB(t)
@@ -394,6 +397,8 @@ func TestBlocksFetcher_scheduleRequest(t *testing.T) {
 	})
 }
 func TestBlocksFetcher_handleRequest(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	blockBatchLimit := flags.Get().BlockBatchLimit
 	chainConfig := struct {
 		expectedBlockSlots []primitives.Slot
@@ -474,6 +479,8 @@ func TestBlocksFetcher_handleRequest(t *testing.T) {
 }
 
 func TestBlocksFetcher_requestBeaconBlocksByRange(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	blockBatchLimit := flags.Get().BlockBatchLimit
 	chainConfig := struct {
 		expectedBlockSlots []primitives.Slot
@@ -523,6 +530,8 @@ func TestBlocksFetcher_requestBeaconBlocksByRange(t *testing.T) {
 }
 
 func TestBlocksFetcher_RequestBlocksRateLimitingLocks(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	p1 := p2pt.NewTestP2P(t)
 	p2 := p2pt.NewTestP2P(t)
 	p3 := p2pt.NewTestP2P(t)
@@ -632,6 +641,8 @@ func TestBlocksFetcher_WaitForBandwidth(t *testing.T) {
 }
 
 func TestBlocksFetcher_requestBlocksFromPeerReturningInvalidBlocks(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	p1 := p2pt.NewTestP2P(t)
 	tests := []struct {
 		name         string

@@ -706,6 +706,8 @@ func TestService_AddPendingBlockToQueueOverMax(t *testing.T) {
 }
 
 func TestService_ProcessPendingBlockOnCorrectSlot(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	ctx := context.Background()
 	db := dbtest.SetupDB(t)
 

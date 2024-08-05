@@ -7,7 +7,6 @@ go_library(
     visibility = [
         "//beacon-chain:__subpackages__",
         "//cmd/prysmctl/testnet:__pkg__",
-        "//testing/spectest:__subpackages__",
         "//validator/client:__pkg__",
     ],
     deps = [

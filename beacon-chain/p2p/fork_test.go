@@ -208,9 +208,10 @@ func TestStartDiscv5_SameForkDigests_DifferentNextForkData(t *testing.T) {
 func TestDiscv5_AddRetrieveForkEntryENR(t *testing.T) {
 	params.SetupTestConfigCleanup(t)
 	c := params.BeaconConfig().Copy()
+	genesisForkVersion := bytesutil.ToBytes4(params.BeaconConfig().GenesisForkVersion)
 	c.ForkVersionSchedule = map[[4]byte]primitives.Epoch{
-		bytesutil.ToBytes4(params.BeaconConfig().GenesisForkVersion): 0,
-		{0, 0, 0, 1}: 1,
+		genesisForkVersion: 0,
+		{0, 0, 0, 1}:       1,
 	}
 	nextForkEpoch := primitives.Epoch(1)
 	nextForkVersion := []byte{0, 0, 0, 1}
@@ -241,7 +242,7 @@ func TestDiscv5_AddRetrieveForkEntryENR(t *testing.T) {
 	localNode := enode.NewLocalNode(db, pkey)
 	localNode.Set(entry)
 
-	want, err := signing.ComputeForkDigest([]byte{0, 0, 0, 0}, genesisValidatorsRoot)
+	want, err := signing.ComputeForkDigest(genesisForkVersion[:], genesisValidatorsRoot)
 	require.NoError(t, err)
 
 	resp, err := forkEntry(localNode.Node().Record())

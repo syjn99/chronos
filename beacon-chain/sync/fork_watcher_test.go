@@ -157,6 +157,7 @@ func TestService_CheckForNextEpochFork(t *testing.T) {
 
 func TestService_CheckForPreviousEpochFork(t *testing.T) {
 	params.SetupTestConfigCleanup(t)
+	params.SetupForkEpochConfigForTest()
 	tests := []struct {
 		name         string
 		svcCreator   func(t *testing.T) *Service

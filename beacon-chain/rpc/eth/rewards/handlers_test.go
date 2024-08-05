@@ -34,6 +34,7 @@ import (
 )
 
 func TestBlockRewards(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	valCount := 64
 
 	st, err := util.NewBeaconStateCapella()
@@ -179,9 +180,9 @@ func TestBlockRewards(t *testing.T) {
 		resp := &BlockRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "12", resp.Data.ProposerIndex)
-		assert.Equal(t, "1152291928", resp.Data.Total)
-		assert.Equal(t, "152206992", resp.Data.Attestations)
-		assert.Equal(t, "84936", resp.Data.SyncAggregate)
+		assert.Equal(t, "1237823438", resp.Data.Total)
+		assert.Equal(t, "237823438", resp.Data.Attestations)
+		assert.Equal(t, "0", resp.Data.SyncAggregate) // zero reward for sync committee
 		assert.Equal(t, "500000000", resp.Data.AttesterSlashings)
 		assert.Equal(t, "500000000", resp.Data.ProposerSlashings)
 		assert.Equal(t, true, resp.ExecutionOptimistic)
@@ -259,7 +260,7 @@ func TestAttestationRewards(t *testing.T) {
 		assert.Equal(t, http.StatusOK, writer.Code)
 		resp := &AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
-		require.Equal(t, 32, len(resp.Data.IdealRewards))
+		require.Equal(t, 16, len(resp.Data.IdealRewards)) // Because Jade changed idealAttRewards()
 		sum := uint64(0)
 		for _, r := range resp.Data.IdealRewards {
 			hr, err := strconv.ParseUint(r.Head, 10, 64)
@@ -270,7 +271,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(98124339180), sum)
+		assert.Equal(t, uint64(80318463609), sum)
 	})
 	t.Run("ok - filtered vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -299,7 +300,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(2023182249), sum)
+		assert.Equal(t, uint64(3073410595), sum)
 	})
 	t.Run("ok - all vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -322,7 +323,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(131506846296), sum)
+		assert.Equal(t, uint64(209811496744), sum)
 	})
 	t.Run("ok - penalty", func(t *testing.T) {
 		st, err := util.NewBeaconStateCapella()
@@ -381,8 +382,8 @@ func TestAttestationRewards(t *testing.T) {
 		resp := &AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "0", resp.Data.TotalRewards[0].Head)
-		assert.Equal(t, "-1065448999", resp.Data.TotalRewards[0].Source)
-		assert.Equal(t, "-1978690998", resp.Data.TotalRewards[0].Target)
+		assert.Equal(t, "-1404290787", resp.Data.TotalRewards[0].Source)
+		assert.Equal(t, "-2808581574", resp.Data.TotalRewards[0].Target)
 	})
 	t.Run("invalid validator index/pubkey", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"

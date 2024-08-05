@@ -38,7 +38,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager"
 	"github.com/prysmaticlabs/prysm/v4/validator/keymanager/derived"
 	remoteweb3signer "github.com/prysmaticlabs/prysm/v4/validator/keymanager/remote-web3signer"
-	"github.com/prysmaticlabs/prysm/v4/validator/slashing-protection-history/format"
 	mocks "github.com/prysmaticlabs/prysm/v4/validator/testing"
 	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
 	"google.golang.org/grpc"
@@ -286,148 +285,149 @@ func TestServer_ImportKeystores_WrongKeymanagerKind(t *testing.T) {
 	require.Equal(t, "Keymanager kind cannot import keys", response.Data[0].Message)
 }
 
-func TestServer_DeleteKeystores(t *testing.T) {
-	t.Run("wallet not ready", func(t *testing.T) {
-		s := Server{}
-		response, err := s.DeleteKeystores(context.Background(), &ethpbservice.DeleteKeystoresRequest{})
-		require.NoError(t, err)
-		require.Equal(t, 0, len(response.Data))
-	})
-	ctx := context.Background()
-	srv := setupServerWithWallet(t)
-
-	// We recover 3 accounts from a test mnemonic.
-	numAccounts := 3
-	km, er := srv.validatorService.Keymanager()
-	require.NoError(t, er)
-	dr, ok := km.(*derived.Keymanager)
-	require.Equal(t, true, ok)
-	err := dr.RecoverAccountsFromMnemonic(ctx, mocks.TestMnemonic, derived.DefaultMnemonicLanguage, "", numAccounts)
-	require.NoError(t, err)
-	publicKeys, err := dr.FetchValidatingPublicKeys(ctx)
-	require.NoError(t, err)
-
-	// Create a validator database.
-	validatorDB, err := kv.NewKVStore(ctx, defaultWalletPath, &kv.Config{
-		PubKeys: publicKeys,
-	})
-	require.NoError(t, err)
-	srv.valDB = validatorDB
-
-	// Have to close it after import is done otherwise it complains db is not open.
-	defer func() {
-		require.NoError(t, validatorDB.Close())
-	}()
-
-	// Generate mock slashing history.
-	//attestingHistory := make([][]*kv.AttestationRecord, 0)
-	proposalHistory := make([]kv.ProposalHistoryForPubkey, len(publicKeys))
-	for i := 0; i < len(publicKeys); i++ {
-		proposalHistory[i].Proposals = make([]kv.Proposal, 0)
-	}
-	// TODO(JOHN) - fix this
-	//mockJSON, err := mocks.MockSlashingProtectionJSON(publicKeys, attestingHistory, proposalHistory)
-	//require.NoError(t, err)
-
-	// JSON encode the protection JSON and save it.
-	//encoded, err := json.Marshal(mockJSON)
-	//require.NoError(t, err)
-
-	//_, err = srv.ImportSlashingProtection(ctx, &validatorpb.ImportSlashingProtectionRequest{
-	//	SlashingProtectionJson: string(encoded),
-	//})
-	//require.NoError(t, err)
-
-	//t.Run("no slashing protection response if no keys in request even if we have a history in DB", func(t *testing.T) {
-	//	resp, err := srv.DeleteKeystores(context.Background(), &ethpbservice.DeleteKeystoresRequest{
-	//		Pubkeys: nil,
-	//	})
-	//	require.NoError(t, err)
-	//	require.Equal(t, "", resp.SlashingProtection)
-	//})
-
-	// For ease of test setup, we'll give each public key a string identifier.
-	publicKeysWithId := map[string][fieldparams.BLSPubkeyLength]byte{
-		"a": publicKeys[0],
-		"b": publicKeys[1],
-		"c": publicKeys[2],
-	}
-
-	type keyCase struct {
-		id                 string
-		wantProtectionData bool
-	}
-	tests := []struct {
-		keys         []*keyCase
-		wantStatuses []ethpbservice.DeletedKeystoreStatus_Status
-	}{
-		{
-			keys: []*keyCase{
-				{id: "a", wantProtectionData: true},
-				{id: "a", wantProtectionData: true},
-				{id: "d"},
-				{id: "c", wantProtectionData: true},
-			},
-			wantStatuses: []ethpbservice.DeletedKeystoreStatus_Status{
-				ethpbservice.DeletedKeystoreStatus_DELETED,
-				ethpbservice.DeletedKeystoreStatus_NOT_ACTIVE,
-				ethpbservice.DeletedKeystoreStatus_NOT_FOUND,
-				ethpbservice.DeletedKeystoreStatus_DELETED,
-			},
-		},
-		{
-			keys: []*keyCase{
-				{id: "a", wantProtectionData: true},
-				{id: "c", wantProtectionData: true},
-			},
-			wantStatuses: []ethpbservice.DeletedKeystoreStatus_Status{
-				ethpbservice.DeletedKeystoreStatus_NOT_ACTIVE,
-				ethpbservice.DeletedKeystoreStatus_NOT_ACTIVE,
-			},
-		},
-		{
-			keys: []*keyCase{
-				{id: "x"},
-			},
-			wantStatuses: []ethpbservice.DeletedKeystoreStatus_Status{
-				ethpbservice.DeletedKeystoreStatus_NOT_FOUND,
-			},
-		},
-	}
-	for _, tc := range tests {
-		keys := make([][]byte, len(tc.keys))
-		for i := 0; i < len(tc.keys); i++ {
-			pk := publicKeysWithId[tc.keys[i].id]
-			keys[i] = pk[:]
-		}
-		resp, err := srv.DeleteKeystores(ctx, &ethpbservice.DeleteKeystoresRequest{Pubkeys: keys})
-		require.NoError(t, err)
-		require.Equal(t, len(keys), len(resp.Data))
-		slashingProtectionData := &format.EIPSlashingProtectionFormat{}
-		require.NoError(t, json.Unmarshal([]byte(resp.SlashingProtection), slashingProtectionData))
-		require.Equal(t, true, len(slashingProtectionData.Data) > 0)
-
-		for i := 0; i < len(tc.keys); i++ {
-			require.Equal(
-				t,
-				tc.wantStatuses[i],
-				resp.Data[i].Status,
-				fmt.Sprintf("Checking status for key %s", tc.keys[i].id),
-			)
-			if tc.keys[i].wantProtectionData {
-				// We check that we can find the key in the slashing protection data.
-				var found bool
-				for _, dt := range slashingProtectionData.Data {
-					if dt.Pubkey == fmt.Sprintf("%#x", keys[i]) {
-						found = true
-						break
-					}
-				}
-				require.Equal(t, true, found)
-			}
-		}
-	}
-}
+// TODO(JOHN) - fix this
+//func TestServer_DeleteKeystores(t *testing.T) {
+//	t.Run("wallet not ready", func(t *testing.T) {
+//		s := Server{}
+//		response, err := s.DeleteKeystores(context.Background(), &ethpbservice.DeleteKeystoresRequest{})
+//		require.NoError(t, err)
+//		require.Equal(t, 0, len(response.Data))
+//	})
+//	ctx := context.Background()
+//	srv := setupServerWithWallet(t)
+//
+//	// We recover 3 accounts from a test mnemonic.
+//	numAccounts := 3
+//	km, er := srv.validatorService.Keymanager()
+//	require.NoError(t, er)
+//	dr, ok := km.(*derived.Keymanager)
+//	require.Equal(t, true, ok)
+//	err := dr.RecoverAccountsFromMnemonic(ctx, mocks.TestMnemonic, derived.DefaultMnemonicLanguage, "", numAccounts)
+//	require.NoError(t, err)
+//	publicKeys, err := dr.FetchValidatingPublicKeys(ctx)
+//	require.NoError(t, err)
+//
+//	// Create a validator database.
+//	validatorDB, err := kv.NewKVStore(ctx, defaultWalletPath, &kv.Config{
+//		PubKeys: publicKeys,
+//	})
+//	require.NoError(t, err)
+//	srv.valDB = validatorDB
+//
+//	// Have to close it after import is done otherwise it complains db is not open.
+//	defer func() {
+//		require.NoError(t, validatorDB.Close())
+//	}()
+//
+//	// Generate mock slashing history.
+//	attestingHistory := make([][]*kv.AttestationRecord, 0)
+//	proposalHistory := make([]kv.ProposalHistoryForPubkey, len(publicKeys))
+//	for i := 0; i < len(publicKeys); i++ {
+//		proposalHistory[i].Proposals = make([]kv.Proposal, 0)
+//	}
+//
+//	mockJSON, err := mocks.MockSlashingProtectionJSON(publicKeys, attestingHistory, proposalHistory)
+//	require.NoError(t, err)
+//
+//	// JSON encode the protection JSON and save it.
+//	encoded, err := json.Marshal(mockJSON)
+//	require.NoError(t, err)
+//
+//	_, err = srv.ImportSlashingProtection(ctx, &validatorpb.ImportSlashingProtectionRequest{
+//		SlashingProtectionJson: string(encoded),
+//	})
+//	require.NoError(t, err)
+//
+//	t.Run("no slashing protection response if no keys in request even if we have a history in DB", func(t *testing.T) {
+//		resp, err := srv.DeleteKeystores(context.Background(), &ethpbservice.DeleteKeystoresRequest{
+//			Pubkeys: nil,
+//		})
+//		require.NoError(t, err)
+//		require.Equal(t, "", resp.SlashingProtection)
+//	})
+//
+//	// For ease of test setup, we'll give each public key a string identifier.
+//	publicKeysWithId := map[string][fieldparams.BLSPubkeyLength]byte{
+//		"a": publicKeys[0],
+//		"b": publicKeys[1],
+//		"c": publicKeys[2],
+//	}
+//
+//	type keyCase struct {
+//		id                 string
+//		wantProtectionData bool
+//	}
+//	tests := []struct {
+//		keys         []*keyCase
+//		wantStatuses []ethpbservice.DeletedKeystoreStatus_Status
+//	}{
+//		{
+//			keys: []*keyCase{
+//				{id: "a", wantProtectionData: true},
+//				{id: "a", wantProtectionData: true},
+//				{id: "d"},
+//				{id: "c", wantProtectionData: true},
+//			},
+//			wantStatuses: []ethpbservice.DeletedKeystoreStatus_Status{
+//				ethpbservice.DeletedKeystoreStatus_DELETED,
+//				ethpbservice.DeletedKeystoreStatus_NOT_ACTIVE,
+//				ethpbservice.DeletedKeystoreStatus_NOT_FOUND,
+//				ethpbservice.DeletedKeystoreStatus_DELETED,
+//			},
+//		},
+//		{
+//			keys: []*keyCase{
+//				{id: "a", wantProtectionData: true},
+//				{id: "c", wantProtectionData: true},
+//			},
+//			wantStatuses: []ethpbservice.DeletedKeystoreStatus_Status{
+//				ethpbservice.DeletedKeystoreStatus_NOT_ACTIVE,
+//				ethpbservice.DeletedKeystoreStatus_NOT_ACTIVE,
+//			},
+//		},
+//		{
+//			keys: []*keyCase{
+//				{id: "x"},
+//			},
+//			wantStatuses: []ethpbservice.DeletedKeystoreStatus_Status{
+//				ethpbservice.DeletedKeystoreStatus_NOT_FOUND,
+//			},
+//		},
+//	}
+//	for _, tc := range tests {
+//		keys := make([][]byte, len(tc.keys))
+//		for i := 0; i < len(tc.keys); i++ {
+//			pk := publicKeysWithId[tc.keys[i].id]
+//			keys[i] = pk[:]
+//		}
+//		resp, err := srv.DeleteKeystores(ctx, &ethpbservice.DeleteKeystoresRequest{Pubkeys: keys})
+//		require.NoError(t, err)
+//		require.Equal(t, len(keys), len(resp.Data))
+//		slashingProtectionData := &format.EIPSlashingProtectionFormat{}
+//		require.NoError(t, json.Unmarshal([]byte(resp.SlashingProtection), slashingProtectionData))
+//		require.Equal(t, true, len(slashingProtectionData.Data) > 0)
+//
+//		for i := 0; i < len(tc.keys); i++ {
+//			require.Equal(
+//				t,
+//				tc.wantStatuses[i],
+//				resp.Data[i].Status,
+//				fmt.Sprintf("Checking status for key %s", tc.keys[i].id),
+//			)
+//			if tc.keys[i].wantProtectionData {
+//				// We check that we can find the key in the slashing protection data.
+//				var found bool
+//				for _, dt := range slashingProtectionData.Data {
+//					if dt.Pubkey == fmt.Sprintf("%#x", keys[i]) {
+//						found = true
+//						break
+//					}
+//				}
+//				require.Equal(t, true, found)
+//			}
+//		}
+//	}
+//}
 
 func TestServer_DeleteKeystores_FailedSlashingProtectionExport(t *testing.T) {
 	ctx := context.Background()

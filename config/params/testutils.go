@@ -23,3 +23,15 @@ func SetupTestConfigCleanup(t testing.TB) {
 		networkConfig = prevNetworkCfg
 	})
 }
+
+func SetupForkEpochConfigForTest() {
+	cfg := BeaconConfig().Copy()
+	// original fork epoch
+	// https://github.com/prysmaticlabs/prysm/blob/3413d05b3421c27579cf7a186cb9b142ffbb8346/config/params/mainnet_config.go#L25
+	cfg.AltairForkEpoch = 72740
+	cfg.BellatrixForkEpoch = 144896
+	cfg.CapellaForkEpoch = 1904048
+	cfg.InitializeForkSchedule()
+	configs = newConfigset(cfg)
+	OverrideBeaconConfig(cfg)
+}

@@ -108,6 +108,7 @@ ssz_gen_marshal(
         "HistoricalBatch",
         "Status",
         "BeaconState",
+        "BeaconStateOld",
         "BeaconStateAltair",
         "BeaconStateBellatrix",
         "BeaconStateCapella",

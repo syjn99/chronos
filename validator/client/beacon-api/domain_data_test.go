@@ -17,6 +17,7 @@ import (
 
 func TestGetDomainData_ValidDomainData(t *testing.T) {
 	const genesisValidatorRoot = "0xcf8e0d4e9587369b2301d0790347320302cc0943d5a1884560367e8208d920f2"
+	params.SetupForkEpochConfigForTest()
 	forkVersion := params.BeaconConfig().AltairForkVersion
 	epoch := params.BeaconConfig().AltairForkEpoch
 	domainType := params.BeaconConfig().DomainBeaconProposer

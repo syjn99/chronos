@@ -404,6 +404,7 @@ func TestWrapSignedContributionAndProofsArray(t *testing.T) {
 
 func TestSetInitialPublishBlockPostRequest(t *testing.T) {
 	params.SetupTestConfigCleanup(t)
+	params.SetupForkEpochConfigForTest()
 	cfg := params.BeaconConfig().Copy()
 	cfg.BellatrixForkEpoch = params.BeaconConfig().AltairForkEpoch + 1
 	params.OverrideBeaconConfig(cfg)
@@ -530,6 +531,7 @@ func TestPreparePublishedBlock(t *testing.T) {
 
 func TestSetInitialPublishBlindedBlockPostRequest(t *testing.T) {
 	params.SetupTestConfigCleanup(t)
+	params.SetupForkEpochConfigForTest()
 	cfg := params.BeaconConfig().Copy()
 	cfg.BellatrixForkEpoch = params.BeaconConfig().AltairForkEpoch + 1
 	params.OverrideBeaconConfig(cfg)

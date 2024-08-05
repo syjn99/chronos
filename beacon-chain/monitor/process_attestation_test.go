@@ -27,7 +27,7 @@ func TestGetAttestingIndices(t *testing.T) {
 	}
 	attestingIndices, err := attestingIndices(ctx, beaconState, att)
 	require.NoError(t, err)
-	require.DeepEqual(t, []uint64{0xc, 0x2}, attestingIndices)
+	require.DeepEqual(t, []uint64{0xdf, 0x74}, attestingIndices)
 
 }
 
@@ -36,7 +36,7 @@ func TestProcessIncludedAttestationTwoTracked(t *testing.T) {
 	s := setupService(t)
 	state, _ := util.DeterministicGenesisStateAltair(t, 256)
 	require.NoError(t, state.SetSlot(2))
-	require.NoError(t, state.SetCurrentParticipationBits(bytes.Repeat([]byte{0xff}, 13)))
+	require.NoError(t, state.SetCurrentParticipationBits(bytes.Repeat([]byte{0xff}, 224)))
 
 	att := &ethpb.Attestation{
 		Data: &ethpb.AttestationData{
@@ -55,8 +55,8 @@ func TestProcessIncludedAttestationTwoTracked(t *testing.T) {
 		AggregationBits: bitfield.Bitlist{0b11, 0b1},
 	}
 	s.processIncludedAttestation(context.Background(), state, att)
-	wanted1 := "\"Attestation included\" BalanceChange=0 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=256000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=2 prefix=monitor"
-	wanted2 := "\"Attestation included\" BalanceChange=100000000 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=256000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=12 prefix=monitor"
+	wanted1 := "\"Attestation included\" BalanceChange=0 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=256000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=116 prefix=monitor"
+	wanted2 := "\"Attestation included\" BalanceChange=100000000 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=256000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=223 prefix=monitor"
 	require.LogsContain(t, hook, wanted1)
 	require.LogsContain(t, hook, wanted2)
 }
@@ -70,7 +70,11 @@ func TestProcessUnaggregatedAttestationStateNotCached(t *testing.T) {
 	state, _ := util.DeterministicGenesisStateAltair(t, 256)
 	require.NoError(t, state.SetSlot(2))
 	header := state.LatestBlockHeader()
-	participation := []byte{0xff, 0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	participation := bytes.Repeat([]byte{0x0}, 224)
+	participation[0] = 0xff
+	participation[1] = 0xff
+	participation[2] = 0x01
+	participation[223] = 0x01
 	require.NoError(t, state.SetCurrentParticipationBits(participation))
 
 	att := &ethpb.Attestation{
@@ -100,7 +104,11 @@ func TestProcessUnaggregatedAttestationStateCached(t *testing.T) {
 
 	s := setupService(t)
 	state, _ := util.DeterministicGenesisStateAltair(t, 256)
-	participation := []byte{0xff, 0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	participation := bytes.Repeat([]byte{0x0}, 224)
+	participation[0] = 0xff
+	participation[1] = 0xff
+	participation[2] = 0x01
+	participation[223] = 0x01
 	require.NoError(t, state.SetCurrentParticipationBits(participation))
 
 	var root [32]byte
@@ -124,8 +132,8 @@ func TestProcessUnaggregatedAttestationStateCached(t *testing.T) {
 	}
 	require.NoError(t, s.config.StateGen.SaveState(ctx, root, state))
 	s.processUnaggregatedAttestation(context.Background(), att)
-	wanted1 := "\"Processed unaggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=2 prefix=monitor"
-	wanted2 := "\"Processed unaggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=12 prefix=monitor"
+	wanted1 := "\"Processed unaggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=223 prefix=monitor"
+	wanted2 := "\"Processed unaggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=116 prefix=monitor"
 	require.LogsContain(t, hook, wanted1)
 	require.LogsContain(t, hook, wanted2)
 }
@@ -139,7 +147,11 @@ func TestProcessAggregatedAttestationStateNotCached(t *testing.T) {
 	state, _ := util.DeterministicGenesisStateAltair(t, 256)
 	require.NoError(t, state.SetSlot(2))
 	header := state.LatestBlockHeader()
-	participation := []byte{0xff, 0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	participation := bytes.Repeat([]byte{0x0}, 224)
+	participation[0] = 0xff
+	participation[1] = 0xff
+	participation[2] = 0x01
+	participation[223] = 0x01
 	require.NoError(t, state.SetCurrentParticipationBits(participation))
 
 	att := &ethpb.AggregateAttestationAndProof{
@@ -172,7 +184,11 @@ func TestProcessAggregatedAttestationStateCached(t *testing.T) {
 	ctx := context.Background()
 	s := setupService(t)
 	state, _ := util.DeterministicGenesisStateAltair(t, 256)
-	participation := []byte{0xff, 0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	participation := bytes.Repeat([]byte{0x0}, 224)
+	participation[0] = 0xff
+	participation[1] = 0xff
+	participation[2] = 0x01
+	participation[223] = 0x01
 	require.NoError(t, state.SetCurrentParticipationBits(participation))
 
 	var root [32]byte
@@ -201,8 +217,8 @@ func TestProcessAggregatedAttestationStateCached(t *testing.T) {
 	require.NoError(t, s.config.StateGen.SaveState(ctx, root, state))
 	s.processAggregatedAttestation(ctx, att)
 	require.LogsContain(t, hook, "\"Processed attestation aggregation\" AggregatorIndex=2 BeaconBlockRoot=0x68656c6c6f2d Slot=1 SourceRoot=0x68656c6c6f2d TargetRoot=0x68656c6c6f2d prefix=monitor")
-	require.LogsContain(t, hook, "\"Processed aggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=2 prefix=monitor")
-	require.LogsDoNotContain(t, hook, "\"Processed aggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=12 prefix=monitor")
+	require.LogsContain(t, hook, "\"Processed aggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=116 prefix=monitor")
+	require.LogsDoNotContain(t, hook, "\"Processed aggregated attestation\" Head=0x68656c6c6f2d Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=175 prefix=monitor")
 }
 
 func TestProcessAttestations(t *testing.T) {
@@ -211,7 +227,7 @@ func TestProcessAttestations(t *testing.T) {
 	ctx := context.Background()
 	state, _ := util.DeterministicGenesisStateAltair(t, 256)
 	require.NoError(t, state.SetSlot(2))
-	require.NoError(t, state.SetCurrentParticipationBits(bytes.Repeat([]byte{0xff}, 13)))
+	require.NoError(t, state.SetCurrentParticipationBits(bytes.Repeat([]byte{0xff}, 224)))
 
 	att := &ethpb.Attestation{
 		Data: &ethpb.AttestationData{
@@ -240,8 +256,8 @@ func TestProcessAttestations(t *testing.T) {
 	wrappedBlock, err := blocks.NewBeaconBlock(block)
 	require.NoError(t, err)
 	s.processAttestations(ctx, state, wrappedBlock)
-	wanted1 := "\"Attestation included\" BalanceChange=0 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=32000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=2 prefix=monitor"
-	wanted2 := "\"Attestation included\" BalanceChange=100000000 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=32000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=12 prefix=monitor"
+	wanted1 := "\"Attestation included\" BalanceChange=0 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=256000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=116 prefix=monitor"
+	wanted2 := "\"Attestation included\" BalanceChange=100000000 CorrectHead=true CorrectSource=true CorrectTarget=true Head=0x68656c6c6f2d InclusionSlot=2 NewBalance=256000000000 Slot=1 Source=0x68656c6c6f2d Target=0x68656c6c6f2d ValidatorIndex=223 prefix=monitor"
 	require.LogsContain(t, hook, wanted1)
 	require.LogsContain(t, hook, wanted2)
 

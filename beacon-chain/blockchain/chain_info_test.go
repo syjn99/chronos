@@ -432,6 +432,7 @@ func TestService_IsOptimistic(t *testing.T) {
 }
 
 func TestService_IsOptimisticBeforeBellatrix(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	ctx := context.Background()
 	c := &Service{genesisTime: time.Now()}
 	opt, err := c.IsOptimistic(ctx)

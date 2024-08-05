@@ -24,8 +24,8 @@ func (s *Server) JWTInterceptor() grpc.UnaryServerInterceptor {
 		// Temporary disable jwt interceptor
 		// TODO : refactor auth
 		if err := s.authorize(ctx); err != nil {
-			// return nil, err
-			log.WithError(err).Debug("failed to validate JWT but ignored")
+			return nil, err
+			//log.WithError(err).Debug("failed to validate JWT but ignored")
 		}
 		h, err := handler(ctx, req)
 		log.WithError(err).WithFields(logrus.Fields{

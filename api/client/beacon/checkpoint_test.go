@@ -75,7 +75,7 @@ func TestFallbackVersionCheck(t *testing.T) {
 			d := struct {
 				Version string `json:"version"`
 			}{
-				Version: "Prysm/v2.0.5 (linux amd64)",
+				Version: "Chronos/v0.0.0 (linux amd64)",
 			}
 			encoded, err := marshalToEnvelope(d)
 			require.NoError(t, err)
@@ -119,7 +119,8 @@ func TestFname(t *testing.T) {
 
 func TestDownloadWeakSubjectivityCheckpoint(t *testing.T) {
 	ctx := context.Background()
-	cfg := params.MainnetConfig().Copy()
+	params.SetupForkEpochConfigForTest()
+	cfg := params.BeaconConfig().Copy()
 
 	epoch := cfg.AltairForkEpoch - 1
 	// set up checkpoint state, using the epoch that will be computed as the ws checkpoint state based on the head state
@@ -215,7 +216,8 @@ func TestDownloadWeakSubjectivityCheckpoint(t *testing.T) {
 // and via ComputeWeakSubjectivityCheckpoint with a round tripper that triggers the backwards compatible code path
 func TestDownloadBackwardsCompatibleCombined(t *testing.T) {
 	ctx := context.Background()
-	cfg := params.MainnetConfig()
+	params.SetupForkEpochConfigForTest()
+	cfg := params.BeaconConfig()
 
 	st, expectedEpoch := defaultTestHeadState(t, cfg)
 	serialized, err := st.MarshalSSZ()
@@ -305,7 +307,8 @@ func TestDownloadBackwardsCompatibleCombined(t *testing.T) {
 }
 
 func TestGetWeakSubjectivityEpochFromHead(t *testing.T) {
-	st, expectedEpoch := defaultTestHeadState(t, params.MainnetConfig())
+	params.SetupForkEpochConfigForTest()
+	st, expectedEpoch := defaultTestHeadState(t, params.BeaconConfig())
 	serialized, err := st.MarshalSSZ()
 	require.NoError(t, err)
 	trans := &testRT{rt: func(req *http.Request) (*http.Response, error) {
@@ -357,7 +360,7 @@ func defaultTestHeadState(t *testing.T, cfg *params.BeaconChainConfig) (state.Be
 	require.NoError(t, err)
 	require.NoError(t, st.SetSlot(slot))
 
-	var validatorCount, avgBalance uint64 = 100, 35
+	var validatorCount, avgBalance uint64 = 100, 280
 	require.NoError(t, populateValidators(cfg, st, validatorCount, avgBalance))
 	require.NoError(t, st.SetFinalizedCheckpoint(&ethpb.Checkpoint{
 		Epoch: fork.Epoch - 10,
@@ -365,7 +368,7 @@ func defaultTestHeadState(t *testing.T, cfg *params.BeaconChainConfig) (state.Be
 	}))
 	// to see the math for this, look at helpers.LatestWeakSubjectivityEpoch
 	// and for the values use mainnet config values, the validatorCount and avgBalance above, and altair fork epoch
-	expectedEpoch := slots.ToEpoch(st.Slot()) - 224
+	expectedEpoch := slots.ToEpoch(st.Slot()) - 266
 	return st, expectedEpoch
 }
 
@@ -391,7 +394,8 @@ func populateValidators(cfg *params.BeaconChainConfig, st state.BeaconState, val
 
 func TestDownloadFinalizedData(t *testing.T) {
 	ctx := context.Background()
-	cfg := params.MainnetConfig().Copy()
+	params.SetupForkEpochConfigForTest()
+	cfg := params.BeaconConfig().Copy()
 
 	// avoid the altair zone because genesis tests are easier to set up
 	epoch := cfg.AltairForkEpoch - 1

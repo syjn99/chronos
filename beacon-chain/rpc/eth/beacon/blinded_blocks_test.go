@@ -305,6 +305,7 @@ func TestServer_GetBlindedBlockSSZ(t *testing.T) {
 func TestServer_SubmitBlindedBlockSSZ(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	ctx := context.Background()
+	params.SetupForkEpochConfigForTest()
 
 	t.Run("Phase 0", func(t *testing.T) {
 		v1alpha1Server := mock2.NewMockBeaconNodeValidatorServer(ctrl)

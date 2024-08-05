@@ -10,7 +10,6 @@ go_library(
     importpath = "github.com/prysmaticlabs/prysm/v4/beacon-chain/cache/depositcache",
     visibility = [
         "//beacon-chain:__subpackages__",
-        "//testing/spectest:__subpackages__",
     ],
     deps = [
         "//config/fieldparams:go_default_library",

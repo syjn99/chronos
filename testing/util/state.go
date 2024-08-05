@@ -87,8 +87,8 @@ func NewBeaconState(options ...NewBeaconStateOption) (state.BeaconState, error) 
 			BlockHash:   make([]byte, 32),
 		},
 		Fork: &ethpb.Fork{
-			PreviousVersion: make([]byte, 4),
-			CurrentVersion:  make([]byte, 4),
+			PreviousVersion: []byte{0x01, 0x00, 0x00, 0x18},
+			CurrentVersion:  []byte{0x02, 0x00, 0x00, 0x18},
 		},
 		Eth1DataVotes:               make([]*ethpb.Eth1Data, 0),
 		HistoricalRoots:             make([][]byte, 0),

@@ -37,6 +37,9 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/testing/require"
 	"github.com/prysmaticlabs/prysm/v4/testing/util"
 	logTest "github.com/sirupsen/logrus/hooks/test"
+
+	ssz "github.com/prysmaticlabs/fastssz"
+	"google.golang.org/protobuf/proto"
 )
 
 // General note for writing validation tests: Use a random value for any field
@@ -151,6 +154,8 @@ func TestValidateBeaconBlockPubSub_BlockAlreadyPresentInDB(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_CanRecoverStateSummary(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -216,6 +221,8 @@ func TestValidateBeaconBlockPubSub_CanRecoverStateSummary(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_IsInCache(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -417,6 +424,7 @@ func TestValidateBeaconBlockPubSub_WithLookahead(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_AdvanceEpochsForState(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -642,6 +650,7 @@ func TestValidateBeaconBlockPubSub_RejectBlocksFromFuture(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_RejectBlocksFromThePast(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	b := []byte("sk")
 	b32 := bytesutil.ToBytes32(b)
@@ -693,6 +702,8 @@ func TestValidateBeaconBlockPubSub_RejectBlocksFromThePast(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_SeenProposerSlot(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -986,6 +997,7 @@ func TestValidateBeaconBlockPubSub_InvalidParentBlock(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_RejectBlocksFromBadParent(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -1052,7 +1064,21 @@ func TestValidateBeaconBlockPubSub_RejectBlocksFromBadParent(t *testing.T) {
 	buf := new(bytes.Buffer)
 	_, err = p.Encoding().EncodeGossip(buf, msg)
 	require.NoError(t, err)
+	// check if it decodes directly
+	readTest := buf.Bytes()
 	topic := p2p.GossipTypeMapping[reflect.TypeOf(msg)]
+	base := p2p.GossipTopicMappings(topic, 0)
+	if base == nil {
+		require.NoError(t, err)
+	}
+	mm, ok := proto.Clone(base).(ssz.Unmarshaler)
+	if !ok {
+		t.Errorf("Proto failed")
+	}
+	err = p.Encoding().DecodeGossip(readTest, mm)
+	require.NoError(t, err)
+
+	// 이 아래에서 하는 내용에 문제가 있다
 	digest, err := r.currentForkDigest()
 	assert.NoError(t, err)
 	topic = r.addDigestToTopic(topic, digest)

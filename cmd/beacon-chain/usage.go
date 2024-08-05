@@ -121,7 +121,7 @@ var appHelpFlagGroups = []flagGroup{
 			flags.WeakSubjectivityCheckpoint,
 			flags.Eth1HeaderReqLimit,
 			flags.MinPeersPerSubnet,
-			flags.MevRelayEndpoint,
+			//			flags.MevRelayEndpoint,
 			flags.MaxBuilderEpochMissedSlots,
 			flags.MaxBuilderConsecutiveMissedSlots,
 			flags.EngineEndpointTimeoutSeconds,

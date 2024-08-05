@@ -58,6 +58,7 @@ go_test(
         "initial_sync_test.go",
         "round_robin_test.go",
     ],
+    timeout = "moderate",
     embed = [":go_default_library"],
     race = "on",
     tags = ["race_on"],

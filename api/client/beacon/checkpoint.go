@@ -158,7 +158,7 @@ func ComputeWeakSubjectivityCheckpoint(ctx context.Context, client *Client) (*We
 }
 
 const (
-	chronosMinimumVersion     = "v0.0.0"
+	chronosMinimumVersion     = "v0.0.5"
 	chronosImplementationName = "Chronos"
 )
 
