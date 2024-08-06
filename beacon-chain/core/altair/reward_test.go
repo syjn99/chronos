@@ -150,8 +150,12 @@ func Test_BaseRewardWithTotalBalance(t *testing.T) {
 
 func Test_BaseRewardPerIncrement(t *testing.T) {
 	helpers.ClearCache()
-	genState := func(valCount uint64) state.ReadOnlyBeaconState {
+	genState := func(valCount, rewardFactor uint64) state.ReadOnlyBeaconState {
 		s, _ := util.DeterministicGenesisStateAltair(t, valCount)
+		err := s.SetRewardAdjustmentFactor(rewardFactor)
+		require.NoError(t, err)
+		err = s.SetPreviousEpochReserve(10000000000)
+		require.NoError(t, err)
 		return s
 	}
 	tests := []struct {
@@ -159,6 +163,7 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 		epoch         primitives.Epoch
 		activeBalance uint64
 		want          uint64
+		rewardFactor  uint64
 		wantReserve   uint64
 		errString     string
 	}{
@@ -167,6 +172,7 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 			epoch:         primitives.Epoch(0),
 			activeBalance: 0,
 			want:          0,
+			rewardFactor:  0,
 			wantReserve:   0,
 			errString:     "active balance can't be 0",
 		},
@@ -175,6 +181,7 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 			epoch:         primitives.Epoch(0),
 			activeBalance: 1,
 			want:          0,
+			rewardFactor:  0,
 			wantReserve:   0,
 			errString:     "active balance can't be lower than effective balance increment",
 		},
@@ -183,7 +190,17 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 			epoch:         primitives.Epoch(0),
 			activeBalance: params.BeaconConfig().EffectiveBalanceIncrement,
 			want:          243531202435,
+			rewardFactor:  0,
 			wantReserve:   0,
+			errString:     "",
+		},
+		{
+			name:          "active balance is 8 over and reward factor is 10000000000",
+			epoch:         primitives.Epoch(0),
+			activeBalance: params.BeaconConfig().EffectiveBalanceIncrement,
+			want:          253531202435,
+			rewardFactor:  10000000000,
+			wantReserve:   10000000001,
 			errString:     "",
 		},
 		{
@@ -191,7 +208,17 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 			epoch:         primitives.Epoch(0),
 			activeBalance: params.BeaconConfig().MaxEffectiveBalance,
 			want:          7610350076,
+			rewardFactor:  0,
 			wantReserve:   0,
+			errString:     "",
+		},
+		{
+			name:          "active balance is 256over and reward factor is 10000000000",
+			epoch:         primitives.Epoch(0),
+			activeBalance: params.BeaconConfig().MaxEffectiveBalance,
+			want:          7922850076,
+			rewardFactor:  10000000000,
+			wantReserve:   312500001,
 			errString:     "",
 		},
 		{
@@ -199,7 +226,17 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 			epoch:         primitives.Epoch(0),
 			activeBalance: params.BeaconConfig().MaxEffectiveBalance * 1e9,
 			want:          120,
+			rewardFactor:  0,
 			wantReserve:   0,
+			errString:     "",
+		},
+		{
+			name:          "active balance is 256eth * 1m validators",
+			epoch:         primitives.Epoch(0),
+			activeBalance: params.BeaconConfig().MaxEffectiveBalance * 1e9,
+			want:          125,
+			rewardFactor:  10000000000,
+			wantReserve:   5,
 			errString:     "",
 		},
 		{
@@ -207,13 +244,14 @@ func Test_BaseRewardPerIncrement(t *testing.T) {
 			epoch:         primitives.Epoch(0),
 			activeBalance: math.MaxUint64,
 			want:          105,
+			rewardFactor:  0,
 			wantReserve:   0,
 			errString:     "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, reserve, err := altair.BaseRewardPerIncrement(genState(20000), tt.activeBalance)
+			got, reserve, err := altair.BaseRewardPerIncrement(genState(20000, tt.rewardFactor), tt.activeBalance)
 			if (err != nil) && (tt.errString != "") {
 				require.ErrorContains(t, tt.errString, err)
 				return
