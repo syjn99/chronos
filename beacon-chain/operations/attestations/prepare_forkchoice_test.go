@@ -8,6 +8,7 @@ import (
 
 	"github.com/prysmaticlabs/go-bitfield"
 	"github.com/prysmaticlabs/prysm/v4/config/features"
+	"github.com/prysmaticlabs/prysm/v4/config/params"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	ethpb "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1"
 	attaggregation "github.com/prysmaticlabs/prysm/v4/proto/prysm/v1alpha1/attestation/aggregation/attestations"
@@ -186,6 +187,8 @@ func TestAggregateAndSaveForkChoiceAtts_Single(t *testing.T) {
 }
 
 func TestAggregateAndSaveForkChoiceAtts_Multiple(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	s, err := NewService(context.Background(), &Config{Pool: NewPool()})
 	require.NoError(t, err)
 

@@ -398,6 +398,8 @@ func TestUpdateSyncCommitteeCache_BadRoot(t *testing.T) {
 }
 
 func TestIsCurrentEpochSyncCommittee_SameBlockRoot(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
+
 	ClearCache()
 	defer ClearCache()
 	validators := make([]*ethpb.Validator, params.BeaconConfig().SyncCommitteeSize)
