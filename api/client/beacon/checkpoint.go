@@ -164,8 +164,8 @@ func ComputeWeakSubjectivityCheckpoint(ctx context.Context, client *Client) (*We
 }
 
 const (
-	prysmMinimumVersion     = "v2.0.7"
-	prysmImplementationName = "Prysm"
+	chronosMinimumVersion     = "v2.0.7"
+	chronosImplementationName = "Chronos"
 )
 
 // errUnsupportedPrysmCheckpointVersion indicates remote beacon node can't be used for checkpoint retrieval.
@@ -183,8 +183,8 @@ func computeBackwardsCompatible(ctx context.Context, client *Client) (*WeakSubje
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to proceed with fallback method without confirming node version")
 	}
-	if nv.implementation == prysmImplementationName && semver.Compare(nv.semver, prysmMinimumVersion) < 0 {
-		return nil, errors.Wrapf(errUnsupportedPrysmCheckpointVersion, "%s < minimum (%s)", nv.semver, prysmMinimumVersion)
+	if nv.implementation == chronosImplementationName && semver.Compare(nv.semver, chronosMinimumVersion) < 0 {
+		return nil, errors.Wrapf(errUnsupportedPrysmCheckpointVersion, "%s < minimum (%s)", nv.semver, chronosMinimumVersion)
 	}
 	epoch, err := getWeakSubjectivityEpochFromHead(ctx, client)
 	if err != nil {

@@ -302,6 +302,7 @@ func TestSendRequest_SendBeaconBlocksByRootRequest(t *testing.T) {
 	defer cancel()
 	pcl := fmt.Sprintf("%s/ssz_snappy", p2p.RPCBlocksByRootTopicV1)
 
+	params.SetupForkEpochConfigForTest()
 	knownBlocks := make(map[[32]byte]*ethpb.SignedBeaconBlock)
 	knownRoots := make([][32]byte, 0)
 	for i := 0; i < 5; i++ {

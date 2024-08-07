@@ -78,11 +78,7 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	}
 	votedKeys := make([]bls.PublicKey, 0, len(committeeKeys))
 
-	activeBalance, err := helpers.TotalActiveBalance(s)
-	if err != nil {
-		return nil, nil, 0, err
-	}
-	proposerReward, participantReward, err := SyncRewards(activeBalance)
+	proposerReward, participantReward, perRewardReserveUsage, err := SyncRewards(s)
 	if err != nil {
 		return nil, nil, 0, err
 	}
@@ -92,6 +88,7 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	}
 
 	earnedProposerReward := uint64(0)
+	cumulatedReserveUsage := uint64(0)
 	for i := uint64(0); i < sync.SyncCommitteeBits.Len(); i++ {
 		vIdx, exists := s.ValidatorIndexByPubkey(bytesutil.ToBytes48(committeeKeys[i]))
 		// Impossible scenario.
@@ -109,6 +106,7 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 				return nil, nil, 0, err
 			}
 			earnedProposerReward += proposerReward
+			cumulatedReserveUsage += perRewardReserveUsage
 		} else {
 			if err := helpers.DecreaseBalance(s, vIdx, participantReward); err != nil {
 				return nil, nil, 0, err
@@ -118,6 +116,11 @@ func processSyncAggregate(ctx context.Context, s state.BeaconState, sync *ethpb.
 	if err := helpers.IncreaseBalance(s, proposerIndex, earnedProposerReward); err != nil {
 		return nil, nil, 0, err
 	}
+
+	if err := helpers.DecreaseCurrentReserve(s, cumulatedReserveUsage); err != nil {
+		return nil, nil, 0, err
+	}
+
 	return s, votedKeys, earnedProposerReward, err
 }
 
@@ -148,16 +151,13 @@ func VerifySyncCommitteeSig(s state.BeaconState, syncKeys []bls.PublicKey, syncS
 }
 
 // SyncRewards returns the proposer reward and the sync participant reward given the total active balance in state.
-func SyncRewards(activeBalance uint64) (proposerReward, participantReward uint64, err error) {
+// Since SyncRewardWeight is equal to zero, this will return zeros.
+func SyncRewards(s state.BeaconState) (proposerReward, participantReward, perRewardReserveUsage uint64, err error) {
 	cfg := params.BeaconConfig()
-	totalActiveIncrements := activeBalance / cfg.EffectiveBalanceIncrement
-	baseRewardPerInc, err := BaseRewardPerIncrement(activeBalance)
-	if err != nil {
-		return 0, 0, err
-	}
-	totalBaseRewards := baseRewardPerInc * totalActiveIncrements
+	totalBaseRewards, reserveUsage := helpers.TotalRewardWithReserveUsage(s)
 	maxParticipantRewards := totalBaseRewards * cfg.SyncRewardWeight / cfg.WeightDenominator / uint64(cfg.SlotsPerEpoch)
 	participantReward = maxParticipantRewards / cfg.SyncCommitteeSize
 	proposerReward = participantReward * cfg.ProposerWeight / (cfg.WeightDenominator - cfg.ProposerWeight)
-	return
+	perRewardReserveUsage = (proposerReward + participantReward) * reserveUsage / totalBaseRewards
+	return proposerReward, participantReward, perRewardReserveUsage, nil
 }

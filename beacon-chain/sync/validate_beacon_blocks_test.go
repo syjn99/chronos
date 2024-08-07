@@ -44,6 +44,7 @@ import (
 // tests in this package.
 
 func TestValidateBeaconBlockPubSub_InvalidSignature(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -108,6 +109,7 @@ func TestValidateBeaconBlockPubSub_InvalidSignature(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_BlockAlreadyPresentInDB(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	ctx := context.Background()
 
@@ -151,6 +153,7 @@ func TestValidateBeaconBlockPubSub_BlockAlreadyPresentInDB(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_CanRecoverStateSummary(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -216,6 +219,7 @@ func TestValidateBeaconBlockPubSub_CanRecoverStateSummary(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_IsInCache(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -282,6 +286,7 @@ func TestValidateBeaconBlockPubSub_IsInCache(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_ValidProposerSignature(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -348,6 +353,7 @@ func TestValidateBeaconBlockPubSub_ValidProposerSignature(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_WithLookahead(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -417,6 +423,7 @@ func TestValidateBeaconBlockPubSub_WithLookahead(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_AdvanceEpochsForState(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -526,6 +533,7 @@ func TestValidateBeaconBlockPubSub_Syncing(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_IgnoreAndQueueBlocksFromNearFuture(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -595,6 +603,7 @@ func TestValidateBeaconBlockPubSub_IgnoreAndQueueBlocksFromNearFuture(t *testing
 }
 
 func TestValidateBeaconBlockPubSub_RejectBlocksFromFuture(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -643,6 +652,7 @@ func TestValidateBeaconBlockPubSub_RejectBlocksFromFuture(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_RejectBlocksFromThePast(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	b := []byte("sk")
 	b32 := bytesutil.ToBytes32(b)
@@ -823,6 +833,7 @@ func TestValidateBeaconBlockPubSub_FilterByFinalizedEpoch(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_ParentNotFinalizedDescendant(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -989,6 +1000,7 @@ func TestValidateBeaconBlockPubSub_InvalidParentBlock(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_InsertValidPendingBlock(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()
@@ -1053,6 +1065,7 @@ func TestValidateBeaconBlockPubSub_InsertValidPendingBlock(t *testing.T) {
 }
 
 func TestValidateBeaconBlockPubSub_RejectBlocksFromBadParent(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p := p2ptest.NewTestP2P(t)
 	ctx := context.Background()

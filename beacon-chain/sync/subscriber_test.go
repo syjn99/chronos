@@ -710,6 +710,7 @@ func TestSubscribeWithSyncSubnets_DynamicSwitchFork(t *testing.T) {
 }
 
 func TestIsDigestValid(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	genRoot := [32]byte{'A'}
 	digest, err := signing.ComputeForkDigest(params.BeaconConfig().GenesisForkVersion, genRoot[:])
 	assert.NoError(t, err)

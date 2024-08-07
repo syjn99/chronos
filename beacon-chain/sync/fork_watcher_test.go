@@ -19,6 +19,7 @@ import (
 
 func TestService_CheckForNextEpochFork(t *testing.T) {
 	params.SetupTestConfigCleanup(t)
+	params.SetupForkEpochConfigForTest()
 	tests := []struct {
 		name         string
 		svcCreator   func(t *testing.T) *Service
@@ -201,6 +202,7 @@ func TestService_CheckForNextEpochFork(t *testing.T) {
 
 func TestService_CheckForPreviousEpochFork(t *testing.T) {
 	params.SetupTestConfigCleanup(t)
+	params.SetupForkEpochConfigForTest()
 	tests := []struct {
 		name         string
 		svcCreator   func(t *testing.T) *Service
@@ -260,6 +262,8 @@ func TestService_CheckForPreviousEpochFork(t *testing.T) {
 				clock := startup.NewClock(chainService.Genesis, chainService.ValidatorsRoot)
 				bCfg := params.BeaconConfig().Copy()
 				bCfg.AltairForkEpoch = 3
+				bCfg.BellatrixForkEpoch = 5
+				bCfg.CapellaForkEpoch = 7
 				params.OverrideBeaconConfig(bCfg)
 				params.BeaconConfig().InitializeForkSchedule()
 				ctx, cancel := context.WithCancel(context.Background())

@@ -87,7 +87,7 @@ func runPrecomputeRewardsAndPenaltiesTest(t *testing.T, testFolderPath string) {
 	require.Equal(t, bp.CurrentEpochTargetAttested, targetCurrent)
 	require.Equal(t, bp.PrevEpochTargetAttested, targetPrevious)
 
-	deltas, err := altair.AttestationsDelta(preBeaconState, bp, vp)
+	deltas, _, err := altair.AttestationsDelta(preBeaconState, bp, vp)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))

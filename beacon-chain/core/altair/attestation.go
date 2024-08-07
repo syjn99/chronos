@@ -107,24 +107,27 @@ func SetParticipationAndRewardProposer(
 	indices []uint64,
 	participatedFlags map[uint8]bool, totalBalance uint64) (state.BeaconState, error) {
 	var proposerRewardNumerator uint64
+	var proposerReserveNumerator uint64
 	currentEpoch := time.CurrentEpoch(beaconState)
 	var stateErr error
 	if targetEpoch == currentEpoch {
 		stateErr = beaconState.ModifyCurrentParticipationBits(func(val []byte) ([]byte, error) {
-			propRewardNum, epochParticipation, err := EpochParticipation(beaconState, indices, val, participatedFlags, totalBalance)
+			propRewardNum, propReserveNum, epochParticipation, err := EpochParticipation(beaconState, indices, val, participatedFlags, totalBalance)
 			if err != nil {
 				return nil, err
 			}
 			proposerRewardNumerator = propRewardNum
+			proposerReserveNumerator = propReserveNum
 			return epochParticipation, nil
 		})
 	} else {
 		stateErr = beaconState.ModifyPreviousParticipationBits(func(val []byte) ([]byte, error) {
-			propRewardNum, epochParticipation, err := EpochParticipation(beaconState, indices, val, participatedFlags, totalBalance)
+			propRewardNum, propReserveNum, epochParticipation, err := EpochParticipation(beaconState, indices, val, participatedFlags, totalBalance)
 			if err != nil {
 				return nil, err
 			}
 			proposerRewardNumerator = propRewardNum
+			proposerReserveNumerator = propReserveNum
 			return epochParticipation, nil
 		})
 	}
@@ -132,7 +135,7 @@ func SetParticipationAndRewardProposer(
 		return nil, stateErr
 	}
 
-	if err := RewardProposer(ctx, beaconState, proposerRewardNumerator); err != nil {
+	if err := RewardProposer(ctx, beaconState, proposerRewardNumerator, proposerReserveNumerator); err != nil {
 		return nil, err
 	}
 
@@ -165,56 +168,60 @@ func AddValidatorFlag(flag, flagPosition uint8) (uint8, error) {
 //	        if flag_index in participation_flag_indices and not has_flag(epoch_participation[index], flag_index):
 //	            epoch_participation[index] = add_flag(epoch_participation[index], flag_index)
 //	            proposer_reward_numerator += get_base_reward(state, index) * weight
-func EpochParticipation(beaconState state.BeaconState, indices []uint64, epochParticipation []byte, participatedFlags map[uint8]bool, totalBalance uint64) (uint64, []byte, error) {
+func EpochParticipation(beaconState state.BeaconState, indices []uint64, epochParticipation []byte, participatedFlags map[uint8]bool, totalBalance uint64) (uint64, uint64, []byte, error) {
 	cfg := params.BeaconConfig()
 	sourceFlagIndex := cfg.TimelySourceFlagIndex
 	targetFlagIndex := cfg.TimelyTargetFlagIndex
 	headFlagIndex := cfg.TimelyHeadFlagIndex
 	proposerRewardNumerator := uint64(0)
+	proposerReserveUsageNumerator := uint64(0)
 	for _, index := range indices {
 		if index >= uint64(len(epochParticipation)) {
-			return 0, nil, fmt.Errorf("index %d exceeds participation length %d", index, len(epochParticipation))
+			return 0, 0, nil, fmt.Errorf("index %d exceeds participation length %d", index, len(epochParticipation))
 		}
-		br, err := BaseRewardWithTotalBalance(beaconState, primitives.ValidatorIndex(index), totalBalance)
+		br, bru, err := BaseRewardWithTotalBalance(beaconState, primitives.ValidatorIndex(index), totalBalance)
 		if err != nil {
-			return 0, nil, err
+			return 0, 0, nil, err
 		}
 		has, err := HasValidatorFlag(epochParticipation[index], sourceFlagIndex)
 		if err != nil {
-			return 0, nil, err
+			return 0, 0, nil, err
 		}
 		if participatedFlags[sourceFlagIndex] && !has {
 			epochParticipation[index], err = AddValidatorFlag(epochParticipation[index], sourceFlagIndex)
 			if err != nil {
-				return 0, nil, err
+				return 0, 0, nil, err
 			}
 			proposerRewardNumerator += br * cfg.TimelySourceWeight
+			proposerReserveUsageNumerator += bru * cfg.TimelySourceWeight
 		}
 		has, err = HasValidatorFlag(epochParticipation[index], targetFlagIndex)
 		if err != nil {
-			return 0, nil, err
+			return 0, 0, nil, err
 		}
 		if participatedFlags[targetFlagIndex] && !has {
 			epochParticipation[index], err = AddValidatorFlag(epochParticipation[index], targetFlagIndex)
 			if err != nil {
-				return 0, nil, err
+				return 0, 0, nil, err
 			}
 			proposerRewardNumerator += br * cfg.TimelyTargetWeight
+			proposerReserveUsageNumerator += bru * cfg.TimelyTargetWeight
 		}
 		has, err = HasValidatorFlag(epochParticipation[index], headFlagIndex)
 		if err != nil {
-			return 0, nil, err
+			return 0, 0, nil, err
 		}
 		if participatedFlags[headFlagIndex] && !has {
 			epochParticipation[index], err = AddValidatorFlag(epochParticipation[index], headFlagIndex)
 			if err != nil {
-				return 0, nil, err
+				return 0, 0, nil, err
 			}
 			proposerRewardNumerator += br * cfg.TimelyHeadWeight
+			proposerReserveUsageNumerator += bru * cfg.TimelyHeadWeight
 		}
 	}
 
-	return proposerRewardNumerator, epochParticipation, nil
+	return proposerRewardNumerator, proposerReserveUsageNumerator, epochParticipation, nil
 }
 
 // RewardProposer rewards proposer by increasing proposer's balance with input reward numerator and calculated reward denominator.
@@ -224,11 +231,16 @@ func EpochParticipation(beaconState state.BeaconState, indices []uint64, epochPa
 //	proposer_reward_denominator = (WEIGHT_DENOMINATOR - PROPOSER_WEIGHT) * WEIGHT_DENOMINATOR // PROPOSER_WEIGHT
 //	proposer_reward = Gwei(proposer_reward_numerator // proposer_reward_denominator)
 //	increase_balance(state, get_beacon_proposer_index(state), proposer_reward)
-func RewardProposer(ctx context.Context, beaconState state.BeaconState, proposerRewardNumerator uint64) error {
+func RewardProposer(ctx context.Context, beaconState state.BeaconState, proposerRewardNumerator uint64, proposerReserveNumerator uint64) error {
 	cfg := params.BeaconConfig()
-	d := (cfg.WeightDenominator - cfg.ProposerWeight) * cfg.WeightDenominator / cfg.ProposerWeight
+	d := (cfg.WeightDenominator - cfg.ProposerWeight - cfg.LightLayerWeight) * cfg.WeightDenominator / cfg.ProposerWeight
 	proposerReward := proposerRewardNumerator / d
 	i, err := helpers.BeaconProposerIndex(ctx, beaconState)
+	if err != nil {
+		return err
+	}
+
+	err = helpers.DecreaseCurrentReserve(beaconState, proposerReserveNumerator/d)
 	if err != nil {
 		return err
 	}

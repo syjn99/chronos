@@ -87,9 +87,9 @@ func runPrecomputeRewardsAndPenaltiesTest(t *testing.T, testFolderPath string) {
 	vp, bp, err = precompute.ProcessAttestations(ctx, preBeaconState, vp, bp)
 	require.NoError(t, err)
 
-	rewards, penalties, err := precompute.AttestationsDelta(preBeaconState, bp, vp)
+	rewards, penalties, _, err := precompute.AttestationsDelta(preBeaconState, bp, vp)
 	require.NoError(t, err)
-	pRewards, err := precompute.ProposersDelta(preBeaconState, bp, vp)
+	pRewards, _, err := precompute.ProposersDelta(preBeaconState, bp, vp)
 	require.NoError(t, err)
 	if len(rewards) != len(penalties) && len(rewards) != len(pRewards) {
 		t.Fatal("Incorrect lengths")

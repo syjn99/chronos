@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -398,7 +399,11 @@ func TestSubmitVoluntaryExit(t *testing.T) {
 		params.SetupTestConfigCleanup(t)
 		config := params.BeaconConfig()
 		config.AltairForkEpoch = params.BeaconConfig().ShardCommitteePeriod + 1
+		config.BellatrixForkEpoch = math.MaxUint64
+		config.CapellaForkEpoch = math.MaxUint64
+		config.DenebForkEpoch = math.MaxUint64
 		params.OverrideBeaconConfig(config)
+		config.InitializeForkSchedule()
 
 		bs, _ := util.DeterministicGenesisState(t, 1)
 		// Satisfy activity time required before exiting.

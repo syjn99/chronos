@@ -259,33 +259,31 @@ func idealAttRewards(
 	bal *precompute.Balance,
 	vals []*precompute.Validator,
 ) ([]structs.IdealAttestationReward, bool) {
-	idealValsCount := uint64(16)
-	minIdealBalance := uint64(17)
-	maxIdealBalance := minIdealBalance + idealValsCount - 1
+	increment := params.BeaconConfig().EffectiveBalanceIncrement / 1e9
+	maxEffectiveBalance := params.BeaconConfig().MaxEffectiveBalance / 1e9
+	ejectionBalance := params.BeaconConfig().EjectionBalance / 1e9
+
+	idealValsCount := (maxEffectiveBalance - ejectionBalance) / increment
+	minIdealBalance := ejectionBalance + increment
+	maxIdealBalance := maxEffectiveBalance
+
 	idealRewards := make([]structs.IdealAttestationReward, 0, idealValsCount)
 	idealVals := make([]*precompute.Validator, 0, idealValsCount)
-	increment := params.BeaconConfig().EffectiveBalanceIncrement
-	for i := minIdealBalance; i <= maxIdealBalance; i++ {
-		for _, v := range vals {
-			if v.CurrentEpochEffectiveBalance/1e9 == i {
-				effectiveBalance := i * increment
-				idealVals = append(idealVals, &precompute.Validator{
-					IsActivePrevEpoch:            true,
-					IsSlashed:                    false,
-					CurrentEpochEffectiveBalance: effectiveBalance,
-					IsPrevEpochSourceAttester:    true,
-					IsPrevEpochTargetAttester:    true,
-					IsPrevEpochHeadAttester:      true,
-				})
-				idealRewards = append(idealRewards, structs.IdealAttestationReward{
-					EffectiveBalance: strconv.FormatUint(effectiveBalance, 10),
-					Inactivity:       strconv.FormatUint(0, 10),
-				})
-				break
-			}
-		}
+
+	for i := minIdealBalance; i <= maxIdealBalance; i += increment {
+		effectiveBalance := i * 1e9
+		idealVals = append(idealVals, &precompute.Validator{
+			IsActivePrevEpoch:            true,
+			IsSlashed:                    false,
+			CurrentEpochEffectiveBalance: effectiveBalance,
+			IsPrevEpochSourceAttester:    true,
+			IsPrevEpochTargetAttester:    true,
+			IsPrevEpochHeadAttester:      true,
+		})
+		idealRewards = append(idealRewards, structs.IdealAttestationReward{EffectiveBalance: strconv.FormatUint(effectiveBalance, 10)})
 	}
-	deltas, err := altair.AttestationsDelta(st, bal, idealVals)
+
+	deltas, _, err := altair.AttestationsDelta(st, bal, idealVals)
 	if err != nil {
 		httputil.HandleError(w, "Could not get attestations delta: "+err.Error(), http.StatusInternalServerError)
 		return nil, false
@@ -322,7 +320,7 @@ func totalAttRewards(
 	for i, v := range valIndices {
 		totalRewards[i] = structs.TotalAttestationReward{ValidatorIndex: strconv.FormatUint(uint64(v), 10)}
 	}
-	deltas, err := altair.AttestationsDelta(st, bal, vals)
+	deltas, _, err := altair.AttestationsDelta(st, bal, vals)
 	if err != nil {
 		httputil.HandleError(w, "Could not get attestations delta: "+err.Error(), http.StatusInternalServerError)
 		return nil, false

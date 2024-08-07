@@ -221,14 +221,16 @@ func TestAttestationsDelta(t *testing.T) {
 	require.NoError(t, err)
 	validators, balance, err = ProcessEpochParticipation(context.Background(), s, balance, validators)
 	require.NoError(t, err)
-	deltas, err := AttestationsDelta(s, balance, validators)
+	deltas, rDeltas, err := AttestationsDelta(s, balance, validators)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))
 	penalties := make([]uint64, len(deltas))
+	totalReserve := uint64(0)
 	for i, d := range deltas {
 		rewards[i] = d.HeadReward + d.SourceReward + d.TargetReward
 		penalties[i] = d.SourcePenalty + d.TargetPenalty + d.InactivityPenalty
+		totalReserve += rDeltas[i]
 	}
 
 	// Reward amount should increase as validator index increases due to setup.
@@ -246,9 +248,9 @@ func TestAttestationsDelta(t *testing.T) {
 	// Last index should have 0 penalty.
 	require.Equal(t, uint64(0), penalties[len(penalties)-1])
 
-	want := []uint64{0, 939146, 2101898, 2414946}
+	want := []uint64{0, 8561643835, 19977168949, 24733637746}
 	require.DeepEqual(t, want, rewards)
-	want = []uint64{3577700, 2325505, 0, 0}
+	want = []uint64{34246575342, 22831050228, 0, 0}
 	require.DeepEqual(t, want, penalties)
 }
 
@@ -259,14 +261,16 @@ func TestAttestationsDeltaBellatrix(t *testing.T) {
 	require.NoError(t, err)
 	validators, balance, err = ProcessEpochParticipation(context.Background(), s, balance, validators)
 	require.NoError(t, err)
-	deltas, err := AttestationsDelta(s, balance, validators)
+	deltas, rDeltas, err := AttestationsDelta(s, balance, validators)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))
 	penalties := make([]uint64, len(deltas))
+	totalReserve := uint64(0)
 	for i, d := range deltas {
 		rewards[i] = d.HeadReward + d.SourceReward + d.TargetReward
 		penalties[i] = d.SourcePenalty + d.TargetPenalty + d.InactivityPenalty
+		totalReserve += rDeltas[i]
 	}
 
 	// Reward amount should increase as validator index increases due to setup.
@@ -284,9 +288,9 @@ func TestAttestationsDeltaBellatrix(t *testing.T) {
 	// Last index should have 0 penalty.
 	require.Equal(t, uint64(0), penalties[len(penalties)-1])
 
-	want := []uint64{0, 939146, 2101898, 2414946}
+	want := []uint64{0, 8561643835, 19977168949, 24733637746}
 	require.DeepEqual(t, want, rewards)
-	want = []uint64{3577700, 2325505, 0, 0}
+	want = []uint64{34246575342, 22831050228, 0, 0}
 	require.DeepEqual(t, want, penalties)
 }
 
@@ -307,14 +311,16 @@ func TestProcessRewardsAndPenaltiesPrecompute_Ok(t *testing.T) {
 	}
 
 	wanted := make([]uint64, s.NumValidators())
-	deltas, err := AttestationsDelta(s, balance, validators)
+	deltas, rDeltas, err := AttestationsDelta(s, balance, validators)
 	require.NoError(t, err)
 
 	rewards := make([]uint64, len(deltas))
 	penalties := make([]uint64, len(deltas))
+	totalReserve := uint64(0)
 	for i, d := range deltas {
 		rewards[i] = d.HeadReward + d.SourceReward + d.TargetReward
 		penalties[i] = d.SourcePenalty + d.TargetPenalty + d.InactivityPenalty
+		totalReserve += rDeltas[i]
 	}
 	for i := range rewards {
 		wanted[i] += rewards[i]
@@ -327,6 +333,7 @@ func TestProcessRewardsAndPenaltiesPrecompute_Ok(t *testing.T) {
 		}
 	}
 	require.DeepEqual(t, wanted, balances)
+	require.Equal(t, uint64(0), totalReserve)
 }
 
 func TestProcessRewardsAndPenaltiesPrecompute_InactivityLeak(t *testing.T) {
@@ -348,8 +355,8 @@ func TestProcessRewardsAndPenaltiesPrecompute_InactivityLeak(t *testing.T) {
 	balances := s.Balances()
 	inactivityBalances := sCopy.Balances()
 	// Balances decreased to 0 due to inactivity
-	require.Equal(t, uint64(2101898), balances[2])
-	require.Equal(t, uint64(2414946), balances[3])
+	require.Equal(t, uint64(19977168949), balances[2])
+	require.Equal(t, uint64(24733637746), balances[3])
 	require.Equal(t, uint64(0), inactivityBalances[2])
 	require.Equal(t, uint64(0), inactivityBalances[3])
 }

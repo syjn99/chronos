@@ -189,6 +189,7 @@ func TestRecentBeaconBlocksRPCHandler_ReturnsBlocks_ReconstructsPayload(t *testi
 }
 
 func TestRecentBeaconBlocks_RPCRequestSent(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	p1 := p2ptest.NewTestP2P(t)
 	p2 := p2ptest.NewTestP2P(t)
 	p1.DelaySend = true

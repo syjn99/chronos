@@ -343,7 +343,7 @@ func TestActiveValidatorCount_Genesis(t *testing.T) {
 	assert.Equal(t, uint64(c), validatorCount, "Did not get the correct validator count")
 }
 
-func TestChurnLimit_OK(t *testing.T) {
+func TestNoBiasChurnLimit_OK(t *testing.T) {
 	tests := []struct {
 		validatorCount int
 		wantedChurn    uint64
@@ -371,7 +371,81 @@ func TestChurnLimit_OK(t *testing.T) {
 		require.NoError(t, err)
 		validatorCount, err := helpers.ActiveValidatorCount(context.Background(), beaconState, time.CurrentEpoch(beaconState))
 		require.NoError(t, err)
-		resultChurn := helpers.ValidatorActivationChurnLimit(validatorCount)
+		resultChurn := helpers.ValidatorExitNoBiasChurnLimit(validatorCount)
+		assert.Equal(t, test.wantedChurn, resultChurn, "ValidatorChurnLimit(%d)", test.validatorCount)
+	}
+}
+
+func TestChurnLimit_OK(t *testing.T) {
+	tests := []struct {
+		validatorCount int
+		epoch          primitives.Epoch
+		wantedChurn    uint64
+	}{
+		{validatorCount: 234375, epoch: 41063, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 234376, epoch: 41063, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 703125, epoch: 287438, wantedChurn: 11}, // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 703126, epoch: 287438, wantedChurn: 10}, // pending_churn when deposit > plan = chrun_limit
+	}
+	for _, test := range tests {
+		helpers.ClearCache()
+
+		validators := make([]*ethpb.Validator, test.validatorCount)
+		for i := 0; i < len(validators); i++ {
+			validators[i] = &ethpb.Validator{
+				EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance,
+				ExitEpoch:        params.BeaconConfig().FarFutureEpoch,
+			}
+		}
+
+		beaconState, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			Slot:        1,
+			Validators:  validators,
+			RandaoMixes: make([][]byte, params.BeaconConfig().EpochsPerHistoricalVector),
+		})
+		require.NoError(t, err)
+		validatorCount, err := helpers.ActiveValidatorCount(context.Background(), beaconState, time.CurrentEpoch(beaconState))
+		require.NoError(t, err)
+		validatorDeposit, err := helpers.TotalActiveBalance(beaconState)
+		require.NoError(t, err)
+		resultChurn := helpers.ValidatorActivationChurnLimit(validatorCount, validatorDeposit, test.epoch)
+		assert.Equal(t, test.wantedChurn, resultChurn, "ValidatorActivationChurnLimit(%d)", test.validatorCount)
+	}
+}
+
+func TestExitChurnLimit_OK(t *testing.T) {
+	tests := []struct {
+		validatorCount int
+		epoch          primitives.Epoch
+		wantedChurn    uint64
+	}{
+		{validatorCount: 234375, epoch: 41063, wantedChurn: 4},   // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 234376, epoch: 41063, wantedChurn: 5},   // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 703125, epoch: 287438, wantedChurn: 10}, // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 703126, epoch: 287438, wantedChurn: 11}, // exit_churn when deposit > plan = chrun_limit++
+	}
+	for _, test := range tests {
+		helpers.ClearCache()
+
+		validators := make([]*ethpb.Validator, test.validatorCount)
+		for i := 0; i < len(validators); i++ {
+			validators[i] = &ethpb.Validator{
+				EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance,
+				ExitEpoch:        params.BeaconConfig().FarFutureEpoch,
+			}
+		}
+
+		beaconState, err := state_native.InitializeFromProtoPhase0(&ethpb.BeaconState{
+			Slot:        1,
+			Validators:  validators,
+			RandaoMixes: make([][]byte, params.BeaconConfig().EpochsPerHistoricalVector),
+		})
+		require.NoError(t, err)
+		validatorCount, err := helpers.ActiveValidatorCount(context.Background(), beaconState, time.CurrentEpoch(beaconState))
+		require.NoError(t, err)
+		validatorDeposit, err := helpers.TotalActiveBalance(beaconState)
+		require.NoError(t, err)
+		resultChurn := helpers.ValidatorExitChurnLimit(validatorCount, validatorDeposit, test.epoch)
 		assert.Equal(t, test.wantedChurn, resultChurn, "ValidatorActivationChurnLimit(%d)", test.validatorCount)
 	}
 }
@@ -380,11 +454,12 @@ func TestChurnLimitDeneb_OK(t *testing.T) {
 	tests := []struct {
 		validatorCount int
 		wantedChurn    uint64
+		epoch          primitives.Epoch
 	}{
-		{1000, 4},
-		{100000, 4},
-		{1000000, params.BeaconConfig().MaxPerEpochActivationChurnLimit},
-		{2000000, params.BeaconConfig().MaxPerEpochActivationChurnLimit},
+		{234375, 5, 41063},
+		{234376, 4, 41063},
+		{1000000, params.BeaconConfig().MaxPerEpochActivationChurnLimit, 0},
+		{2000000, params.BeaconConfig().MaxPerEpochActivationChurnLimit, 0},
 	}
 	for _, test := range tests {
 		helpers.ClearCache()
@@ -393,7 +468,8 @@ func TestChurnLimitDeneb_OK(t *testing.T) {
 		validators := make([]*ethpb.Validator, test.validatorCount)
 		for i := range validators {
 			validators[i] = &ethpb.Validator{
-				ExitEpoch: params.BeaconConfig().FarFutureEpoch,
+				EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance,
+				ExitEpoch:        params.BeaconConfig().FarFutureEpoch,
 			}
 		}
 
@@ -409,8 +485,12 @@ func TestChurnLimitDeneb_OK(t *testing.T) {
 		validatorCount, err := helpers.ActiveValidatorCount(context.Background(), beaconState, time.CurrentEpoch(beaconState))
 		require.NoError(t, err)
 
+		// Get active validator balance
+		validatorDeposit, err := helpers.TotalActiveBalance(beaconState)
+		require.NoError(t, err)
+
 		// Test churn limit calculation
-		resultChurn := helpers.ValidatorActivationChurnLimitDeneb(validatorCount)
+		resultChurn := helpers.ValidatorActivationChurnLimitDeneb(validatorCount, validatorDeposit, test.epoch)
 		assert.Equal(t, test.wantedChurn, resultChurn)
 	}
 }

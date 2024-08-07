@@ -46,6 +46,7 @@ func TestSkipSlotCache_OK(t *testing.T) {
 }
 
 func TestSkipSlotCache_ConcurrentMixup(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	bState, privs := util.DeterministicGenesisState(t, params.MinimalSpecConfig().MinGenesisActiveValidatorCount)
 	pbState, err := state_native.ProtobufBeaconStatePhase0(bState.ToProto())
 	require.NoError(t, err)

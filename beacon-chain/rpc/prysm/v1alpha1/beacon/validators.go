@@ -425,14 +425,18 @@ func (bs *Server) GetValidatorActiveSetChanges(
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not get active validator count: %v", err)
 	}
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(requestedState)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not calculate active balance: %v", err)
+	}
 	vs := requestedState.Validators()
 	activatedIndices := validators.ActivatedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs)
-	exitedIndices, err := validators.ExitedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount)
+	exitedIndices, err := validators.ExitedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount, activeValidatorDeposit)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not determine exited validator indices: %v", err)
 	}
 	slashedIndices := validators.SlashedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs)
-	ejectedIndices, err := validators.EjectedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount)
+	ejectedIndices, err := validators.EjectedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount, activeValidatorDeposit)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not determine ejected validator indices: %v", err)
 	}
@@ -601,6 +605,10 @@ func (bs *Server) GetValidatorQueue(
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not get active validator count: %v", err)
 	}
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(headState)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not calculate active balance: %v", err)
+	}
 
 	exitQueueEpoch := primitives.Epoch(0)
 	for _, i := range exitEpochs {
@@ -615,7 +623,7 @@ func (bs *Server) GetValidatorQueue(
 		}
 	}
 	// Prevent churn limit from causing index out of bound issues.
-	exitChurnLimit := helpers.ValidatorExitChurnLimit(activeValidatorCount)
+	exitChurnLimit := helpers.ValidatorExitChurnLimit(activeValidatorCount, activeValidatorDeposit, coreTime.CurrentEpoch(headState))
 	if exitChurnLimit < exitQueueChurn {
 		// If we are above the churn limit, we simply increase the churn by one.
 		exitQueueEpoch++
@@ -642,9 +650,9 @@ func (bs *Server) GetValidatorQueue(
 		exitQueueKeys[i] = vals[idx].PublicKey
 	}
 
-	churnLimit := helpers.ValidatorActivationChurnLimit(activeValidatorCount)
+	churnLimit := helpers.ValidatorActivationChurnLimit(activeValidatorCount, activeValidatorDeposit, coreTime.CurrentEpoch(headState))
 	if headState.Version() >= version.Deneb {
-		churnLimit = helpers.ValidatorActivationChurnLimitDeneb(activeValidatorCount)
+		churnLimit = helpers.ValidatorActivationChurnLimitDeneb(activeValidatorCount, activeValidatorDeposit, coreTime.CurrentEpoch(headState))
 	}
 	return &ethpb.ValidatorQueue{
 		ChurnLimit:                 churnLimit,

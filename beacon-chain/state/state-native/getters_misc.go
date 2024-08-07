@@ -84,6 +84,30 @@ func (b *BeaconState) HistoricalRoots() ([][]byte, error) {
 	return b.historicalRoots.Slice(), nil
 }
 
+// RewardAdjustmentFactor of the beacon state as an uint64.
+func (b *BeaconState) RewardAdjustmentFactor() uint64 {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.rewardAdjustmentFactor
+}
+
+// PreviousEpochReserve of the beacon state as an uint64.
+func (b *BeaconState) PreviousEpochReserve() uint64 {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.previousEpochReserve
+}
+
+// CurrentEpochReserve of the beacon state as an uint64.
+func (b *BeaconState) CurrentEpochReserve() uint64 {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+
+	return b.currentEpochReserve
+}
+
 // HistoricalSummaries of the beacon state.
 func (b *BeaconState) HistoricalSummaries() ([]*ethpb.HistoricalSummary, error) {
 	if b.version < version.Capella {

@@ -1303,6 +1303,12 @@ func TestGetDuties_GetDutiesForEpochFailed(t *testing.T) {
 		gomock.Any(),
 	).Times(2)
 
+	dutiesProvider.EXPECT().GetSyncDuties(
+		ctx,
+		gomock.Any(),
+		gomock.Any(),
+	).Times(2)
+
 	validatorClient := &beaconApiValidatorClient{
 		stateValidatorsProvider: stateValidatorsProvider,
 		dutiesProvider:          dutiesProvider,

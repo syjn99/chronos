@@ -19,7 +19,14 @@ import (
 )
 
 func TestDomainCache(t *testing.T) {
-	cfg := params.MainnetConfig()
+	cfg := params.MainnetConfig().Copy()
+	cfg.AltairForkEpoch = 1
+	cfg.BellatrixForkEpoch = 2
+	cfg.CapellaForkEpoch = 3
+	cfg.DenebForkEpoch = 4
+	params.OverrideBeaconConfig(cfg)
+	cfg.InitializeForkSchedule()
+
 	vRoot, err := hexutil.Decode("0x0011223344556677889900112233445566778899001122334455667788990011")
 	dType := cfg.DomainBeaconProposer
 	require.NoError(t, err)

@@ -92,6 +92,10 @@ func ComputeFieldRootsWithHasher(ctx context.Context, state *BeaconState) ([][]b
 	}
 	fieldRoots[types.HistoricalRoots.RealPosition()] = historicalRootsRt[:]
 
+	// RewardAdjustmentFactor root.
+	rewardAdjustmentFactorRoot := ssz.Uint64Root(state.rewardAdjustmentFactor)
+	fieldRoots[types.RewardAdjustmentFactor.RealPosition()] = rewardAdjustmentFactorRoot[:]
+
 	// Eth1Data data structure root.
 	eth1HashTreeRoot, err := stateutil.Eth1Root(state.eth1Data)
 	if err != nil {
@@ -125,6 +129,14 @@ func ComputeFieldRootsWithHasher(ctx context.Context, state *BeaconState) ([][]b
 		return nil, errors.Wrap(err, "could not compute validator balances merkleization")
 	}
 	fieldRoots[types.Balances.RealPosition()] = balancesRoot[:]
+
+	// PreviousEpochReserve root.
+	previousEpochReserveRoot := ssz.Uint64Root(state.previousEpochReserve)
+	fieldRoots[types.PreviousEpochReserve.RealPosition()] = previousEpochReserveRoot[:]
+
+	// CurrentEpochReserve root.
+	currentEpochReserveRoot := ssz.Uint64Root(state.currentEpochReserve)
+	fieldRoots[types.CurrentEpochReserve.RealPosition()] = currentEpochReserveRoot[:]
 
 	// RandaoMixes array root.
 	randaoRootsRoot, err := stateutil.ArraysRoot(state.randaoMixesVal().Slice(), fieldparams.RandaoMixesLength)

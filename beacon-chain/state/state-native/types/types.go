@@ -44,6 +44,8 @@ func (f FieldIndex) String() string {
 		return "stateRoots"
 	case HistoricalRoots:
 		return "historicalRoots"
+	case RewardAdjustmentFactor:
+		return "rewardAdjustmentFactor"
 	case Eth1Data:
 		return "eth1Data"
 	case Eth1DataVotes:
@@ -54,6 +56,10 @@ func (f FieldIndex) String() string {
 		return "validators"
 	case Balances:
 		return "balances"
+	case PreviousEpochReserve:
+		return "previousEpochReserve"
+	case CurrentEpochReserve:
+		return "currentEpochReserve"
 	case RandaoMixes:
 		return "randaoMixes"
 	case Slashings:
@@ -117,48 +123,54 @@ func (f FieldIndex) RealPosition() int {
 		return 6
 	case HistoricalRoots:
 		return 7
-	case Eth1Data:
+	case RewardAdjustmentFactor:
 		return 8
-	case Eth1DataVotes:
+	case Eth1Data:
 		return 9
-	case Eth1DepositIndex:
+	case Eth1DataVotes:
 		return 10
-	case Validators:
+	case Eth1DepositIndex:
 		return 11
-	case Balances:
+	case Validators:
 		return 12
-	case RandaoMixes:
+	case Balances:
 		return 13
-	case Slashings:
+	case PreviousEpochReserve:
 		return 14
-	case PreviousEpochAttestations, PreviousEpochParticipationBits:
+	case CurrentEpochReserve:
 		return 15
-	case CurrentEpochAttestations, CurrentEpochParticipationBits:
+	case RandaoMixes:
 		return 16
-	case JustificationBits:
+	case Slashings:
 		return 17
-	case PreviousJustifiedCheckpoint:
+	case PreviousEpochAttestations, PreviousEpochParticipationBits:
 		return 18
-	case CurrentJustifiedCheckpoint:
+	case CurrentEpochAttestations, CurrentEpochParticipationBits:
 		return 19
-	case FinalizedCheckpoint:
+	case JustificationBits:
 		return 20
-	case InactivityScores:
+	case PreviousJustifiedCheckpoint:
 		return 21
-	case CurrentSyncCommittee:
+	case CurrentJustifiedCheckpoint:
 		return 22
-	case NextSyncCommittee:
+	case FinalizedCheckpoint:
 		return 23
-	case BailOutScores:
+	case InactivityScores:
 		return 24
-	case LatestExecutionPayloadHeader, LatestExecutionPayloadHeaderCapella, LatestExecutionPayloadHeaderDeneb:
+	case CurrentSyncCommittee:
 		return 25
-	case NextWithdrawalIndex:
+	case NextSyncCommittee:
 		return 26
-	case NextWithdrawalValidatorIndex:
+	case BailOutScores:
 		return 27
-	case HistoricalSummaries:
+	case LatestExecutionPayloadHeader, LatestExecutionPayloadHeaderCapella, LatestExecutionPayloadHeaderDeneb:
 		return 28
+	case NextWithdrawalIndex:
+		return 29
+	case NextWithdrawalValidatorIndex:
+		return 30
+	case HistoricalSummaries:
+		return 31
 	default:
 		return -1
 	}
@@ -190,11 +202,14 @@ const (
 	BlockRoots
 	StateRoots
 	HistoricalRoots
+	RewardAdjustmentFactor
 	Eth1Data
 	Eth1DataVotes
 	Eth1DepositIndex
 	Validators
 	Balances
+	PreviousEpochReserve
+	CurrentEpochReserve
 	RandaoMixes
 	Slashings
 	PreviousEpochAttestations

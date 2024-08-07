@@ -466,6 +466,7 @@ func TestRPCBeaconBlocksByRange_RPCHandlerRateLimitOverflow(t *testing.T) {
 	}
 
 	t.Run("high request count param and no overflow", func(t *testing.T) {
+		params.SetupForkEpochConfigForTest()
 		p1 := p2ptest.NewTestP2P(t)
 		p2 := p2ptest.NewTestP2P(t)
 		p1.Connect(p2)

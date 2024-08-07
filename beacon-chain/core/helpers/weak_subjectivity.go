@@ -80,7 +80,7 @@ func ComputeWeakSubjectivityPeriod(ctx context.Context, st state.ReadOnlyBeaconS
 	T := cfg.MaxEffectiveBalance / cfg.GweiPerEth
 
 	// Validator churn limit.
-	delta := ValidatorExitChurnLimit(N)
+	delta := ValidatorExitNoBiasChurnLimit(N)
 
 	// Balance top-ups.
 	Delta := uint64(cfg.SlotsPerEpoch.Mul(cfg.MaxDeposits))

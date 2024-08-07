@@ -33,11 +33,14 @@ var phase0Fields = []types.FieldIndex{
 	types.BlockRoots,
 	types.StateRoots,
 	types.HistoricalRoots,
+	types.RewardAdjustmentFactor,
 	types.Eth1Data,
 	types.Eth1DataVotes,
 	types.Eth1DepositIndex,
 	types.Validators,
 	types.Balances,
+	types.PreviousEpochReserve,
+	types.CurrentEpochReserve,
 	types.RandaoMixes,
 	types.Slashings,
 	types.PreviousEpochAttestations,
@@ -57,11 +60,14 @@ var altairFields = []types.FieldIndex{
 	types.BlockRoots,
 	types.StateRoots,
 	types.HistoricalRoots,
+	types.RewardAdjustmentFactor,
 	types.Eth1Data,
 	types.Eth1DataVotes,
 	types.Eth1DepositIndex,
 	types.Validators,
 	types.Balances,
+	types.PreviousEpochReserve,
+	types.CurrentEpochReserve,
 	types.RandaoMixes,
 	types.Slashings,
 	types.PreviousEpochParticipationBits,
@@ -153,9 +159,12 @@ func InitializeFromProtoUnsafePhase0(st *ethpb.BeaconState) (state.BeaconState, 
 		fork:                        st.Fork,
 		latestBlockHeader:           st.LatestBlockHeader,
 		historicalRoots:             hRoots,
+		rewardAdjustmentFactor:      st.RewardAdjustmentFactor,
 		eth1Data:                    st.Eth1Data,
 		eth1DataVotes:               st.Eth1DataVotes,
 		eth1DepositIndex:            st.Eth1DepositIndex,
+		previousEpochReserve:        st.PreviousEpochReserve,
+		currentEpochReserve:         st.CurrentEpochReserve,
 		slashings:                   st.Slashings,
 		previousEpochAttestations:   st.PreviousEpochAttestations,
 		currentEpochAttestations:    st.CurrentEpochAttestations,
@@ -257,9 +266,12 @@ func InitializeFromProtoUnsafeAltair(st *ethpb.BeaconStateAltair) (state.BeaconS
 		fork:                        st.Fork,
 		latestBlockHeader:           st.LatestBlockHeader,
 		historicalRoots:             hRoots,
+		rewardAdjustmentFactor:      st.RewardAdjustmentFactor,
 		eth1Data:                    st.Eth1Data,
 		eth1DataVotes:               st.Eth1DataVotes,
 		eth1DepositIndex:            st.Eth1DepositIndex,
+		previousEpochReserve:        st.PreviousEpochReserve,
+		currentEpochReserve:         st.CurrentEpochReserve,
 		slashings:                   st.Slashings,
 		previousEpochParticipation:  st.PreviousEpochParticipation,
 		currentEpochParticipation:   st.CurrentEpochParticipation,
@@ -369,9 +381,12 @@ func InitializeFromProtoUnsafeBellatrix(st *ethpb.BeaconStateBellatrix) (state.B
 		fork:                         st.Fork,
 		latestBlockHeader:            st.LatestBlockHeader,
 		historicalRoots:              hRoots,
+		rewardAdjustmentFactor:       st.RewardAdjustmentFactor,
 		eth1Data:                     st.Eth1Data,
 		eth1DataVotes:                st.Eth1DataVotes,
 		eth1DepositIndex:             st.Eth1DepositIndex,
+		previousEpochReserve:         st.PreviousEpochReserve,
+		currentEpochReserve:          st.CurrentEpochReserve,
 		slashings:                    st.Slashings,
 		previousEpochParticipation:   st.PreviousEpochParticipation,
 		currentEpochParticipation:    st.CurrentEpochParticipation,
@@ -483,9 +498,12 @@ func InitializeFromProtoUnsafeCapella(st *ethpb.BeaconStateCapella) (state.Beaco
 		fork:                                st.Fork,
 		latestBlockHeader:                   st.LatestBlockHeader,
 		historicalRoots:                     hRoots,
+		rewardAdjustmentFactor:              st.RewardAdjustmentFactor,
 		eth1Data:                            st.Eth1Data,
 		eth1DataVotes:                       st.Eth1DataVotes,
 		eth1DepositIndex:                    st.Eth1DepositIndex,
+		previousEpochReserve:                st.PreviousEpochReserve,
+		currentEpochReserve:                 st.CurrentEpochReserve,
 		slashings:                           st.Slashings,
 		previousEpochParticipation:          st.PreviousEpochParticipation,
 		currentEpochParticipation:           st.CurrentEpochParticipation,
@@ -601,9 +619,12 @@ func InitializeFromProtoUnsafeDeneb(st *ethpb.BeaconStateDeneb) (state.BeaconSta
 		fork:                              st.Fork,
 		latestBlockHeader:                 st.LatestBlockHeader,
 		historicalRoots:                   hRoots,
+		rewardAdjustmentFactor:            st.RewardAdjustmentFactor,
 		eth1Data:                          st.Eth1Data,
 		eth1DataVotes:                     st.Eth1DataVotes,
 		eth1DepositIndex:                  st.Eth1DepositIndex,
+		previousEpochReserve:              st.PreviousEpochReserve,
+		currentEpochReserve:               st.CurrentEpochReserve,
 		slashings:                         st.Slashings,
 		previousEpochParticipation:        st.PreviousEpochParticipation,
 		currentEpochParticipation:         st.CurrentEpochParticipation,
@@ -724,6 +745,9 @@ func (b *BeaconState) Copy() state.BeaconState {
 		eth1DepositIndex:             b.eth1DepositIndex,
 		nextWithdrawalIndex:          b.nextWithdrawalIndex,
 		nextWithdrawalValidatorIndex: b.nextWithdrawalValidatorIndex,
+		rewardAdjustmentFactor:       b.rewardAdjustmentFactor,
+		previousEpochReserve:         b.previousEpochReserve,
+		currentEpochReserve:          b.currentEpochReserve,
 
 		// Large arrays, infrequently changed, constant size.
 		blockRoots:                b.blockRoots,
@@ -1054,6 +1078,8 @@ func (b *BeaconState) rootSelector(ctx context.Context, field types.FieldIndex) 
 			hRoots[i] = b.historicalRoots[i][:]
 		}
 		return ssz.ByteArrayRootWithLimit(hRoots, fieldparams.HistoricalRootsLength)
+	case types.RewardAdjustmentFactor:
+		return ssz.Uint64Root(b.rewardAdjustmentFactor), nil
 	case types.Eth1Data:
 		return stateutil.Eth1Root(b.eth1Data)
 	case types.Eth1DataVotes:
@@ -1074,6 +1100,10 @@ func (b *BeaconState) rootSelector(ctx context.Context, field types.FieldIndex) 
 		return b.validatorsRootSelector(field)
 	case types.Balances:
 		return b.balancesRootSelector(field)
+	case types.PreviousEpochReserve:
+		return ssz.Uint64Root(b.previousEpochReserve), nil
+	case types.CurrentEpochReserve:
+		return ssz.Uint64Root(b.currentEpochReserve), nil
 	case types.RandaoMixes:
 		return b.randaoMixesRootSelector(field)
 	case types.Slashings:

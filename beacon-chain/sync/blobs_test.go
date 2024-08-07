@@ -283,6 +283,7 @@ func repositionFutureEpochs(cfg *params.BeaconChainConfig) {
 }
 
 func defaultMockChain(t *testing.T) (*mock.ChainService, *startup.Clock) {
+	params.SetupForkEpochConfigForTest()
 	de := params.BeaconConfig().DenebForkEpoch
 	df, err := forks.Fork(de)
 	require.NoError(t, err)

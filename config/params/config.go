@@ -24,26 +24,41 @@ type BeaconChainConfig struct {
 	JustificationBitsLength  uint64           `yaml:"JUSTIFICATION_BITS_LENGTH"`   // JustificationBitsLength defines number of epochs to track when implementing k-finality in Casper FFG.
 
 	// Misc constants.
-	PresetBase                     string `yaml:"PRESET_BASE" spec:"true"`                        // PresetBase represents the underlying spec preset this config is based on.
-	ConfigName                     string `yaml:"CONFIG_NAME" spec:"true"`                        // ConfigName for allowing an easy human-readable way of knowing what chain is being used.
-	TargetCommitteeSize            uint64 `yaml:"TARGET_COMMITTEE_SIZE" spec:"true"`              // TargetCommitteeSize is the number of validators in a committee when the chain is healthy.
-	MaxValidatorsPerCommittee      uint64 `yaml:"MAX_VALIDATORS_PER_COMMITTEE" spec:"true"`       // MaxValidatorsPerCommittee defines the upper bound of the size of a committee.
-	MaxCommitteesPerSlot           uint64 `yaml:"MAX_COMMITTEES_PER_SLOT" spec:"true"`            // MaxCommitteesPerSlot defines the max amount of committee in a single slot.
-	MinPerEpochChurnLimit          uint64 `yaml:"MIN_PER_EPOCH_CHURN_LIMIT" spec:"true"`          // MinPerEpochChurnLimit is the minimum amount of churn allotted for validator rotations.
-	ChurnLimitQuotient             uint64 `yaml:"CHURN_LIMIT_QUOTIENT" spec:"true"`               // ChurnLimitQuotient is used to determine the limit of how many validators can rotate per epoch.
-	ShuffleRoundCount              uint64 `yaml:"SHUFFLE_ROUND_COUNT" spec:"true"`                // ShuffleRoundCount is used for retrieving the permuted index.
-	MinGenesisActiveValidatorCount uint64 `yaml:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT" spec:"true"` // MinGenesisActiveValidatorCount defines how many validator deposits needed to kick off beacon chain.
-	MinGenesisTime                 uint64 `yaml:"MIN_GENESIS_TIME" spec:"true"`                   // MinGenesisTime is the time that needed to pass before kicking off beacon chain.
-	TargetAggregatorsPerCommittee  uint64 `yaml:"TARGET_AGGREGATORS_PER_COMMITTEE" spec:"true"`   // TargetAggregatorsPerCommittee defines the number of aggregators inside one committee.
-	HysteresisQuotient             uint64 `yaml:"HYSTERESIS_QUOTIENT" spec:"true"`                // HysteresisQuotient defines the hysteresis quotient for effective balance calculations.
-	HysteresisDownwardMultiplier   uint64 `yaml:"HYSTERESIS_DOWNWARD_MULTIPLIER" spec:"true"`     // HysteresisDownwardMultiplier defines the hysteresis downward multiplier for effective balance calculations.
-	HysteresisUpwardMultiplier     uint64 `yaml:"HYSTERESIS_UPWARD_MULTIPLIER" spec:"true"`       // HysteresisUpwardMultiplier defines the hysteresis upward multiplier for effective balance calculations.
+	PresetBase                        string `yaml:"PRESET_BASE" spec:"true"`                          // PresetBase represents the underlying spec preset this config is based on.
+	ConfigName                        string `yaml:"CONFIG_NAME" spec:"true"`                          // ConfigName for allowing an easy human-readable way of knowing what chain is being used.
+	TargetCommitteeSize               uint64 `yaml:"TARGET_COMMITTEE_SIZE" spec:"true"`                // TargetCommitteeSize is the number of validators in a committee when the chain is healthy.
+	MaxValidatorsPerCommittee         uint64 `yaml:"MAX_VALIDATORS_PER_COMMITTEE" spec:"true"`         // MaxValidatorsPerCommittee defines the upper bound of the size of a committee.
+	MaxCommitteesPerSlot              uint64 `yaml:"MAX_COMMITTEES_PER_SLOT" spec:"true"`              // MaxCommitteesPerSlot defines the max amount of committee in a single slot.
+	MinPerEpochChurnLimit             uint64 `yaml:"MIN_PER_EPOCH_CHURN_LIMIT" spec:"true"`            // MinPerEpochChurnLimit is the minimum amount of churn allotted for validator rotations.
+	ChurnLimitQuotient                uint64 `yaml:"CHURN_LIMIT_QUOTIENT" spec:"true"`                 // ChurnLimitQuotient is used to determine the limit of how many validators can rotate per epoch.
+	ChurnLimitBias                    uint64 `yaml:"CHURN_LIMIT_BIAS" spec:"true"`                     // ChurnLimitBias is a parameter for dynamic churn limit calculation.
+	ShuffleRoundCount                 uint64 `yaml:"SHUFFLE_ROUND_COUNT" spec:"true"`                  // ShuffleRoundCount is used for retrieving the permuted index.
+	MinGenesisActiveValidatorCount    uint64 `yaml:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT" spec:"true"`   // MinGenesisActiveValidatorCount defines how many validator deposits needed to kick off beacon chain.
+	MinGenesisTime                    uint64 `yaml:"MIN_GENESIS_TIME" spec:"true"`                     // MinGenesisTime is the time that needed to pass before kicking off beacon chain.
+	TargetAggregatorsPerCommittee     uint64 `yaml:"TARGET_AGGREGATORS_PER_COMMITTEE" spec:"true"`     // TargetAggregatorsPerCommittee defines the number of aggregators inside one committee.
+	HysteresisQuotient                uint64 `yaml:"HYSTERESIS_QUOTIENT" spec:"true"`                  // HysteresisQuotient defines the hysteresis quotient for effective balance calculations.
+	HysteresisDownwardMultiplier      uint64 `yaml:"HYSTERESIS_DOWNWARD_MULTIPLIER" spec:"true"`       // HysteresisDownwardMultiplier defines the hysteresis downward multiplier for effective balance calculations.
+	HysteresisUpwardMultiplier        uint64 `yaml:"HYSTERESIS_UPWARD_MULTIPLIER" spec:"true"`         // HysteresisUpwardMultiplier defines the hysteresis upward multiplier for effective balance calculations.
+	EpochIssuance                     uint64 `yaml:"EPOCH_ISSUANCE"`                                   // EpochIssuance defines the issuance per epoch before year 11.
+	DepositPlanEarlyEnd               uint64 `yaml:"DEPOSIT_PLAN_EARLY_END" spec:"true"`               // DepositPlanEarlyEnd defines the first end of the ~x year deposit plan.
+	DepositPlanEarlySlope             uint64 `yaml:"DEPOSIT_PLAN_EARLY_SLOPE" spec:"true"`             // DepositPlanEarlySlope defines the slope of the ~x year deposit plan.
+	DepositPlanEarlyOffset            uint64 `yaml:"DEPOSIT_PLAN_EARLY_OFFSET" spec:"true"`            // DepositPlanEarlyOffset defines the bias of the ~x year deposit plan.
+	DepositPlanLaterEnd               uint64 `yaml:"DEPOSIT_PLAN_LATER_END" spec:"true"`               // DepositPlanLaterEnd defines the last end of the ~y year deposit plan.
+	DepositPlanLaterSlope             uint64 `yaml:"DEPOSIT_PLAN_LATER_SLOPE" spec:"true"`             // DepositPlanLaterSlope defines the slope of the x~y year deposit plan.
+	DepositPlanLaterOffset            uint64 `yaml:"DEPOSIT_PLAN_LATER_OFFSET" spec:"true"`            // DepositPlanLaterOffset defines the bias of the x~y year deposit plan.
+	DepositPlanFinal                  uint64 `yaml:"DEPOSIT_PLAN_FINAL" spec:"true"`                   // DepositPlanFinal defines the final deposit amount after 6 years.
+	RewardFeedbackPrecision           uint64 `yaml:"REWARD_FEEDBACK_PRECISION" spec:"true"`            // RewardFeedbackPrecision defines the precision of the reward feedback.
+	RewardFeedbackThresholdReciprocal uint64 `yaml:"REWARD_FEEDBACK_THRESHOLD_RECIPROCAL" spec:"true"` // RewardFeedbackThresholdReciprocal defines the reciprocal of threshold in the reward feedback.
+	TargetChangeRate                  uint64 `yaml:"TARGET_CHANGE_RATE" spec:"true"`                   // TargetChangeRate defines the target change rate for the reward feedback.
+	TargetYield                       uint64 `yaml:"TARGET_YIELD" spec:"true"`                         // TargetYield defines the target yield for the reward feedback.
 
 	// Gwei value constants.
 	MinDepositAmount          uint64 `yaml:"MIN_DEPOSIT_AMOUNT" spec:"true"`          // MinDepositAmount is the minimum amount of Gwei a validator can send to the deposit contract at once (lower amounts will be reverted).
 	MaxEffectiveBalance       uint64 `yaml:"MAX_EFFECTIVE_BALANCE" spec:"true"`       // MaxEffectiveBalance is the maximal amount of Gwei that is effective for staking.
 	EjectionBalance           uint64 `yaml:"EJECTION_BALANCE" spec:"true"`            // EjectionBalance is the minimal GWei a validator needs to have before ejected.
 	EffectiveBalanceIncrement uint64 `yaml:"EFFECTIVE_BALANCE_INCREMENT" spec:"true"` // EffectiveBalanceIncrement is used for converting the high balance into the low balance for validators.
+	MaxTokenSupply            uint64 `yaml:"MAX_TOKEN_SUPPLY" spec:"true"`            // MaxTokenSupply defines the target maximum number of tokens that can be issued in GWei.
+	IssuancePerYear           uint64 `yaml:"ISSUANCE_PER_YEAR" spec:"true"`           // IssuancePerYear defines the issuance of tokens per year in GWei.
 
 	// Initial value constants.
 	BLSWithdrawalPrefixByte         byte     `yaml:"BLS_WITHDRAWAL_PREFIX" spec:"true"`          // BLSWithdrawalPrefixByte is used for BLS withdrawal and it's the first byte.
@@ -56,6 +71,7 @@ type BeaconChainConfig struct {
 	SecondsPerSlot                   uint64           `yaml:"SECONDS_PER_SLOT" spec:"true"`                // SecondsPerSlot is how many seconds are in a single slot.
 	SlotsPerEpoch                    primitives.Slot  `yaml:"SLOTS_PER_EPOCH" spec:"true"`                 // SlotsPerEpoch is the number of slots in an epoch.
 	SqrRootSlotsPerEpoch             primitives.Slot  // SqrRootSlotsPerEpoch is a hard coded value where we take the square root of `SlotsPerEpoch` and round down.
+	EpochsPerYear                    uint64           `yaml:"EPOCHS_PER_YEAR" spec:"true"`                     // EpochsPerYear defines the number of epochs per year.
 	MinSeedLookahead                 primitives.Epoch `yaml:"MIN_SEED_LOOKAHEAD" spec:"true"`                  // MinSeedLookahead is the duration of randao look ahead seed.
 	MaxSeedLookahead                 primitives.Epoch `yaml:"MAX_SEED_LOOKAHEAD" spec:"true"`                  // MaxSeedLookahead is the duration a validator has to wait for entry and exit in epoch.
 	EpochsPerEth1VotingPeriod        primitives.Epoch `yaml:"EPOCHS_PER_ETH1_VOTING_PERIOD" spec:"true"`       // EpochsPerEth1VotingPeriod defines how often the merkle root of deposit receipts get updated in beacon node on per epoch basis.
@@ -102,6 +118,7 @@ type BeaconChainConfig struct {
 	MaxAttestations                  uint64 `yaml:"MAX_ATTESTATIONS" spec:"true"`                     // MaxAttestations defines the maximum allowed attestations in a beacon block.
 	MaxDeposits                      uint64 `yaml:"MAX_DEPOSITS" spec:"true"`                         // MaxDeposits defines the maximum number of validator deposits in a block.
 	MaxVoluntaryExits                uint64 `yaml:"MAX_VOLUNTARY_EXITS" spec:"true"`                  // MaxVoluntaryExits defines the maximum number of validator exits in a block.
+	MaxBailOuts                      uint64 `yaml:"MAX_BAIL_OUTS" spec:"true"`                        // MaxBailOuts defines the maximum number of bailouts in a block.
 	MaxWithdrawalsPerPayload         uint64 `yaml:"MAX_WITHDRAWALS_PER_PAYLOAD" spec:"true"`          // MaxWithdrawalsPerPayload defines the maximum number of withdrawals in a block.
 	MaxBlsToExecutionChanges         uint64 `yaml:"MAX_BLS_TO_EXECUTION_CHANGES" spec:"true"`         // MaxBlsToExecutionChanges defines the maximum number of BLS-to-execution-change objects in a block.
 	MaxValidatorsPerWithdrawalsSweep uint64 `yaml:"MAX_VALIDATORS_PER_WITHDRAWALS_SWEEP" spec:"true"` // MaxValidatorsPerWithdrawalsSweep bounds the size of the sweep searching for withdrawals per slot.
@@ -175,8 +192,9 @@ type BeaconChainConfig struct {
 	TimelyTargetWeight uint64 `yaml:"TIMELY_TARGET_WEIGHT" spec:"true"` // TimelyTargetWeight is the factor of how much target rewards receives.
 	TimelyHeadWeight   uint64 `yaml:"TIMELY_HEAD_WEIGHT" spec:"true"`   // TimelyHeadWeight is the factor of how much head rewards receives.
 	SyncRewardWeight   uint64 `yaml:"SYNC_REWARD_WEIGHT" spec:"true"`   // SyncRewardWeight is the factor of how much sync committee rewards receives.
-	WeightDenominator  uint64 `yaml:"WEIGHT_DENOMINATOR" spec:"true"`   // WeightDenominator accounts for total rewards denomination.
 	ProposerWeight     uint64 `yaml:"PROPOSER_WEIGHT" spec:"true"`      // ProposerWeight is the factor of how much proposer rewards receives.
+	LightLayerWeight   uint64 `yaml:"LIGHT_LAYER_WEIGHT" spec:"true"`   // LightLayerWeight is the factor of how much light layer rewards receives.
+	WeightDenominator  uint64 `yaml:"WEIGHT_DENOMINATOR" spec:"true"`   // WeightDenominator accounts for total rewards denomination.
 
 	// Validator related.
 	TargetAggregatorsPerSyncSubcommittee uint64 `yaml:"TARGET_AGGREGATORS_PER_SYNC_SUBCOMMITTEE" spec:"true"` // TargetAggregatorsPerSyncSubcommittee for aggregating in sync committee.
@@ -303,6 +321,20 @@ func (b *BeaconChainConfig) PreviousEpochAttestationsLength() uint64 {
 // BeaconChainConfig.
 func (b *BeaconChainConfig) CurrentEpochAttestationsLength() uint64 {
 	return uint64(b.SlotsPerEpoch.Mul(b.MaxAttestations))
+}
+
+// InitializeEpochIssuance initializes the value of issuance per epoch.
+func (b *BeaconChainConfig) InitializeEpochIssuance() {
+	b.EpochIssuance = b.IssuancePerYear / b.EpochsPerYear
+}
+
+// InitializeDepositPlan initializes the deposit plan of consensus.
+func (b *BeaconChainConfig) InitializeDepositPlan() {
+	b.DepositPlanEarlySlope = 160000000 * 1e9 / (b.EpochsPerYear * b.DepositPlanEarlyEnd)
+	b.DepositPlanEarlyOffset = 40000000 * 1e9
+	b.DepositPlanLaterSlope = 100000000 * 1e9 / (b.EpochsPerYear * (b.DepositPlanLaterEnd - b.DepositPlanEarlyEnd))
+	b.DepositPlanLaterOffset = 133333334 * 1e9
+	b.DepositPlanFinal = 300000000 * 1e9
 }
 
 // TtfbTimeoutDuration returns the time duration of the timeout.

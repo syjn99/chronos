@@ -80,6 +80,7 @@ func TestMetaDataRPCHandler_ReceivesMetadata(t *testing.T) {
 }
 
 func TestMetadataRPCHandler_SendsMetadata(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	p1 := p2ptest.NewTestP2P(t)
 	p2 := p2ptest.NewTestP2P(t)
 	p1.Connect(p2)

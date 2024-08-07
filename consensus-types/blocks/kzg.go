@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	bodyLength    = 12 // The number of elements in the BeaconBlockBody Container
+	bodyLength    = 13 // The number of elements in the BeaconBlockBody Container
 	logBodyLength = 4  // The log 2 of bodyLength
-	kzgPosition   = 11 // The index of the KZG commitment list in the Body
-	kzgRootIndex  = 54 // The Merkle index of the KZG commitment list's root in the Body's Merkle tree
+	kzgPosition   = 12 // The index of the KZG commitment list in the Body
+	kzgRootIndex  = 56 // The Merkle index of the KZG commitment list's root in the Body's Merkle tree
 	KZGOffset     = kzgRootIndex * field_params.MaxBlobCommitmentsPerBlock
 )
 
@@ -197,6 +197,16 @@ func topLevelRoots(body interfaces.ReadOnlyBeaconBlockBody) ([][]byte, error) {
 	}
 	copy(layer[8], root[:])
 
+	bo, err := body.BailOuts()
+	if err != nil {
+		return nil, err
+	}
+	root, err = ssz.MerkleizeListSSZ(bo, params.BeaconConfig().MaxBailOuts)
+	if err != nil {
+		return nil, err
+	}
+	copy(layer[9], root[:])
+
 	// Execution Payload
 	ep, err := body.Execution()
 	if err != nil {
@@ -206,7 +216,7 @@ func topLevelRoots(body interfaces.ReadOnlyBeaconBlockBody) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	copy(layer[9], root[:])
+	copy(layer[10], root[:])
 
 	// BLS Changes
 	bls, err := body.BLSToExecutionChanges()
@@ -217,7 +227,7 @@ func topLevelRoots(body interfaces.ReadOnlyBeaconBlockBody) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	copy(layer[10], root[:])
+	copy(layer[11], root[:])
 
 	// KZG commitments is not needed
 	return layer, nil

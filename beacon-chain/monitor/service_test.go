@@ -46,29 +46,41 @@ func setupService(t *testing.T) *Service {
 	}
 
 	trackedVals := map[primitives.ValidatorIndex]bool{
-		1:  true,
-		2:  true,
-		12: true,
-		15: true,
+		1:   true,
+		2:   true,
+		12:  true,
+		21:  true,
+		116: true,
+		223: true,
+		225: true,
 	}
 	latestPerformance := map[primitives.ValidatorIndex]ValidatorLatestPerformance{
 		1: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
 		2: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
 		12: {
-			balance: 31900000000,
+			balance: 255900000000,
 		},
-		15: {
-			balance: 31900000000,
+		21: {
+			balance: 255900000000,
+		},
+		116: {
+			balance: 256000000000,
+		},
+		223: {
+			balance: 255900000000,
+		},
+		225: {
+			balance: 256000000000,
 		},
 	}
 	aggregatedPerformance := map[primitives.ValidatorIndex]ValidatorAggregatedPerformance{
 		1: {
 			startEpoch:                      0,
-			startBalance:                    31700000000,
+			startBalance:                    25700000000,
 			totalAttestedCount:              12,
 			totalRequestedCount:             15,
 			totalDistance:                   14,
@@ -81,7 +93,6 @@ func setupService(t *testing.T) *Service {
 		},
 		2:  {},
 		12: {},
-		15: {},
 	}
 	trackedSyncCommitteeIndices := map[primitives.ValidatorIndex][]primitives.CommitteeIndex{
 		1:  {0, 1, 2, 3},
@@ -148,7 +159,7 @@ func TestStart(t *testing.T) {
 	// wait for Logrus
 	time.Sleep(1000 * time.Millisecond)
 	require.LogsContain(t, hook, "Synced to head epoch, starting reporting performance")
-	require.LogsContain(t, hook, "\"Starting service\" prefix=monitor validatorIndices=\"[1 2 12 15]\"")
+	require.LogsContain(t, hook, "\"Starting service\" prefix=monitor validatorIndices=\"[1 2 12 21 116 223 225]\"")
 	s.Lock()
 	require.Equal(t, s.isLogging, true, "monitor is not running")
 	s.Unlock()
@@ -165,30 +176,48 @@ func TestInitializePerformanceStructures(t *testing.T) {
 	require.LogsDoNotContain(t, hook, "Could not fetch starting balance")
 	latestPerformance := map[primitives.ValidatorIndex]ValidatorLatestPerformance{
 		1: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
 		2: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
 		12: {
-			balance: 32000000000,
+			balance: 256000000000,
 		},
-		15: {
-			balance: 32000000000,
+		21: {
+			balance: 256000000000,
+		},
+		116: {
+			balance: 256000000000,
+		},
+		223: {
+			balance: 256000000000,
+		},
+		225: {
+			balance: 256000000000,
 		},
 	}
 	aggregatedPerformance := map[primitives.ValidatorIndex]ValidatorAggregatedPerformance{
 		1: {
-			startBalance: 32000000000,
+			startBalance: 256000000000,
 		},
 		2: {
-			startBalance: 32000000000,
+			startBalance: 256000000000,
 		},
 		12: {
-			startBalance: 32000000000,
+			startBalance: 256000000000,
 		},
-		15: {
-			startBalance: 32000000000,
+		21: {
+			startBalance: 256000000000,
+		},
+		116: {
+			startBalance: 256000000000,
+		},
+		223: {
+			startBalance: 256000000000,
+		},
+		225: {
+			startBalance: 256000000000,
 		},
 	}
 
@@ -237,7 +266,7 @@ func TestMonitorRoutine(t *testing.T) {
 
 	// Wait for Logrus
 	time.Sleep(1000 * time.Millisecond)
-	wanted1 := fmt.Sprintf("\"Proposed beacon block was included\" balanceChange=100000000 blockRoot=%#x newBalance=32000000000 parentRoot=0xeb7f85a49744 prefix=monitor proposerIndex=15 slot=1 version=1", bytesutil.Trunc(root[:]))
+	wanted1 := fmt.Sprintf("\"Proposed beacon block was included\" balanceChange=100000000 blockRoot=%#x newBalance=256000000000 parentRoot=0x1f585f6c581c prefix=monitor proposerIndex=21 slot=1 version=1", bytesutil.Trunc(root[:]))
 	require.LogsContain(t, hook, wanted1)
 
 }

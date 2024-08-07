@@ -286,6 +286,7 @@ func TestLightClientHandler_GetLightClientUpdatesByRange_TooBigInputCount(t *tes
 func TestLightClientHandler_GetLightClientUpdatesByRange_TooEarlyPeriod(t *testing.T) {
 	helpers.ClearCache()
 	ctx := context.Background()
+	params.SetupForkEpochConfigForTest()
 	config := params.BeaconConfig()
 	slot := primitives.Slot(config.AltairForkEpoch * primitives.Epoch(config.SlotsPerEpoch)).Add(1)
 
@@ -389,6 +390,7 @@ func TestLightClientHandler_GetLightClientUpdatesByRange_TooEarlyPeriod(t *testi
 func TestLightClientHandler_GetLightClientUpdatesByRange_TooBigCount(t *testing.T) {
 	helpers.ClearCache()
 	ctx := context.Background()
+	params.SetupForkEpochConfigForTest()
 	config := params.BeaconConfig()
 	slot := primitives.Slot(config.AltairForkEpoch * primitives.Epoch(config.SlotsPerEpoch)).Add(1)
 

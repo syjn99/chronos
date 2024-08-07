@@ -233,7 +233,7 @@ func createLocalNode(privKey *ecdsa.PrivateKey, ipAddr net.IP, port int) (*enode
 	}
 
 	localNode := enode.NewLocalNode(db, privKey)
-	localNode.Set(enr.WithEntry("eth2", forkEntry))
+	localNode.Set(enr.WithEntry("over", forkEntry))
 	localNode.Set(enr.WithEntry("attnets", bitfield.NewBitvector64()))
 	localNode.SetFallbackIP(external)
 	localNode.SetFallbackUDP(port)

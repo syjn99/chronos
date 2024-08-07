@@ -32,12 +32,15 @@ type BeaconState struct {
 	stateRootsMultiValue                *MultiValueStateRoots
 	historicalRoots                     customtypes.HistoricalRoots
 	historicalSummaries                 []*ethpb.HistoricalSummary
+	rewardAdjustmentFactor              uint64
 	eth1Data                            *ethpb.Eth1Data
 	eth1DataVotes                       []*ethpb.Eth1Data
 	eth1DepositIndex                    uint64
 	validators                          []*ethpb.Validator
 	validatorsMultiValue                *MultiValueValidators
 	balances                            []uint64
+	previousEpochReserve                uint64
+	currentEpochReserve                 uint64
 	balancesMultiValue                  *MultiValueBalances
 	randaoMixes                         customtypes.RandaoMixes
 	randaoMixesMultiValue               *MultiValueRandaoMixes
@@ -84,11 +87,14 @@ type beaconStateMarshalable struct {
 	StateRoots                          customtypes.StateRoots                  `json:"state_roots" yaml:"state_roots"`
 	HistoricalRoots                     customtypes.HistoricalRoots             `json:"historical_roots" yaml:"historical_roots"`
 	HistoricalSummaries                 []*ethpb.HistoricalSummary              `json:"historical_summaries" yaml:"historical_summaries"`
+	RewardAdjustmentFactor              uint64                                  `json:"reward_adjustment_factor" yaml:"reward_adjustment_factor"`
 	Eth1Data                            *ethpb.Eth1Data                         `json:"eth_1_data" yaml:"eth_1_data"`
 	Eth1DataVotes                       []*ethpb.Eth1Data                       `json:"eth_1_data_votes" yaml:"eth_1_data_votes"`
 	Eth1DepositIndex                    uint64                                  `json:"eth_1_deposit_index" yaml:"eth_1_deposit_index"`
 	Validators                          []*ethpb.Validator                      `json:"validators" yaml:"validators"`
 	Balances                            []uint64                                `json:"balances" yaml:"balances"`
+	PreviousEpochReserve                uint64                                  `json:"previous_epoch_reserve" yaml:"previous_epoch_reserve"`
+	CurrentEpochReserve                 uint64                                  `json:"current_epoch_reserve" yaml:"current_epoch_reserve"`
 	RandaoMixes                         customtypes.RandaoMixes                 `json:"randao_mixes" yaml:"randao_mixes"`
 	Slashings                           []uint64                                `json:"slashings" yaml:"slashings"`
 	PreviousEpochAttestations           []*ethpb.PendingAttestation             `json:"previous_epoch_attestations" yaml:"previous_epoch_attestations"`
@@ -147,11 +153,14 @@ func (b *BeaconState) MarshalJSON() ([]byte, error) {
 		StateRoots:                          sRoots,
 		HistoricalRoots:                     b.historicalRoots,
 		HistoricalSummaries:                 b.historicalSummaries,
+		RewardAdjustmentFactor:              b.rewardAdjustmentFactor,
 		Eth1Data:                            b.eth1Data,
 		Eth1DataVotes:                       b.eth1DataVotes,
 		Eth1DepositIndex:                    b.eth1DepositIndex,
 		Validators:                          vals,
 		Balances:                            balances,
+		PreviousEpochReserve:                b.previousEpochReserve,
+		CurrentEpochReserve:                 b.currentEpochReserve,
 		RandaoMixes:                         mixes,
 		Slashings:                           b.slashings,
 		PreviousEpochAttestations:           b.previousEpochAttestations,

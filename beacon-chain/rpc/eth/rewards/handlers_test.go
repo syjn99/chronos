@@ -432,7 +432,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(20756849), sum)
+		assert.Equal(t, uint64(98124339180), sum)
 	})
 	t.Run("filtered vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -461,7 +461,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(794265), sum)
+		assert.Equal(t, uint64(2023182249), sum)
 	})
 	t.Run("all vals", func(t *testing.T) {
 		url := "http://only.the.epoch.number.at.the.end.is.important/1"
@@ -484,7 +484,7 @@ func TestAttestationRewards(t *testing.T) {
 			require.NoError(t, err)
 			sum += hr + sr + tr
 		}
-		assert.Equal(t, uint64(54221955), sum)
+		assert.Equal(t, uint64(2023182249), sum)
 	})
 	t.Run("penalty", func(t *testing.T) {
 		st := st.Copy()
@@ -516,8 +516,8 @@ func TestAttestationRewards(t *testing.T) {
 		resp := &structs.AttestationRewardsResponse{}
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 		assert.Equal(t, "0", resp.Data.TotalRewards[0].Head)
-		assert.Equal(t, "-439299", resp.Data.TotalRewards[0].Source)
-		assert.Equal(t, "-815841", resp.Data.TotalRewards[0].Target)
+		assert.Equal(t, "-1065448999", resp.Data.TotalRewards[0].Source)
+		assert.Equal(t, "-1978690998", resp.Data.TotalRewards[0].Target)
 		assert.Equal(t, "0", resp.Data.TotalRewards[0].Inactivity)
 	})
 	t.Run("inactivity", func(t *testing.T) {

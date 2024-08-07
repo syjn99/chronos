@@ -215,6 +215,7 @@ func TestCallWithdrawalEndpoint_Errors(t *testing.T) {
 	baseurl := "127.0.0.1:3500"
 	l, err := net.Listen("tcp", baseurl)
 	require.NoError(t, err)
+	params.SetupForkEpochConfigForTest()
 	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost && r.RequestURI == "/eth/v1/beacon/pool/bls_to_execution_changes" {
 			w.WriteHeader(400)

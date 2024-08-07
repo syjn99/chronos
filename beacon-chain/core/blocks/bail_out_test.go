@@ -28,12 +28,12 @@ func TestProcessBailOut(t *testing.T) {
 	out0 := []*ethpb.BailOut{
 		{ValidatorIndex: 0},
 	}
-	st, err := blocks.ProcessBailOuts(context.Background(), s, out0)
+	_, err = blocks.ProcessBailOuts(context.Background(), s, out0)
 	require.ErrorContains(t, "validator bailout score is below bail out threshold", err)
 	out1 := []*ethpb.BailOut{
 		{ValidatorIndex: 1},
 	}
-	st, err = blocks.ProcessBailOuts(context.Background(), s, out1)
+	st, err := blocks.ProcessBailOuts(context.Background(), s, out1)
 	require.NoError(t, err)
 	require.DeepEqual(t, &ethpb.Validator{
 		EffectiveBalance:  meb,

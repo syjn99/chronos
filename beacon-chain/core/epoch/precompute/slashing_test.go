@@ -56,11 +56,11 @@ func TestProcessSlashingsPrecompute_SlashedLess(t *testing.T) {
 						EffectiveBalance:  params.BeaconConfig().MaxEffectiveBalance},
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance}},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance},
-				Slashings: []uint64{0, 1e9},
+				Slashings: []uint64{0, 8e9},
 			},
 			// penalty    = validator balance / increment * (2*total_penalties) / total_balance * increment
-			// 1000000000 = (32 * 1e9)        / (1 * 1e9) * (1*1e9)             / (32*1e9)      * (1 * 1e9)
-			want: uint64(31000000000), // 32 * 1e9 - 1000000000
+			// 1000000000 = (256 * 1e9)        / (8 * 1e9) * (1*1e9)             / (256*1e9)      * (8 * 1e9)
+			want: uint64(248000000000), // 256 * 1e9 - 1000000000
 		},
 		{
 			state: &ethpb.BeaconState{
@@ -72,11 +72,11 @@ func TestProcessSlashingsPrecompute_SlashedLess(t *testing.T) {
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance},
 				},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance},
-				Slashings: []uint64{0, 1e9},
+				Slashings: []uint64{0, 8e9},
 			},
 			// penalty    = validator balance / increment * (2*total_penalties) / total_balance * increment
-			// 500000000 = (32 * 1e9)        / (1 * 1e9) * (1*1e9)             / (32*1e9)      * (1 * 1e9)
-			want: uint64(32000000000), // 32 * 1e9 - 500000000
+			// 500000000 = (256 * 1e9)        / (1 * 1e9) * (1*1e9)             / (256*1e9)      * (1 * 1e9)
+			want: uint64(256000000000), // 256 * 1e9 - 500000000
 		},
 		{
 			state: &ethpb.BeaconState{
@@ -88,11 +88,11 @@ func TestProcessSlashingsPrecompute_SlashedLess(t *testing.T) {
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance},
 				},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance, params.BeaconConfig().MaxEffectiveBalance},
-				Slashings: []uint64{0, 2 * 1e9},
+				Slashings: []uint64{0, 2 * 8e9},
 			},
 			// penalty    = validator balance / increment * (3*total_penalties) / total_balance * increment
-			// 1000000000 = (32 * 1e9)        / (1 * 1e9) * (1*2e9)             / (64*1e9)      * (1 * 1e9)
-			want: uint64(31000000000), // 32 * 1e9 - 1000000000
+			// 1000000000 = (256 * 1e9)        / (1 * 1e9) * (1*2e9)             / (512*1e9)      * (1 * 1e9)
+			want: uint64(248000000000), // 256 * 1e9 - 1000000000
 		},
 		{
 			state: &ethpb.BeaconState{
@@ -102,11 +102,11 @@ func TestProcessSlashingsPrecompute_SlashedLess(t *testing.T) {
 						EffectiveBalance:  params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement},
 					{ExitEpoch: params.BeaconConfig().FarFutureEpoch, EffectiveBalance: params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement}},
 				Balances:  []uint64{params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement, params.BeaconConfig().MaxEffectiveBalance - params.BeaconConfig().EffectiveBalanceIncrement},
-				Slashings: []uint64{0, 1e9},
+				Slashings: []uint64{0, 8e9},
 			},
 			// penalty    = validator balance           / increment * (3*total_penalties) / total_balance        * increment
-			// 2000000000 = (32  * 1e9 - 1*1e9)         / (1 * 1e9) * (2*1e9)             / (31*1e9)             * (1 * 1e9)
-			want: uint64(30000000000), // 32 * 1e9 - 2000000000
+			// 2000000000 = (256  * 1e9 - 1*1e9)         / (1 * 1e9) * (2*1e9)             / (255*1e9)             * (1 * 1e9)
+			want: uint64(240000000000), // 256 * 1e9 - 2000000000
 		},
 	}
 

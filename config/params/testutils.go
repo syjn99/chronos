@@ -38,3 +38,15 @@ func SetActiveTestCleanup(t *testing.T, cfg *BeaconChainConfig) {
 		}
 	})
 }
+
+func SetupForkEpochConfigForTest() {
+	cfg := BeaconConfig().Copy()
+	// original fork epoch
+	// https://github.com/prysmaticlabs/prysm/blob/3413d05b3421c27579cf7a186cb9b142ffbb8346/config/params/mainnet_config.go#L25
+	cfg.AltairForkEpoch = 72740
+	cfg.BellatrixForkEpoch = 144896
+	cfg.CapellaForkEpoch = 194048
+	cfg.DenebForkEpoch = 269568
+	cfg.InitializeForkSchedule()
+	OverrideBeaconConfig(cfg)
+}

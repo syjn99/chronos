@@ -57,6 +57,7 @@ func TestValidateBlob_InvalidTopic(t *testing.T) {
 }
 
 func TestValidateBlob_InvalidMessageType(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	ctx := context.Background()
 	p := p2ptest.NewTestP2P(t)
 	chainService := &mock.ChainService{Genesis: time.Unix(time.Now().Unix()-int64(params.BeaconConfig().SecondsPerSlot), 0)}
@@ -164,7 +165,7 @@ func TestValidateBlob_InvalidTopicIndex(t *testing.T) {
 			Data:  buf.Bytes(),
 			Topic: &topic,
 		}})
-	require.ErrorContains(t, "/eth2/f5a5fd42/blob_sidecar_1", err)
+	require.ErrorContains(t, "/eth2/d04db14f/blob_sidecar_1", err)
 	require.Equal(t, result, pubsub.ValidationReject)
 }
 

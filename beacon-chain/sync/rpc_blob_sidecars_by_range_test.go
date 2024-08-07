@@ -157,6 +157,7 @@ func TestBlobByRangeOK(t *testing.T) {
 }
 
 func TestBlobsByRangeValidation(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	cfg := params.BeaconConfig()
 	repositionFutureEpochs(cfg)
 	undo, err := params.SetActiveWithUndo(cfg)
@@ -287,6 +288,7 @@ func TestBlobsByRangeValidation(t *testing.T) {
 }
 
 func TestBlobRPCMinValidSlot(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	denebSlot, err := slots.EpochStart(params.BeaconConfig().DenebForkEpoch)
 	require.NoError(t, err)
 	cases := []struct {

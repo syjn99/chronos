@@ -19,7 +19,7 @@ import (
 func TestGenesisBeaconState_OK(t *testing.T) {
 	genesisEpoch := primitives.Epoch(0)
 
-	assert.DeepEqual(t, []byte{0, 0, 0, 0}, params.BeaconConfig().GenesisForkVersion, "GenesisSlot( should be {0,0,0,0} for these tests to pass")
+	assert.DeepEqual(t, []byte{0, 0, 0, 0x18}, params.BeaconConfig().GenesisForkVersion, "GenesisSlot( should be {0,0,0,18} for these tests to pass")
 	genesisForkVersion := params.BeaconConfig().GenesisForkVersion
 
 	assert.Equal(t, [32]byte{}, params.BeaconConfig().ZeroHash, "ZeroHash should be all 0s for these tests to pass")

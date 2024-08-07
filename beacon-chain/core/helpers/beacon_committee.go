@@ -439,6 +439,7 @@ func ClearCache() {
 	proposerIndicesCache.Prune(0)
 	syncCommitteeCache.Clear()
 	balanceCache.Clear()
+	balanceWithQueueCache.Clear()
 }
 
 // ComputeCommittee returns the requested shuffled committee out of the total committees using

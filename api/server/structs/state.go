@@ -9,11 +9,14 @@ type BeaconState struct {
 	BlockRoots                  []string              `json:"block_roots"`
 	StateRoots                  []string              `json:"state_roots"`
 	HistoricalRoots             []string              `json:"historical_roots"`
+	RewardAdjustmentFactor      uint64                `json:"reward_adjustment_factor"`
 	Eth1Data                    *Eth1Data             `json:"eth1_data"`
 	Eth1DataVotes               []*Eth1Data           `json:"eth1_data_votes"`
 	Eth1DepositIndex            string                `json:"eth1_deposit_index"`
 	Validators                  []*Validator          `json:"validators"`
 	Balances                    []string              `json:"balances"`
+	PreviousEpochReserve        uint64                `json:"previous_epoch_reserve"`
+	CurrentEpochReserve         uint64                `json:"current_epoch_reserve"`
 	RandaoMixes                 []string              `json:"randao_mixes"`
 	Slashings                   []string              `json:"slashings"`
 	PreviousEpochAttestations   []*PendingAttestation `json:"previous_epoch_attestations"`
@@ -33,11 +36,14 @@ type BeaconStateAltair struct {
 	BlockRoots                  []string           `json:"block_roots"`
 	StateRoots                  []string           `json:"state_roots"`
 	HistoricalRoots             []string           `json:"historical_roots"`
+	RewardAdjustmentFactor      uint64             `json:"reward_adjustment_factor"`
 	Eth1Data                    *Eth1Data          `json:"eth1_data"`
 	Eth1DataVotes               []*Eth1Data        `json:"eth1_data_votes"`
 	Eth1DepositIndex            string             `json:"eth1_deposit_index"`
 	Validators                  []*Validator       `json:"validators"`
 	Balances                    []string           `json:"balances"`
+	PreviousEpochReserve        uint64             `json:"previous_epoch_reserve"`
+	CurrentEpochReserve         uint64             `json:"current_epoch_reserve"`
 	RandaoMixes                 []string           `json:"randao_mixes"`
 	Slashings                   []string           `json:"slashings"`
 	PreviousEpochParticipation  []string           `json:"previous_epoch_participation"`
@@ -61,11 +67,14 @@ type BeaconStateBellatrix struct {
 	BlockRoots                   []string                `json:"block_roots"`
 	StateRoots                   []string                `json:"state_roots"`
 	HistoricalRoots              []string                `json:"historical_roots"`
+	RewardAdjustmentFactor       uint64                  `json:"reward_adjustment_factor"`
 	Eth1Data                     *Eth1Data               `json:"eth1_data"`
 	Eth1DataVotes                []*Eth1Data             `json:"eth1_data_votes"`
 	Eth1DepositIndex             string                  `json:"eth1_deposit_index"`
 	Validators                   []*Validator            `json:"validators"`
 	Balances                     []string                `json:"balances"`
+	PreviousEpochReserve         uint64                  `json:"previous_epoch_reserve"`
+	CurrentEpochReserve          uint64                  `json:"current_epoch_reserve"`
 	RandaoMixes                  []string                `json:"randao_mixes"`
 	Slashings                    []string                `json:"slashings"`
 	PreviousEpochParticipation   []string                `json:"previous_epoch_participation"`
@@ -90,11 +99,14 @@ type BeaconStateCapella struct {
 	BlockRoots                   []string                       `json:"block_roots"`
 	StateRoots                   []string                       `json:"state_roots"`
 	HistoricalRoots              []string                       `json:"historical_roots"`
+	RewardAdjustmentFactor       uint64                         `json:"reward_adjustment_factor"`
 	Eth1Data                     *Eth1Data                      `json:"eth1_data"`
 	Eth1DataVotes                []*Eth1Data                    `json:"eth1_data_votes"`
 	Eth1DepositIndex             string                         `json:"eth1_deposit_index"`
 	Validators                   []*Validator                   `json:"validators"`
 	Balances                     []string                       `json:"balances"`
+	PreviousEpochReserve         uint64                         `json:"previous_epoch_reserve"`
+	CurrentEpochReserve          uint64                         `json:"current_epoch_reserve"`
 	RandaoMixes                  []string                       `json:"randao_mixes"`
 	Slashings                    []string                       `json:"slashings"`
 	PreviousEpochParticipation   []string                       `json:"previous_epoch_participation"`
@@ -122,11 +134,14 @@ type BeaconStateDeneb struct {
 	BlockRoots                   []string                     `json:"block_roots"`
 	StateRoots                   []string                     `json:"state_roots"`
 	HistoricalRoots              []string                     `json:"historical_roots"`
+	RewardAdjustmentFactor       uint64                       `json:"reward_adjustment_factor"`
 	Eth1Data                     *Eth1Data                    `json:"eth1_data"`
 	Eth1DataVotes                []*Eth1Data                  `json:"eth1_data_votes"`
 	Eth1DepositIndex             string                       `json:"eth1_deposit_index"`
 	Validators                   []*Validator                 `json:"validators"`
 	Balances                     []string                     `json:"balances"`
+	PreviousEpochReserve         uint64                       `json:"previous_epoch_reserve"`
+	CurrentEpochReserve          uint64                       `json:"current_epoch_reserve"`
 	RandaoMixes                  []string                     `json:"randao_mixes"`
 	Slashings                    []string                     `json:"slashings"`
 	PreviousEpochParticipation   []string                     `json:"previous_epoch_participation"`

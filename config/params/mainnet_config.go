@@ -13,6 +13,8 @@ func MainnetConfig() *BeaconChainConfig {
 	if mainnetBeaconConfig.ForkVersionSchedule == nil {
 		mainnetBeaconConfig.InitializeForkSchedule()
 	}
+	mainnetBeaconConfig.InitializeEpochIssuance()
+	mainnetBeaconConfig.InitializeDepositPlan()
 	return mainnetBeaconConfig
 }
 
@@ -20,40 +22,24 @@ const (
 	// Genesis Fork Epoch for the mainnet config.
 	genesisForkEpoch = 0
 	// Altair Fork Epoch for mainnet config.
-	mainnetAltairForkEpoch = 74240 // Oct 27, 2021, 10:56:23am UTC
+	mainnetAltairForkEpoch = 0 // epoch 0
 	// Bellatrix Fork Epoch for mainnet config.
-	mainnetBellatrixForkEpoch = 144896 // Sept 6, 2022, 11:34:47am UTC
+	mainnetBellatrixForkEpoch = 0 // epoch 0
 	// Capella Fork Epoch for mainnet config.
-	mainnetCapellaForkEpoch = 194048 // April 12, 2023, 22:27:35 UTC
+	mainnetCapellaForkEpoch = 10 // epoch 10
 	// Deneb Fork Epoch for mainnet config.
-	mainnetDenebForkEpoch = 269568 // March 13, 2024, 13:55:35 UTC
+	mainnetDenebForkEpoch = math.MaxInt // not activated
 )
 
 var mainnetNetworkConfig = &NetworkConfig{
-	ETH2Key:                    "eth2",
+	ETH2Key:                    "over",
 	AttSubnetKey:               "attnets",
 	SyncCommsSubnetKey:         "syncnets",
 	MinimumPeersInSubnetSearch: 20,
-	ContractDeploymentBlock:    11184524, // Note: contract was deployed in block 11052984 but no transactions were sent until 11184524.
+	ContractDeploymentBlock:    0, // Note: contract was deployed in genesis block.
 	BootstrapNodes: []string{
-		// Teku team's bootnode
-		"enr:-KG4QNTx85fjxABbSq_Rta9wy56nQ1fHK0PewJbGjLm1M4bMGx5-3Qq4ZX2-iFJ0pys_O90sVXNNOxp2E7afBsGsBrgDhGV0aDKQu6TalgMAAAD__________4JpZIJ2NIJpcIQEnfA2iXNlY3AyNTZrMaECGXWQ-rQ2KZKRH1aOW4IlPDBkY4XDphxg9pxKytFCkayDdGNwgiMog3VkcIIjKA",
-		"enr:-KG4QF4B5WrlFcRhUU6dZETwY5ZzAXnA0vGC__L1Kdw602nDZwXSTs5RFXFIFUnbQJmhNGVU6OIX7KVrCSTODsz1tK4DhGV0aDKQu6TalgMAAAD__________4JpZIJ2NIJpcIQExNYEiXNlY3AyNTZrMaECQmM9vp7KhaXhI-nqL_R0ovULLCFSFTa9CPPSdb1zPX6DdGNwgiMog3VkcIIjKA",
-		// Prylab team's bootnodes
-		"enr:-Ku4QImhMc1z8yCiNJ1TyUxdcfNucje3BGwEHzodEZUan8PherEo4sF7pPHPSIB1NNuSg5fZy7qFsjmUKs2ea1Whi0EBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpD1pf1CAAAAAP__________gmlkgnY0gmlwhBLf22SJc2VjcDI1NmsxoQOVphkDqal4QzPMksc5wnpuC3gvSC8AfbFOnZY_On34wIN1ZHCCIyg",
-		"enr:-Ku4QP2xDnEtUXIjzJ_DhlCRN9SN99RYQPJL92TMlSv7U5C1YnYLjwOQHgZIUXw6c-BvRg2Yc2QsZxxoS_pPRVe0yK8Bh2F0dG5ldHOIAAAAAAAAAACEZXRoMpD1pf1CAAAAAP__________gmlkgnY0gmlwhBLf22SJc2VjcDI1NmsxoQMeFF5GrS7UZpAH2Ly84aLK-TyvH-dRo0JM1i8yygH50YN1ZHCCJxA",
-		"enr:-Ku4QPp9z1W4tAO8Ber_NQierYaOStqhDqQdOPY3bB3jDgkjcbk6YrEnVYIiCBbTxuar3CzS528d2iE7TdJsrL-dEKoBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpD1pf1CAAAAAP__________gmlkgnY0gmlwhBLf22SJc2VjcDI1NmsxoQMw5fqqkw2hHC4F5HZZDPsNmPdB1Gi8JPQK7pRc9XHh-oN1ZHCCKvg",
-		// Lighthouse team's bootnodes
-		"enr:-Jq4QItoFUuug_n_qbYbU0OY04-np2wT8rUCauOOXNi0H3BWbDj-zbfZb7otA7jZ6flbBpx1LNZK2TDebZ9dEKx84LYBhGV0aDKQtTA_KgEAAAD__________4JpZIJ2NIJpcISsaa0ZiXNlY3AyNTZrMaEDHAD2JKYevx89W0CcFJFiskdcEzkH_Wdv9iW42qLK79ODdWRwgiMo",
-		"enr:-Jq4QN_YBsUOqQsty1OGvYv48PMaiEt1AzGD1NkYQHaxZoTyVGqMYXg0K9c0LPNWC9pkXmggApp8nygYLsQwScwAgfgBhGV0aDKQtTA_KgEAAAD__________4JpZIJ2NIJpcISLosQxiXNlY3AyNTZrMaEDBJj7_dLFACaxBfaI8KZTh_SSJUjhyAyfshimvSqo22WDdWRwgiMo",
-		// EF bootnodes
-		"enr:-Ku4QHqVeJ8PPICcWk1vSn_XcSkjOkNiTg6Fmii5j6vUQgvzMc9L1goFnLKgXqBJspJjIsB91LTOleFmyWWrFVATGngBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhAMRHkWJc2VjcDI1NmsxoQKLVXFOhp2uX6jeT0DvvDpPcU8FWMjQdR4wMuORMhpX24N1ZHCCIyg",
-		"enr:-Ku4QG-2_Md3sZIAUebGYT6g0SMskIml77l6yR-M_JXc-UdNHCmHQeOiMLbylPejyJsdAPsTHJyjJB2sYGDLe0dn8uYBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhBLY-NyJc2VjcDI1NmsxoQORcM6e19T1T9gi7jxEZjk_sjVLGFscUNqAY9obgZaxbIN1ZHCCIyg",
-		"enr:-Ku4QPn5eVhcoF1opaFEvg1b6JNFD2rqVkHQ8HApOKK61OIcIXD127bKWgAtbwI7pnxx6cDyk_nI88TrZKQaGMZj0q0Bh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhDayLMaJc2VjcDI1NmsxoQK2sBOLGcUb4AwuYzFuAVCaNHA-dy24UuEKkeFNgCVCsIN1ZHCCIyg",
-		"enr:-Ku4QEWzdnVtXc2Q0ZVigfCGggOVB2Vc1ZCPEc6j21NIFLODSJbvNaef1g4PxhPwl_3kax86YPheFUSLXPRs98vvYsoBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhDZBrP2Jc2VjcDI1NmsxoQM6jr8Rb1ktLEsVcKAPa08wCsKUmvoQ8khiOl_SLozf9IN1ZHCCIyg",
-		// Nimbus bootnodes
-		"enr:-LK4QA8FfhaAjlb_BXsXxSfiysR7R52Nhi9JBt4F8SPssu8hdE1BXQQEtVDC3qStCW60LSO7hEsVHv5zm8_6Vnjhcn0Bh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhAN4aBKJc2VjcDI1NmsxoQJerDhsJ-KxZ8sHySMOCmTO6sHM3iCFQ6VMvLTe948MyYN0Y3CCI4yDdWRwgiOM",
-		"enr:-LK4QKWrXTpV9T78hNG6s8AM6IO4XH9kFT91uZtFg1GcsJ6dKovDOr1jtAAFPnS2lvNltkOGA9k29BUN7lFh_sjuc9QBh2F0dG5ldHOIAAAAAAAAAACEZXRoMpC1MD8qAAAAAP__________gmlkgnY0gmlwhANAdd-Jc2VjcDI1NmsxoQLQa6ai7y9PMN5hpLe5HmiJSlYzMuzP7ZhwRiwHvqNXdoN0Y3CCI4yDdWRwgiOM",
+		// Over Mainnet Bootnodes
+		"enr:-MK4QAyA5sVdEIquksykdH07kUGAAw40mqe7tIoGUVVxx0kCd2TOmoa_dWKUucfpBrYfDKCbfS6UXOwQ2XHb0lMMvjqGAYkkvmrch2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEAyT5xoRvdmVykIDJGRQgAACS_v________-Jc2VjcDI1NmsxoQO9Ml07M1f1OIotRTv6PsCMA6IkjStrY0Q6cX5odCWZBYhzeW5jbmV0cwCDdGNwgjLIg3VkcIIu4A",
 	},
 }
 
@@ -63,27 +49,36 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	FarFutureSlot:            math.MaxUint64,
 	BaseRewardsPerEpoch:      4,
 	DepositContractTreeDepth: 32,
-	GenesisDelay:             604800, // 1 week.
+	GenesisDelay:             30, // 30 seconds
 
 	// Misc constant.
-	TargetCommitteeSize:            128,
-	MaxValidatorsPerCommittee:      2048,
-	MaxCommitteesPerSlot:           64,
-	MinPerEpochChurnLimit:          4,
-	ChurnLimitQuotient:             1 << 16,
-	ShuffleRoundCount:              90,
-	MinGenesisActiveValidatorCount: 16384,
-	MinGenesisTime:                 1606824000, // Dec 1, 2020, 12pm UTC.
-	TargetAggregatorsPerCommittee:  16,
-	HysteresisQuotient:             4,
-	HysteresisDownwardMultiplier:   1,
-	HysteresisUpwardMultiplier:     5,
+	TargetCommitteeSize:               128,
+	MaxValidatorsPerCommittee:         2048,
+	MaxCommitteesPerSlot:              64,
+	MinPerEpochChurnLimit:             4,
+	ChurnLimitQuotient:                1 << 16,
+	ChurnLimitBias:                    1,
+	ShuffleRoundCount:                 90,
+	MinGenesisActiveValidatorCount:    16384,
+	MinGenesisTime:                    1718690400, // Jun 19, 2024, 00 AM UTC+9.
+	TargetAggregatorsPerCommittee:     16,
+	HysteresisQuotient:                4,
+	HysteresisDownwardMultiplier:      1,
+	HysteresisUpwardMultiplier:        5,
+	DepositPlanEarlyEnd:               4,
+	DepositPlanLaterEnd:               10,
+	RewardFeedbackPrecision:           1000000000000,
+	RewardFeedbackThresholdReciprocal: 10,
+	TargetChangeRate:                  1500000,
+	TargetYield:                       20000000000,
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,
-	MaxEffectiveBalance:       32 * 1e9,
-	EjectionBalance:           16 * 1e9,
-	EffectiveBalanceIncrement: 1 * 1e9,
+	MaxEffectiveBalance:       256 * 1e9,
+	EjectionBalance:           128 * 1e9,
+	EffectiveBalanceIncrement: 8 * 1e9,
+	MaxTokenSupply:            1000000000 * 1e9,
+	IssuancePerYear:           20000000 * 1e9,
 
 	// Initial value constants.
 	BLSWithdrawalPrefixByte:         byte(0),
@@ -95,6 +90,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	SecondsPerSlot:                   12,
 	SlotsPerEpoch:                    32,
 	SqrRootSlotsPerEpoch:             5,
+	EpochsPerYear:                    82125, // 365(Days)*24(Hours)*60(minutes)*60(Seconds)/12(Seconds per slot)/32(Slots per epoch)
 	MinSeedLookahead:                 1,
 	MaxSeedLookahead:                 4,
 	EpochsPerEth1VotingPeriod:        64,
@@ -102,7 +98,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	MinValidatorWithdrawabilityDelay: 256,
 	ShardCommitteePeriod:             256,
 	MinEpochsToInactivityPenalty:     4,
-	Eth1FollowDistance:               2048,
+	Eth1FollowDistance:               1024,
 
 	// Fork choice algorithm constants.
 	ProposerScoreBoost:              40,
@@ -112,9 +108,9 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	IntervalsPerSlot:                3,
 
 	// Ethereum PoW parameters.
-	DepositChainID:         1, // Chain ID of eth1 mainnet.
-	DepositNetworkID:       1, // Network ID of eth1 mainnet.
-	DepositContractAddress: "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+	DepositChainID:         54176, // Chain ID of over mainnet.
+	DepositNetworkID:       54176, // Network ID of over mainnet.
+	DepositContractAddress: "000000000000000000000000000000000beac017",
 
 	// Validator params.
 	RandomSubnetsPerValidator:         1 << 0,
@@ -126,7 +122,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Additional context: https://github.com/ethereum/consensus-specs/issues/2132
 	// Bug prompting this change: https://github.com/prysmaticlabs/prysm/issues/7856
 	// Future optimization: https://github.com/prysmaticlabs/prysm/issues/7739
-	SecondsPerETH1Block: 14,
+	SecondsPerETH1Block: 12,
 
 	// State list length constants.
 	EpochsPerHistoricalVector: 65536,
@@ -148,6 +144,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	MaxAttestations:                  128,
 	MaxDeposits:                      16,
 	MaxVoluntaryExits:                16,
+	MaxBailOuts:                      16,
 	MaxWithdrawalsPerPayload:         16,
 	MaxBlsToExecutionChanges:         16,
 	MaxValidatorsPerWithdrawalsSweep: 16384,
@@ -182,11 +179,11 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	GenesisCountdownInterval:       time.Minute,
 	ConfigName:                     MainnetName,
 	PresetBase:                     "mainnet",
-	BeaconStateFieldCount:          21,
-	BeaconStateAltairFieldCount:    25,
-	BeaconStateBellatrixFieldCount: 26,
-	BeaconStateCapellaFieldCount:   29,
-	BeaconStateDenebFieldCount:     29,
+	BeaconStateFieldCount:          24,
+	BeaconStateAltairFieldCount:    28,
+	BeaconStateBellatrixFieldCount: 29,
+	BeaconStateCapellaFieldCount:   32,
+	BeaconStateDenebFieldCount:     32,
 
 	// Slasher related values.
 	WeakSubjectivityPeriod:          54000,
@@ -198,14 +195,14 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 
 	// Fork related values.
 	GenesisEpoch:         genesisForkEpoch,
-	GenesisForkVersion:   []byte{0, 0, 0, 0},
-	AltairForkVersion:    []byte{1, 0, 0, 0},
+	GenesisForkVersion:   []byte{0x00, 0x00, 0x00, 0x18},
+	AltairForkVersion:    []byte{0x01, 0x00, 0x00, 0x18},
 	AltairForkEpoch:      mainnetAltairForkEpoch,
-	BellatrixForkVersion: []byte{2, 0, 0, 0},
+	BellatrixForkVersion: []byte{0x02, 0x00, 0x00, 0x18},
 	BellatrixForkEpoch:   mainnetBellatrixForkEpoch,
-	CapellaForkVersion:   []byte{3, 0, 0, 0},
+	CapellaForkVersion:   []byte{0x03, 0x00, 0x00, 0x18},
 	CapellaForkEpoch:     mainnetCapellaForkEpoch,
-	DenebForkVersion:     []byte{4, 0, 0, 0},
+	DenebForkVersion:     []byte{0x04, 0x00, 0x00, 0x18},
 	DenebForkEpoch:       mainnetDenebForkEpoch,
 
 	// New values introduced in Altair hard fork 1.
@@ -215,11 +212,12 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	TimelyHeadFlagIndex:   2,
 
 	// Incentivization weight values.
-	TimelySourceWeight: 14,
-	TimelyTargetWeight: 26,
-	TimelyHeadWeight:   14,
-	SyncRewardWeight:   2,
+	TimelySourceWeight: 12,
+	TimelyTargetWeight: 24,
+	TimelyHeadWeight:   12,
+	SyncRewardWeight:   0,
 	ProposerWeight:     8,
+	LightLayerWeight:   8,
 	WeightDenominator:  64,
 
 	// Validator related values.
@@ -249,7 +247,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Bellatrix
 	TerminalBlockHashActivationEpoch: 18446744073709551615,
 	TerminalBlockHash:                [32]byte{},
-	TerminalTotalDifficulty:          "58750000000000000000000", // Estimated: Sept 15, 2022
+	TerminalTotalDifficulty:          "0",
 	EthBurnAddressHex:                "0x0000000000000000000000000000000000000000",
 	DefaultBuilderGasLimit:           uint64(30000000),
 

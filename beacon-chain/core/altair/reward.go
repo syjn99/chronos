@@ -6,7 +6,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/primitives"
-	"github.com/prysmaticlabs/prysm/v5/math"
 )
 
 // BaseReward takes state and validator index and calculate
@@ -29,34 +28,42 @@ func BaseReward(s state.ReadOnlyBeaconState, index primitives.ValidatorIndex) (u
 	if err != nil {
 		return 0, errors.Wrap(err, "could not calculate active balance")
 	}
-	return BaseRewardWithTotalBalance(s, index, totalBalance)
+	baseReward, _, err := BaseRewardWithTotalBalance(s, index, totalBalance)
+	return baseReward, err
 }
 
 // BaseRewardWithTotalBalance calculates the base reward with the provided total balance.
-func BaseRewardWithTotalBalance(s state.ReadOnlyBeaconState, index primitives.ValidatorIndex, totalBalance uint64) (uint64, error) {
+func BaseRewardWithTotalBalance(s state.ReadOnlyBeaconState, index primitives.ValidatorIndex, totalBalance uint64) (uint64, uint64, error) {
 	val, err := s.ValidatorAtIndexReadOnly(index)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	cfg := params.BeaconConfig()
 	increments := val.EffectiveBalance() / cfg.EffectiveBalanceIncrement
-	baseRewardPerInc, err := BaseRewardPerIncrement(totalBalance)
+	baseRewardPerInc, reserveUsagePerInc, err := BaseRewardPerIncrement(s, totalBalance)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
-	return increments * baseRewardPerInc, nil
+	return increments * baseRewardPerInc, increments * reserveUsagePerInc, nil
 }
 
 // BaseRewardPerIncrement of the beacon state
 //
 // Spec code:
-// def get_base_reward_per_increment(state: BeaconState) -> Gwei:
+// def get_base_reward_per_increment(epoch, activeBalance) -> Gwei:
 //
-//	return Gwei(EFFECTIVE_BALANCE_INCREMENT * BASE_REWARD_FACTOR // integer_squareroot(get_total_active_balance(state)))
-func BaseRewardPerIncrement(activeBalance uint64) (uint64, error) {
+//	return Gwei(Issuance_Per_Epoch * EffectiveBalanceIncrement // get_total_active_balance(state))
+func BaseRewardPerIncrement(s state.ReadOnlyBeaconState, activeBalance uint64) (uint64, uint64, error) {
 	if activeBalance == 0 {
-		return 0, errors.New("active balance can't be 0")
+		return 0, 0, errors.New("active balance can't be 0")
 	}
+
 	cfg := params.BeaconConfig()
-	return cfg.EffectiveBalanceIncrement * cfg.BaseRewardFactor / math.CachedSquareRoot(activeBalance), nil
+	if activeBalance < cfg.EffectiveBalanceIncrement {
+		return 0, 0, errors.New("active balance can't be lower than effective balance increment")
+	}
+	totalActiveIncrement := activeBalance / cfg.EffectiveBalanceIncrement
+	totalReward, reserveUsage := helpers.TotalRewardWithReserveUsage(s)
+
+	return totalReward / totalActiveIncrement, reserveUsage / totalActiveIncrement, nil
 }

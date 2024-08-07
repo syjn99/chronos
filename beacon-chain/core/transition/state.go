@@ -165,8 +165,10 @@ func OptimizedGenesisBeaconState(genesisTime uint64, preState state.BeaconState,
 		},
 
 		// Validator registry fields.
-		Validators: preState.Validators(),
-		Balances:   preState.Balances(),
+		Validators:           preState.Validators(),
+		Balances:             preState.Balances(),
+		PreviousEpochReserve: preState.PreviousEpochReserve(),
+		CurrentEpochReserve:  preState.CurrentEpochReserve(),
 
 		// Randomness and committees.
 		RandaoMixes: randaoMixes,
@@ -186,6 +188,7 @@ func OptimizedGenesisBeaconState(genesisTime uint64, preState state.BeaconState,
 			Root:  params.BeaconConfig().ZeroHash[:],
 		},
 
+		RewardAdjustmentFactor:    preState.RewardAdjustmentFactor(),
 		HistoricalRoots:           [][]byte{},
 		BlockRoots:                blockRoots,
 		StateRoots:                stateRoots,
@@ -246,11 +249,14 @@ func EmptyGenesisState() (state.BeaconState, error) {
 		StateRoots:  stateRoots,
 		RandaoMixes: mixes,
 		// Validator registry fields.
-		Validators: []*ethpb.Validator{},
-		Balances:   []uint64{},
+		Validators:           []*ethpb.Validator{},
+		Balances:             []uint64{},
+		PreviousEpochReserve: 0,
+		CurrentEpochReserve:  0,
 
 		JustificationBits:         []byte{0},
 		HistoricalRoots:           [][]byte{},
+		RewardAdjustmentFactor:    0,
 		CurrentEpochAttestations:  []*ethpb.PendingAttestation{},
 		PreviousEpochAttestations: []*ethpb.PendingAttestation{},
 

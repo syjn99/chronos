@@ -66,13 +66,15 @@ func emptyGenesisStateDeneb() (state.BeaconState, error) {
 			Epoch:           0,
 		},
 		// Validator registry fields.
-		Validators:       []*ethpb.Validator{},
-		Balances:         []uint64{},
-		InactivityScores: []uint64{},
-		BailOutScores:    []uint64{},
+		Validators:           []*ethpb.Validator{},
+		Balances:             []uint64{},
+		InactivityScores:     []uint64{},
+		PreviousEpochReserve: 0,
+		CurrentEpochReserve:  0,
 
 		JustificationBits:          []byte{0},
 		HistoricalRoots:            [][]byte{},
+		RewardAdjustmentFactor:     0,
 		CurrentEpochParticipation:  []byte{},
 		PreviousEpochParticipation: []byte{},
 

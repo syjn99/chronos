@@ -584,6 +584,7 @@ func TestService_sortedPendingSlots(t *testing.T) {
 }
 
 func TestService_BatchRootRequest(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	db := dbtest.SetupDB(t)
 	p1 := p2ptest.NewTestP2P(t)
 	p2 := p2ptest.NewTestP2P(t)
@@ -707,6 +708,7 @@ func TestService_AddPendingBlockToQueueOverMax(t *testing.T) {
 }
 
 func TestService_ProcessPendingBlockOnCorrectSlot(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	ctx := context.Background()
 	db := dbtest.SetupDB(t)
 

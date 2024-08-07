@@ -263,6 +263,8 @@ func TestBlocksFetcher_RoundRobin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			params.SetupForkEpochConfigForTest()
+
 			cache.initializeRootCache(tt.expectedBlockSlots, t)
 
 			beaconDB := dbtest.SetupDB(t)

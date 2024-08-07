@@ -66,6 +66,9 @@ type ReadOnlyBeaconState interface {
 	LatestBlockHeader() *ethpb.BeaconBlockHeader
 	HistoricalRoots() ([][]byte, error)
 	HistoricalSummaries() ([]*ethpb.HistoricalSummary, error)
+	RewardAdjustmentFactor() uint64
+	PreviousEpochReserve() uint64
+	CurrentEpochReserve() uint64
 	Slashings() []uint64
 	FieldReferencesCount() map[string]uint64
 	RecordStateMetrics()
@@ -95,10 +98,13 @@ type WriteOnlyBeaconState interface {
 	SetFork(val *ethpb.Fork) error
 	SetLatestBlockHeader(val *ethpb.BeaconBlockHeader) error
 	SetHistoricalRoots(val [][]byte) error
+	SetRewardAdjustmentFactor(val uint64) error
 	SetSlashings(val []uint64) error
 	UpdateSlashingsAtIndex(idx, val uint64) error
 	AppendHistoricalRoots(root [32]byte) error
 	AppendHistoricalSummaries(*ethpb.HistoricalSummary) error
+	SetPreviousEpochReserve(val uint64) error
+	SetCurrentEpochReserve(val uint64) error
 	SetLatestExecutionPayloadHeader(payload interfaces.ExecutionData) error
 	SetNextWithdrawalIndex(i uint64) error
 	SetNextWithdrawalValidatorIndex(i primitives.ValidatorIndex) error

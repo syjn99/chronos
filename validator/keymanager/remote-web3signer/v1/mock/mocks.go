@@ -637,8 +637,8 @@ func ValidatorRegistrationSignRequest() *v1.ValidatorRegistrationSignRequest {
 func ForkInfo() *v1.ForkInfo {
 	return &v1.ForkInfo{
 		Fork: &v1.Fork{
-			PreviousVersion: make([]byte, 4),
-			CurrentVersion:  make([]byte, 4),
+			PreviousVersion: []byte{0x01, 0x00, 0x00, 0x18},
+			CurrentVersion:  []byte{0x02, 0x00, 0x00, 0x18},
 			Epoch:           "0",
 		},
 		GenesisValidatorsRoot: make([]byte, fieldparams.RootLength),

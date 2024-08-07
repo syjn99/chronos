@@ -150,7 +150,7 @@ func TestProcessProposedBlock(t *testing.T) {
 				StateRoot:     bytesutil.PadTo([]byte("state-world"), 32),
 				Body:          &ethpb.BeaconBlockBody{},
 			},
-			wantedErr: "\"Proposed beacon block was included\" balanceChange=100000000 blockRoot=0x68656c6c6f2d newBalance=32000000000 parentRoot=0x68656c6c6f2d prefix=monitor proposerIndex=12 slot=6 version=0",
+			wantedErr: "\"Proposed beacon block was included\" balanceChange=100000000 blockRoot=0x68656c6c6f2d newBalance=256000000000 parentRoot=0x68656c6c6f2d prefix=monitor proposerIndex=12 slot=6 version=0",
 		},
 		{
 			name: "Block proposed by untracked validator",
@@ -215,7 +215,7 @@ func TestProcessBlock_AllEventsTrackedVals(t *testing.T) {
 	if !s.trackedIndex(idx) {
 		s.TrackedValidators[idx] = true
 		s.latestPerformance[idx] = ValidatorLatestPerformance{
-			balance: 31900000000,
+			balance: 255900000000,
 		}
 		s.aggregatedPerformance[idx] = ValidatorAggregatedPerformance{}
 	}
@@ -225,10 +225,10 @@ func TestProcessBlock_AllEventsTrackedVals(t *testing.T) {
 	root, err := b.GetBlock().HashTreeRoot()
 	require.NoError(t, err)
 	require.NoError(t, s.config.StateGen.SaveState(ctx, root, genesis))
-	wanted1 := fmt.Sprintf("\"Proposed beacon block was included\" balanceChange=100000000 blockRoot=%#x newBalance=32000000000 parentRoot=0xeb7f85a49744 prefix=monitor proposerIndex=15 slot=1 version=1", bytesutil.Trunc(root[:]))
+	wanted1 := fmt.Sprintf("\"Proposed beacon block was included\" balanceChange=100000000 blockRoot=%#x newBalance=256000000000 parentRoot=0x1f585f6c581c prefix=monitor proposerIndex=21 slot=1 version=1", bytesutil.Trunc(root[:]))
 	wanted2 := fmt.Sprintf("\"Proposer slashing was included\" bodyRoot1=0x000100000000 bodyRoot2=0x000200000000 prefix=monitor proposerIndex=%d slashingSlot=0 slot=1", idx)
-	wanted3 := "\"Sync committee contribution included\" balanceChange=0 contribCount=3 expectedContribCount=3 newBalance=32000000000 prefix=monitor validatorIndex=1"
-	wanted4 := "\"Sync committee contribution included\" balanceChange=0 contribCount=1 expectedContribCount=1 newBalance=32000000000 prefix=monitor validatorIndex=2"
+	wanted3 := "\"Sync committee contribution included\" balanceChange=0 contribCount=3 expectedContribCount=3 newBalance=256000000000 prefix=monitor validatorIndex=1"
+	wanted4 := "\"Sync committee contribution included\" balanceChange=0 contribCount=1 expectedContribCount=1 newBalance=256000000000 prefix=monitor validatorIndex=2"
 	wrapped, err := blocks.NewSignedBeaconBlock(b)
 	require.NoError(t, err)
 	s.processBlock(ctx, wrapped)
@@ -243,15 +243,6 @@ func TestLogAggregatedPerformance(t *testing.T) {
 	latestPerformance := map[primitives.ValidatorIndex]ValidatorLatestPerformance{
 		1: {
 			balance: 32000000000,
-		},
-		2: {
-			balance: 32000000000,
-		},
-		12: {
-			balance: 31900000000,
-		},
-		15: {
-			balance: 31900000000,
 		},
 	}
 	aggregatedPerformance := map[primitives.ValidatorIndex]ValidatorAggregatedPerformance{
@@ -268,9 +259,6 @@ func TestLogAggregatedPerformance(t *testing.T) {
 			totalSyncCommitteeContributions: 0,
 			totalSyncCommitteeAggregations:  0,
 		},
-		2:  {},
-		12: {},
-		15: {},
 	}
 	s := &Service{
 		latestPerformance:     latestPerformance,

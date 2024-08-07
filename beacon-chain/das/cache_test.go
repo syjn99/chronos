@@ -58,6 +58,7 @@ func filterTestCaseSetup(slot primitives.Slot, nBlobs int, onDisk []int, numExpe
 }
 
 func TestFilterDiskSummary(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	denebSlot, err := slots.EpochStart(params.BeaconConfig().DenebForkEpoch)
 	require.NoError(t, err)
 	cases := []struct {
@@ -121,6 +122,7 @@ func TestFilterDiskSummary(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
+	params.SetupForkEpochConfigForTest()
 	denebSlot, err := slots.EpochStart(params.BeaconConfig().DenebForkEpoch)
 	require.NoError(t, err)
 	cases := []struct {

@@ -35,7 +35,7 @@ func TestSetupInitialDeposits_1024Entries(t *testing.T) {
 		t.Fatalf("incorrect withdrawal credentials, wanted %x but received %x", expectedWithdrawalCredentialsAt0, deposits[0].Data.WithdrawalCredentials)
 	}
 
-	dRootAt0 := []byte("4bbc31cfec9602242576e8570b3c72cd09f55e0d5ea4d64fd08fb6ca5cb69f17")
+	dRootAt0 := []byte("1a233634bd6443d9de59c28967a2cd901b0866c9a6c35f2f18ee1339a9bae4cc")
 	dRootAt0B := make([]byte, hex.DecodedLen(len(dRootAt0)))
 	_, err = hex.Decode(dRootAt0B, dRootAt0)
 	require.NoError(t, err)
