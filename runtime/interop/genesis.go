@@ -188,8 +188,8 @@ func defaultDepositContractAllocation(contractAddress string) depositAllocation 
 	}
 }
 
-func deterministicNonce(i uint32) uint32 {
-	return math.MaxUint32/2 + i
+func deterministicNonce(i uint64) uint64 {
+	return math.MaxUint64/2 + i
 }
 
 func init() {

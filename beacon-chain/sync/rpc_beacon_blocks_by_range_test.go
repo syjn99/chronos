@@ -179,7 +179,6 @@ func TestRPCBeaconBlocksByRange_ReconstructsPayloads(t *testing.T) {
 
 	parent := bytesutil.PadTo([]byte("parentHash"), fieldparams.RootLength)
 	stateRoot := bytesutil.PadTo([]byte("stateRoot"), fieldparams.RootLength)
-	checkpointRoot := bytesutil.PadTo([]byte("checkpointRoot"), fieldparams.RootLength)
 	receiptsRoot := bytesutil.PadTo([]byte("receiptsRoot"), fieldparams.RootLength)
 	logsBloom := bytesutil.PadTo([]byte("logs"), fieldparams.LogsBloomLength)
 	tx := gethTypes.NewTransaction(
@@ -195,21 +194,20 @@ func TestRPCBeaconBlocksByRange_ReconstructsPayloads(t *testing.T) {
 	require.NoError(t, err)
 	blockHash := bytesutil.ToBytes32([]byte("foo"))
 	payload := &enginev1.ExecutionPayload{
-		ParentHash:     parent,
-		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:      stateRoot,
-		CheckpointRoot: checkpointRoot,
-		ReceiptsRoot:   receiptsRoot,
-		LogsBloom:      logsBloom,
-		PrevRandao:     blockHash[:],
-		BlockNumber:    0,
-		GasLimit:       0,
-		GasUsed:        0,
-		Timestamp:      0,
-		ExtraData:      make([]byte, 0),
-		BlockHash:      blockHash[:],
-		BaseFeePerGas:  bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
-		Transactions:   encodedBinaryTxs,
+		ParentHash:    parent,
+		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:     stateRoot,
+		ReceiptsRoot:  receiptsRoot,
+		LogsBloom:     logsBloom,
+		PrevRandao:    blockHash[:],
+		BlockNumber:   0,
+		GasLimit:      0,
+		GasUsed:       0,
+		Timestamp:     0,
+		ExtraData:     make([]byte, 0),
+		BlockHash:     blockHash[:],
+		BaseFeePerGas: bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
+		Transactions:  encodedBinaryTxs,
 	}
 	mockEngine := &mockExecution.EngineClient{
 		ExecutionPayloadByBlockHash: map[[32]byte]*enginev1.ExecutionPayload{

@@ -90,11 +90,6 @@ func (e executionPayload) StateRoot() []byte {
 	return e.p.StateRoot
 }
 
-// CheckpointRoot --
-func (e executionPayload) CheckpointRoot() []byte {
-	return e.p.CheckpointRoot
-}
-
 // ReceiptsRoot --
 func (e executionPayload) ReceiptsRoot() []byte {
 	return e.p.ReceiptsRoot
@@ -256,11 +251,6 @@ func (e executionPayloadHeader) StateRoot() []byte {
 	return e.p.StateRoot
 }
 
-// CheckpointRoot --
-func (e executionPayloadHeader) CheckpointRoot() []byte {
-	return e.p.CheckpointRoot
-}
-
 // ReceiptsRoot --
 func (e executionPayloadHeader) ReceiptsRoot() []byte {
 	return e.p.ReceiptsRoot
@@ -360,7 +350,6 @@ func PayloadToHeader(payload interfaces.ExecutionData) (*enginev1.ExecutionPaylo
 		ParentHash:       bytesutil.SafeCopyBytes(payload.ParentHash()),
 		FeeRecipient:     bytesutil.SafeCopyBytes(payload.FeeRecipient()),
 		StateRoot:        bytesutil.SafeCopyBytes(payload.StateRoot()),
-		CheckpointRoot:   bytesutil.SafeCopyBytes(payload.CheckpointRoot()),
 		ReceiptsRoot:     bytesutil.SafeCopyBytes(payload.ReceiptsRoot()),
 		LogsBloom:        bytesutil.SafeCopyBytes(payload.LogsBloom()),
 		PrevRandao:       bytesutil.SafeCopyBytes(payload.PrevRandao()),
@@ -450,11 +439,6 @@ func (e executionPayloadCapella) FeeRecipient() []byte {
 // StateRoot --
 func (e executionPayloadCapella) StateRoot() []byte {
 	return e.p.StateRoot
-}
-
-// CheckpointRoot --
-func (e executionPayloadCapella) CheckpointRoot() []byte {
-	return e.p.CheckpointRoot
 }
 
 // ReceiptsRoot --
@@ -619,11 +603,6 @@ func (e executionPayloadHeaderCapella) StateRoot() []byte {
 	return e.p.StateRoot
 }
 
-// CheckpointRoot --
-func (e executionPayloadHeaderCapella) CheckpointRoot() []byte {
-	return e.p.CheckpointRoot
-}
-
 // ReceiptsRoot --
 func (e executionPayloadHeaderCapella) ReceiptsRoot() []byte {
 	return e.p.ReceiptsRoot
@@ -732,7 +711,6 @@ func PayloadToHeaderCapella(payload interfaces.ExecutionData) (*enginev1.Executi
 		ParentHash:       bytesutil.SafeCopyBytes(payload.ParentHash()),
 		FeeRecipient:     bytesutil.SafeCopyBytes(payload.FeeRecipient()),
 		StateRoot:        bytesutil.SafeCopyBytes(payload.StateRoot()),
-		CheckpointRoot:   bytesutil.SafeCopyBytes(payload.CheckpointRoot()),
 		ReceiptsRoot:     bytesutil.SafeCopyBytes(payload.ReceiptsRoot()),
 		LogsBloom:        bytesutil.SafeCopyBytes(payload.LogsBloom()),
 		PrevRandao:       bytesutil.SafeCopyBytes(payload.PrevRandao()),
@@ -758,9 +736,6 @@ func IsEmptyExecutionData(data interfaces.ExecutionData) (bool, error) {
 		return false, nil
 	}
 	if !bytes.Equal(data.StateRoot(), make([]byte, fieldparams.RootLength)) {
-		return false, nil
-	}
-	if !bytes.Equal(data.CheckpointRoot(), make([]byte, fieldparams.RootLength)) {
 		return false, nil
 	}
 	if !bytes.Equal(data.ReceiptsRoot(), make([]byte, fieldparams.RootLength)) {

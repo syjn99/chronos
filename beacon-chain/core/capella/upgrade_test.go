@@ -83,7 +83,6 @@ func TestUpgradeToCapella(t *testing.T) {
 		ParentHash:       prevHeader.ParentHash(),
 		FeeRecipient:     prevHeader.FeeRecipient(),
 		StateRoot:        prevHeader.StateRoot(),
-		CheckpointRoot:   prevHeader.CheckpointRoot(),
 		ReceiptsRoot:     prevHeader.ReceiptsRoot(),
 		LogsBloom:        prevHeader.LogsBloom(),
 		PrevRandao:       prevHeader.PrevRandao(),

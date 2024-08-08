@@ -91,7 +91,6 @@ func TestRecentBeaconBlocksRPCHandler_ReturnsBlocks_ReconstructsPayload(t *testi
 	// Start service with 160 as allowed blocks capacity (and almost zero capacity recovery).
 	parent := bytesutil.PadTo([]byte("parentHash"), fieldparams.RootLength)
 	stateRoot := bytesutil.PadTo([]byte("stateRoot"), fieldparams.RootLength)
-	checkpointRoot := bytesutil.PadTo([]byte("checkpointRoot"), fieldparams.RootLength)
 	receiptsRoot := bytesutil.PadTo([]byte("receiptsRoot"), fieldparams.RootLength)
 	logsBloom := bytesutil.PadTo([]byte("logs"), fieldparams.LogsBloomLength)
 	tx := gethTypes.NewTransaction(
@@ -107,21 +106,20 @@ func TestRecentBeaconBlocksRPCHandler_ReturnsBlocks_ReconstructsPayload(t *testi
 	require.NoError(t, err)
 	blockHash := bytesutil.ToBytes32([]byte("foo"))
 	payload := &enginev1.ExecutionPayload{
-		ParentHash:     parent,
-		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:      stateRoot,
-		CheckpointRoot: checkpointRoot,
-		ReceiptsRoot:   receiptsRoot,
-		LogsBloom:      logsBloom,
-		PrevRandao:     blockHash[:],
-		BlockNumber:    0,
-		GasLimit:       0,
-		GasUsed:        0,
-		Timestamp:      0,
-		ExtraData:      make([]byte, 0),
-		BlockHash:      blockHash[:],
-		BaseFeePerGas:  bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
-		Transactions:   encodedBinaryTxs,
+		ParentHash:    parent,
+		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:     stateRoot,
+		ReceiptsRoot:  receiptsRoot,
+		LogsBloom:     logsBloom,
+		PrevRandao:    blockHash[:],
+		BlockNumber:   0,
+		GasLimit:      0,
+		GasUsed:       0,
+		Timestamp:     0,
+		ExtraData:     make([]byte, 0),
+		BlockHash:     blockHash[:],
+		BaseFeePerGas: bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
+		Transactions:  encodedBinaryTxs,
 	}
 	wrappedPayload, err := blocks.WrappedExecutionPayload(payload)
 	require.NoError(t, err)

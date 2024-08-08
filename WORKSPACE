@@ -379,12 +379,39 @@ load(
 _cc_image_repos()
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-
 load("@com_github_atlassian_bazel_tools//gometalinter:deps.bzl", "gometalinter_dependencies")
 
 gometalinter_dependencies()
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+
+go_repository(
+    name = "com_github_cockroachdb_fifo",
+    importpath = "github.com/cockroachdb/fifo",
+    sum = "h1:giXvy4KSc/6g/esnpM7Geqxka4WSqI1SZc7sMJFd3y4=",
+    version = "v0.0.0-20240606204812-0bbfbd93a7ce",
+)
+
+go_repository(
+    name = "com_google_cloud_go_apigeeregistry",
+    importpath = "cloud.google.com/go/apigeeregistry",
+    sum = "h1:E43RdhhCxdlV+I161gUY2rI4eOaMzHTA5kNkvRsFXvc=",
+    version = "v0.6.0",
+)
+
+go_repository(
+    name = "com_google_cloud_go_apikeys",
+    importpath = "cloud.google.com/go/apikeys",
+    sum = "h1:B9CdHFZTFjVti89tmyXXrO+7vSNo2jvZuHG8zD5trdQ=",
+    version = "v0.6.0",
+)
+
+go_repository(
+    name = "org_golang_x_telemetry",
+    importpath = "golang.org/x/telemetry",
+    sum = "h1:IRJeR9r1pYWsHKTRe/IInb7lYvbBVIqOgsX/u0mbOWY=",
+    version = "v0.0.0-20240228155512-f48c80bd79b2",
+)
 
 gazelle_dependencies()
 
