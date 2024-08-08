@@ -64,6 +64,8 @@ func BaseRewardPerIncrement(s state.ReadOnlyBeaconState, activeBalance uint64) (
 	}
 	totalActiveIncrement := activeBalance / cfg.EffectiveBalanceIncrement
 	totalReward, reserveUsage := helpers.TotalRewardWithReserveUsage(s)
-
-	return totalReward / totalActiveIncrement, reserveUsage / totalActiveIncrement, nil
+	if reserveUsage == 0 {
+		return totalReward / totalActiveIncrement, 0, nil
+	}
+	return totalReward / totalActiveIncrement, (reserveUsage / totalActiveIncrement) + 1, nil
 }
