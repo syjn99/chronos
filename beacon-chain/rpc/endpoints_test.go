@@ -127,13 +127,19 @@ func Test_endpoints(t *testing.T) {
 		"/prysm/v1/validators/performance": {http.MethodPost},
 	}
 
+	overRoutes := map[string][]string{
+		"/chronos/validator/estimated_activation/{validator_id}": {http.MethodPost},
+		"/chronos/states/epoch_reward/{epoch}":                   {http.MethodGet},
+		"/over/v1/beacon/states/{state_id}/reserves":             {http.MethodGet},
+	}
+
 	overNodeRoutes := map[string][]string{
 		"/over-node/close": {http.MethodPost},
 	}
 
 	s := &Service{cfg: &Config{}}
 
-	routesMap := combineMaps(beaconRoutes, builderRoutes, configRoutes, debugRoutes, eventsRoutes, nodeRoutes, validatorRoutes, rewardsRoutes, lightClientRoutes, blobRoutes, prysmValidatorRoutes, prysmNodeRoutes, prysmBeaconRoutes, overNodeRoutes)
+	routesMap := combineMaps(beaconRoutes, builderRoutes, configRoutes, debugRoutes, eventsRoutes, nodeRoutes, validatorRoutes, rewardsRoutes, lightClientRoutes, blobRoutes, prysmValidatorRoutes, prysmNodeRoutes, prysmBeaconRoutes, overRoutes, overNodeRoutes)
 	actual := s.endpoints(true, true, nil, nil, nil, nil, nil, nil, nil)
 	for _, e := range actual {
 		methods, ok := routesMap[e.template]

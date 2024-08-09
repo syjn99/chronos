@@ -6,7 +6,7 @@ go_library(
         "handler.go",
         "server.go",
     ],
-    importpath = "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/overnode",
+    importpath = "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/over/overnode",
     visibility = ["//visibility:public"],
     deps = [
         "//beacon-chain/node/close-handler:go_default_library",

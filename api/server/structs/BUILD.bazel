@@ -15,6 +15,7 @@ go_library(
         "endpoints_events.go",
         "endpoints_lightclient.go",
         "endpoints_node.go",
+        "endpoints_over.go",
         "endpoints_rewards.go",
         "endpoints_validator.go",
         "other.go",

@@ -16,7 +16,8 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/rewards"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/eth/validator"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/lookup"
-	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/overnode"
+	over "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/over"
+	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/over/overnode"
 	beaconprysm "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/prysm/beacon"
 	nodeprysm "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/prysm/node"
 	validatorv1alpha1 "github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/prysm/v1alpha1/validator"
@@ -55,6 +56,9 @@ func (s *Service) endpoints(
 	endpoints = append(endpoints, s.prysmBeaconEndpoints(ch, stater)...)
 	endpoints = append(endpoints, s.prysmNodeEndpoints()...)
 	endpoints = append(endpoints, s.prysmValidatorEndpoints(coreService, stater)...)
+
+	// custom endpoints for OverProtocol.
+	endpoints = append(endpoints, s.overEndpoints(stater)...)
 	if enableDebug {
 		endpoints = append(endpoints, s.debugEndpoints(stater)...)
 	}
@@ -782,6 +786,39 @@ func (s *Service) prysmValidatorEndpoints(coreService *core.Service, stater look
 			name:     namespace + ".GetValidatorPerformance",
 			handler:  server.GetValidatorPerformance,
 			methods:  []string{http.MethodPost},
+		},
+	}
+}
+
+func (s *Service) overEndpoints(stater lookup.Stater) []endpoint {
+	server := &over.Server{
+		Stater:                stater,
+		GenesisTimeFetcher:    s.cfg.GenesisTimeFetcher,
+		HeadFetcher:           s.cfg.HeadFetcher,
+		OptimisticModeFetcher: s.cfg.OptimisticModeFetcher,
+		FinalizationFetcher:   s.cfg.FinalizationFetcher,
+	}
+
+	const namespace = "over"
+	// TODO: API endpoints can be standardized
+	return []endpoint{
+		{
+			template: "/chronos/validator/estimated_activation/{validator_id}",
+			name:     namespace + ".EstimatedActivation",
+			handler:  server.EstimatedActivation,
+			methods:  []string{http.MethodPost},
+		},
+		{
+			template: "/chronos/states/epoch_reward/{epoch}",
+			name:     namespace + ".GetEpochReward",
+			handler:  server.GetEpochReward,
+			methods:  []string{http.MethodGet},
+		},
+		{
+			template: "/over/v1/beacon/states/{state_id}/reserves",
+			name:     namespace + ".GetReserves",
+			handler:  server.GetReserves,
+			methods:  []string{http.MethodGet},
 		},
 	}
 }
