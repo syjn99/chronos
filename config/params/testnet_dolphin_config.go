@@ -24,6 +24,8 @@ func DolphinConfig() *BeaconChainConfig {
 	cfg.BellatrixForkVersion = []byte{0x02, 0x00, 0x00, 0x28}
 	cfg.CapellaForkEpoch = 4
 	cfg.CapellaForkVersion = []byte{0x03, 0x00, 0x00, 0x28}
+	cfg.IssuanceRate = [11]uint64{20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 0}
+	cfg.MaxBoostYield = [11]uint64{0, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000}
 	cfg.InitializeForkSchedule()
 	return cfg
 }
