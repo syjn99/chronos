@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/prysmaticlabs/go-bitfield"
+	bitfield "github.com/prysmaticlabs/go-bitfield"
 	mock "github.com/prysmaticlabs/prysm/v4/beacon-chain/blockchain/testing"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/altair"
 	"github.com/prysmaticlabs/prysm/v4/beacon-chain/core/epoch/precompute"
@@ -1069,7 +1069,7 @@ func TestServer_ListValidators_FromOldEpoch(t *testing.T) {
 	vals := st.Validators()
 	want := make([]*ethpb.Validators_ValidatorContainer, 0)
 	for i, v := range vals {
-		v.EffectiveBalance = 0x2a600b9c00 // 182000000000 Gwei
+		v.EffectiveBalance = 0x3946be1c00 // 246000000000 Gwei
 		want = append(want, &ethpb.Validators_ValidatorContainer{
 			Index:     primitives.ValidatorIndex(i),
 			Validator: v,

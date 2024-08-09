@@ -13,7 +13,6 @@ func MainnetConfig() *BeaconChainConfig {
 	if mainnetBeaconConfig.ForkVersionSchedule == nil {
 		mainnetBeaconConfig.InitializeForkSchedule()
 	}
-	mainnetBeaconConfig.InitializeEpochIssuance()
 	mainnetBeaconConfig.InitializeDepositPlan()
 	return mainnetBeaconConfig
 }
@@ -76,12 +75,14 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	HysteresisQuotient:                4,
 	HysteresisDownwardMultiplier:      1,
 	HysteresisUpwardMultiplier:        5,
+	IssuanceRate:                      [11]uint64{20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 0},
+	IssuancePrecision:                 1000,
 	DepositPlanEarlyEnd:               4,
 	DepositPlanLaterEnd:               10,
 	RewardFeedbackPrecision:           1000000000000,
 	RewardFeedbackThresholdReciprocal: 10,
 	TargetChangeRate:                  1500000,
-	MaxBoostYield:                     10000000000,
+	MaxBoostYield:                     [11]uint64{0, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000},
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,

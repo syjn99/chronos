@@ -116,7 +116,7 @@ func TestGetSpec(t *testing.T) {
 	config.DepositPlanLaterOffset = 207
 	config.DepositPlanFinal = 208
 	config.ChurnLimitBias = 209
-	config.MaxBoostYield = 210
+	config.MaxBoostYield = [11]uint64{210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210}
 	config.TargetChangeRate = 211
 	config.IssuancePerYear = 212
 	config.DepositPlanEarlyEnd = 213
@@ -124,6 +124,8 @@ func TestGetSpec(t *testing.T) {
 	config.RewardFeedbackThresholdReciprocal = 215
 	config.RewardFeedbackPrecision = 216
 	config.LightLayerWeight = 217
+	config.IssuanceRate = [11]uint64{218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218}
+	config.IssuancePrecision = 219
 
 	var dbp [4]byte
 	copy(dbp[:], []byte{'0', '0', '0', '1'})
@@ -409,7 +411,7 @@ func TestGetSpec(t *testing.T) {
 		case "CHURN_LIMIT_BIAS":
 			assert.Equal(t, "209", v)
 		case "MAX_BOOST_YIELD":
-			assert.Equal(t, "210", v)
+			assert.Equal(t, [11]uint64{210, 210, 210, 210, 210, 210, 210, 210, 210, 210, 210}, v)
 		case "TARGET_CHANGE_RATE":
 			assert.Equal(t, "211", v)
 		case "ISSUANCE_PER_YEAR":
@@ -424,6 +426,10 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "216", v)
 		case "LIGHT_LAYER_WEIGHT":
 			assert.Equal(t, "217", v)
+		case "ISSUANCE_RATE":
+			assert.Equal(t, [11]uint64{218, 218, 218, 218, 218, 218, 218, 218, 218, 218, 218}, v)
+		case "ISSUANCE_PRECISION":
+			assert.Equal(t, "219", v)
 		case "SAFE_SLOTS_TO_IMPORT_OPTIMISTICALLY":
 		default:
 			t.Errorf("Incorrect key: %s", k)
