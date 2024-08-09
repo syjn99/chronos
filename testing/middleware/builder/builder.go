@@ -828,7 +828,6 @@ func executableDataToBlock(params engine.ExecutableData, prevBeaconRoot []byte) 
 		UncleHash:       gethTypes.EmptyUncleHash,
 		Coinbase:        params.FeeRecipient,
 		Root:            params.StateRoot,
-		CheckpointRoot:  params.CheckpointRoot,
 		TxHash:          gethTypes.DeriveSha(gethTypes.Transactions(txs), trie.NewStackTrie(nil)),
 		ReceiptHash:     params.ReceiptsRoot,
 		Bloom:           gethTypes.BytesToBloom(params.LogsBloom),

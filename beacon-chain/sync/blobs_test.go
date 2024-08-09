@@ -60,7 +60,6 @@ type expectedRequirer func(*testing.T, *Service, []*expectedBlobChunk) func(netw
 func generateTestBlockWithSidecars(t *testing.T, parent [32]byte, slot types.Slot, nblobs int) (*ethpb.SignedBeaconBlockDeneb, []blocks.ROBlob) {
 	// Start service with 160 as allowed blocks capacity (and almost zero capacity recovery).
 	stateRoot := bytesutil.PadTo([]byte("stateRoot"), fieldparams.RootLength)
-	checkpointRoot := bytesutil.PadTo([]byte("checkpointRoot"), fieldparams.RootLength)
 	receiptsRoot := bytesutil.PadTo([]byte("receiptsRoot"), fieldparams.RootLength)
 	logsBloom := bytesutil.PadTo([]byte("logs"), fieldparams.LogsBloomLength)
 	parentHash := bytesutil.PadTo([]byte("parentHash"), fieldparams.RootLength)
@@ -77,23 +76,22 @@ func generateTestBlockWithSidecars(t *testing.T, parent [32]byte, slot types.Slo
 	require.NoError(t, err)
 	blockHash := bytesutil.ToBytes32([]byte("foo"))
 	payload := &enginev1.ExecutionPayloadDeneb{
-		ParentHash:     parentHash,
-		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:      stateRoot,
-		CheckpointRoot: checkpointRoot,
-		ReceiptsRoot:   receiptsRoot,
-		LogsBloom:      logsBloom,
-		PrevRandao:     blockHash[:],
-		BlockNumber:    0,
-		GasLimit:       0,
-		GasUsed:        0,
-		Timestamp:      0,
-		ExtraData:      make([]byte, 0),
-		BaseFeePerGas:  bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
-		ExcessBlobGas:  0,
-		BlobGasUsed:    0,
-		BlockHash:      blockHash[:],
-		Transactions:   encodedBinaryTxs,
+		ParentHash:    parentHash,
+		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:     stateRoot,
+		ReceiptsRoot:  receiptsRoot,
+		LogsBloom:     logsBloom,
+		PrevRandao:    blockHash[:],
+		BlockNumber:   0,
+		GasLimit:      0,
+		GasUsed:       0,
+		Timestamp:     0,
+		ExtraData:     make([]byte, 0),
+		BaseFeePerGas: bytesutil.PadTo([]byte("baseFeePerGas"), fieldparams.RootLength),
+		ExcessBlobGas: 0,
+		BlobGasUsed:   0,
+		BlockHash:     blockHash[:],
+		Transactions:  encodedBinaryTxs,
 	}
 	block := util.NewBeaconBlockDeneb()
 	block.Block.Body.ExecutionPayload = payload

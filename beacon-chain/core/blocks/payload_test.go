@@ -71,18 +71,6 @@ func Test_IsMergeComplete(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "has checkpoint root",
-			payload: func() interfaces.ExecutionData {
-				h, err := emptyPayloadHeader()
-				require.NoError(t, err)
-				p, ok := h.Proto().(*enginev1.ExecutionPayloadHeader)
-				require.Equal(t, true, ok)
-				p.CheckpointRoot = bytesutil.PadTo([]byte{'a'}, fieldparams.RootLength)
-				return h
-			}(),
-			want: true,
-		},
-		{
 			name: "has receipt root",
 			payload: func() interfaces.ExecutionData {
 				h, err := emptyPayloadHeader()
@@ -819,7 +807,6 @@ func Test_PayloadToHeader(t *testing.T) {
 	p.ParentHash = b
 	p.FeeRecipient = b
 	p.StateRoot = b
-	p.CheckpointRoot = b
 	p.ReceiptsRoot = b
 	p.LogsBloom = b
 	p.PrevRandao = b
@@ -834,7 +821,6 @@ func Test_PayloadToHeader(t *testing.T) {
 	require.DeepSSZEqual(t, h.ParentHash, make([]byte, fieldparams.RootLength))
 	require.DeepSSZEqual(t, h.FeeRecipient, make([]byte, fieldparams.FeeRecipientLength))
 	require.DeepSSZEqual(t, h.StateRoot, make([]byte, fieldparams.RootLength))
-	require.DeepSSZEqual(t, h.CheckpointRoot, make([]byte, fieldparams.RootLength))
 	require.DeepSSZEqual(t, h.ReceiptsRoot, make([]byte, fieldparams.RootLength))
 	require.DeepSSZEqual(t, h.LogsBloom, make([]byte, fieldparams.LogsBloomLength))
 	require.DeepSSZEqual(t, h.PrevRandao, make([]byte, fieldparams.RootLength))
@@ -865,7 +851,6 @@ func emptyPayloadHeader() (interfaces.ExecutionData, error) {
 		ParentHash:       make([]byte, fieldparams.RootLength),
 		FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 		StateRoot:        make([]byte, fieldparams.RootLength),
-		CheckpointRoot:   make([]byte, fieldparams.RootLength),
 		ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 		LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 		PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -881,7 +866,6 @@ func emptyPayloadHeaderCapella() (interfaces.ExecutionData, error) {
 		ParentHash:       make([]byte, fieldparams.RootLength),
 		FeeRecipient:     make([]byte, fieldparams.FeeRecipientLength),
 		StateRoot:        make([]byte, fieldparams.RootLength),
-		CheckpointRoot:   make([]byte, fieldparams.RootLength),
 		ReceiptsRoot:     make([]byte, fieldparams.RootLength),
 		LogsBloom:        make([]byte, fieldparams.LogsBloomLength),
 		PrevRandao:       make([]byte, fieldparams.RootLength),
@@ -895,33 +879,31 @@ func emptyPayloadHeaderCapella() (interfaces.ExecutionData, error) {
 
 func emptyPayload() *enginev1.ExecutionPayload {
 	return &enginev1.ExecutionPayload{
-		ParentHash:     make([]byte, fieldparams.RootLength),
-		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:      make([]byte, fieldparams.RootLength),
-		CheckpointRoot: make([]byte, fieldparams.RootLength),
-		ReceiptsRoot:   make([]byte, fieldparams.RootLength),
-		LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
-		PrevRandao:     make([]byte, fieldparams.RootLength),
-		ExtraData:      make([]byte, 0),
-		BaseFeePerGas:  make([]byte, fieldparams.RootLength),
-		BlockHash:      make([]byte, fieldparams.RootLength),
-		Transactions:   make([][]byte, 0),
+		ParentHash:    make([]byte, fieldparams.RootLength),
+		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:     make([]byte, fieldparams.RootLength),
+		ReceiptsRoot:  make([]byte, fieldparams.RootLength),
+		LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
+		PrevRandao:    make([]byte, fieldparams.RootLength),
+		ExtraData:     make([]byte, 0),
+		BaseFeePerGas: make([]byte, fieldparams.RootLength),
+		BlockHash:     make([]byte, fieldparams.RootLength),
+		Transactions:  make([][]byte, 0),
 	}
 }
 
 func emptyPayloadCapella() *enginev1.ExecutionPayloadCapella {
 	return &enginev1.ExecutionPayloadCapella{
-		ParentHash:     make([]byte, fieldparams.RootLength),
-		FeeRecipient:   make([]byte, fieldparams.FeeRecipientLength),
-		StateRoot:      make([]byte, fieldparams.RootLength),
-		CheckpointRoot: make([]byte, fieldparams.RootLength),
-		ReceiptsRoot:   make([]byte, fieldparams.RootLength),
-		LogsBloom:      make([]byte, fieldparams.LogsBloomLength),
-		PrevRandao:     make([]byte, fieldparams.RootLength),
-		ExtraData:      make([]byte, 0),
-		BaseFeePerGas:  make([]byte, fieldparams.RootLength),
-		BlockHash:      make([]byte, fieldparams.RootLength),
-		Transactions:   make([][]byte, 0),
-		Withdrawals:    make([]*enginev1.Withdrawal, 0),
+		ParentHash:    make([]byte, fieldparams.RootLength),
+		FeeRecipient:  make([]byte, fieldparams.FeeRecipientLength),
+		StateRoot:     make([]byte, fieldparams.RootLength),
+		ReceiptsRoot:  make([]byte, fieldparams.RootLength),
+		LogsBloom:     make([]byte, fieldparams.LogsBloomLength),
+		PrevRandao:    make([]byte, fieldparams.RootLength),
+		ExtraData:     make([]byte, 0),
+		BaseFeePerGas: make([]byte, fieldparams.RootLength),
+		BlockHash:     make([]byte, fieldparams.RootLength),
+		Transactions:  make([][]byte, 0),
+		Withdrawals:   make([]*enginev1.Withdrawal, 0),
 	}
 }

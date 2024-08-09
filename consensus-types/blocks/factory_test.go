@@ -445,16 +445,15 @@ func TestBuildSignedBeaconBlockFromExecutionPayload(t *testing.T) {
 	t.Run("payload header root and payload root mismatch", func(t *testing.T) {
 		blockHash := bytesutil.Bytes32(1)
 		payload := &enginev1.ExecutionPayload{
-			ParentHash:     make([]byte, fieldparams.RootLength),
-			FeeRecipient:   make([]byte, 20),
-			StateRoot:      make([]byte, fieldparams.RootLength),
-			CheckpointRoot: make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
-			LogsBloom:      make([]byte, 256),
-			PrevRandao:     make([]byte, fieldparams.RootLength),
-			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
-			BlockHash:      blockHash,
-			Transactions:   make([][]byte, 0),
+			ParentHash:    make([]byte, fieldparams.RootLength),
+			FeeRecipient:  make([]byte, 20),
+			StateRoot:     make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
+			LogsBloom:     make([]byte, 256),
+			PrevRandao:    make([]byte, fieldparams.RootLength),
+			BaseFeePerGas: make([]byte, fieldparams.RootLength),
+			BlockHash:     blockHash,
+			Transactions:  make([][]byte, 0),
 		}
 		wrapped, err := WrappedExecutionPayload(payload)
 		require.NoError(t, err)
@@ -475,16 +474,15 @@ func TestBuildSignedBeaconBlockFromExecutionPayload(t *testing.T) {
 	})
 	t.Run("ok", func(t *testing.T) {
 		payload := &enginev1.ExecutionPayload{
-			ParentHash:     make([]byte, fieldparams.RootLength),
-			FeeRecipient:   make([]byte, 20),
-			StateRoot:      make([]byte, fieldparams.RootLength),
-			CheckpointRoot: make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
-			LogsBloom:      make([]byte, 256),
-			PrevRandao:     make([]byte, fieldparams.RootLength),
-			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
-			BlockHash:      make([]byte, fieldparams.RootLength),
-			Transactions:   make([][]byte, 0),
+			ParentHash:    make([]byte, fieldparams.RootLength),
+			FeeRecipient:  make([]byte, 20),
+			StateRoot:     make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
+			LogsBloom:     make([]byte, 256),
+			PrevRandao:    make([]byte, fieldparams.RootLength),
+			BaseFeePerGas: make([]byte, fieldparams.RootLength),
+			BlockHash:     make([]byte, fieldparams.RootLength),
+			Transactions:  make([][]byte, 0),
 		}
 		wrapped, err := WrappedExecutionPayload(payload)
 		require.NoError(t, err)
@@ -506,18 +504,17 @@ func TestBuildSignedBeaconBlockFromExecutionPayload(t *testing.T) {
 	})
 	t.Run("deneb", func(t *testing.T) {
 		payload := &enginev1.ExecutionPayloadDeneb{
-			ParentHash:     make([]byte, fieldparams.RootLength),
-			FeeRecipient:   make([]byte, 20),
-			StateRoot:      make([]byte, fieldparams.RootLength),
-			CheckpointRoot: make([]byte, fieldparams.RootLength),
-			ReceiptsRoot:   make([]byte, fieldparams.RootLength),
-			LogsBloom:      make([]byte, 256),
-			PrevRandao:     make([]byte, fieldparams.RootLength),
-			BaseFeePerGas:  make([]byte, fieldparams.RootLength),
-			BlockHash:      make([]byte, fieldparams.RootLength),
-			Transactions:   make([][]byte, 0),
-			ExcessBlobGas:  123,
-			BlobGasUsed:    321,
+			ParentHash:    make([]byte, fieldparams.RootLength),
+			FeeRecipient:  make([]byte, 20),
+			StateRoot:     make([]byte, fieldparams.RootLength),
+			ReceiptsRoot:  make([]byte, fieldparams.RootLength),
+			LogsBloom:     make([]byte, 256),
+			PrevRandao:    make([]byte, fieldparams.RootLength),
+			BaseFeePerGas: make([]byte, fieldparams.RootLength),
+			BlockHash:     make([]byte, fieldparams.RootLength),
+			Transactions:  make([][]byte, 0),
+			ExcessBlobGas: 123,
+			BlobGasUsed:   321,
 		}
 		wrapped, err := WrappedExecutionPayloadDeneb(payload, big.NewInt(123))
 		require.NoError(t, err)

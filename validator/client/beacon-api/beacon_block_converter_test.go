@@ -321,15 +321,6 @@ func TestGetBeaconBlockConverter_BellatrixError(t *testing.T) {
 			},
 		},
 		{
-			name:                 "bad checkpoint root",
-			expectedErrorMessage: "failed to decode execution payload checkpoint root `poo`",
-			generateData: func() *structs.BeaconBlockBellatrix {
-				beaconBlock := test_helpers.GenerateJsonBellatrixBeaconBlock()
-				beaconBlock.Body.ExecutionPayload.CheckpointRoot = "poo"
-				return beaconBlock
-			},
-		},
-		{
 			name:                 "bad receipts root",
 			expectedErrorMessage: "failed to decode execution payload receipts root `bar`",
 			generateData: func() *structs.BeaconBlockBellatrix {
