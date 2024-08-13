@@ -5,7 +5,7 @@ func UseDolphinNetworkConfig() {
 	cfg := BeaconNetworkConfig().Copy()
 	cfg.BootstrapNodes = []string{
 		// Dolphin testnet boot nodess
-		"enr:-LG4QBg_EHDI1NooVMFiODW81B6h5Xw1xGBQT8VfsR_IBZgdFZaGrmyFUomH-kd9gWOqaf_tlseyLRSXMZBsy2vMPWmGAZBJSMwth2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEIkBUf4RvdmVykNBNsU8AAAAY__________-Jc2VjcDI1NmsxoQOaEHgEJPUhVaDcltNoWYFRCE7GcZccocBv6EW6uX1M2IN1ZHCCyyA",
+		"enr:-LG4QF2nF7q4LflZjONYRqvdZ86wyJLU5Uyk412ebO17SsNqXDG9bwQk6YSNflAdQdB7lxEiLS3M2aHOwNqitxBwHqiGAZFKwsOSh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEzr2e9IRvdmVykNBNsU8AAAAY__________-Jc2VjcDI1NmsxoQPj_uLKFjVr0hcT3SYrcHDCnDFXPNuXblZdj0bkdVnI24N1ZHCCyyA",
 	}
 	OverrideBeaconNetworkConfig(cfg)
 }
@@ -15,8 +15,8 @@ func DolphinConfig() *BeaconChainConfig {
 	cfg := MainnetConfig().Copy()
 	cfg.ConfigName = DolphinName
 	cfg.PresetBase = "dolphin"
-	cfg.DepositChainID = 541762
-	cfg.DepositNetworkID = 541762
+	cfg.DepositChainID = 541764
+	cfg.DepositNetworkID = 541764
 	cfg.GenesisForkVersion = []byte{0x00, 0x00, 0x00, 0x28}
 	cfg.AltairForkEpoch = 0
 	cfg.AltairForkVersion = []byte{0x01, 0x00, 0x00, 0x28}
