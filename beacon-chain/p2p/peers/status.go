@@ -25,6 +25,7 @@ package peers
 import (
 	"context"
 	"math"
+	"net"
 	"sort"
 	"strings"
 	"time"
@@ -46,6 +47,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1/metadata"
 	prysmTime "github.com/prysmaticlabs/prysm/v5/time"
 	"github.com/prysmaticlabs/prysm/v5/time/slots"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -60,8 +62,10 @@ const (
 )
 
 const (
-	// CollocationLimit restricts how many peer identities we can see from a single ip or ipv6 subnet.
-	CollocationLimit = 5
+	// DefaultColocationLimit restricts how many peer identities we can see from a single ip or ipv6 subnet.
+	DefaultColocationLimit = 5
+
+	DefaultIpTrackerBanTime = 2 * time.Hour
 
 	// Additional buffer beyond current peer limit, from which we can store the relevant peer statuses.
 	maxLimitBuffer = 150
@@ -86,11 +90,19 @@ const (
 
 // Status is the structure holding the peer status information.
 type Status struct {
-	ctx       context.Context
-	scorers   *scorers.Service
-	store     *peerdata.Store
-	ipTracker map[string]uint64
-	rand      *rand.Rand
+	ctx             context.Context
+	scorers         *scorers.Service
+	store           *peerdata.Store
+	ipTracker       map[string]uint64
+	lastSeen        map[string]time.Time
+	rand            *rand.Rand
+	ipTrackerConfig *IpTrackerConfig
+}
+
+type IpTrackerConfig struct {
+	ColocationLimit         uint64
+	ColocationWhitelistCIDR []*net.IPNet
+	IpTrackerBanTime        time.Duration
 }
 
 // StatusConfig represents peer status service params.
@@ -99,6 +111,8 @@ type StatusConfig struct {
 	PeerLimit int
 	// ScorerParams holds peer scorer configuration params.
 	ScorerParams *scorers.Config
+	// IpTrackerPruneConfig specifies the configuration for pruning the ip tracker.
+	IpTrackerConfig *IpTrackerConfig
 }
 
 // NewStatus creates a new status entity.
@@ -106,14 +120,36 @@ func NewStatus(ctx context.Context, config *StatusConfig) *Status {
 	store := peerdata.NewStore(ctx, &peerdata.StoreConfig{
 		MaxPeers: maxLimitBuffer + config.PeerLimit,
 	})
+
+	if config.IpTrackerConfig == nil {
+		config.IpTrackerConfig = &IpTrackerConfig{
+			ColocationLimit:  DefaultColocationLimit,
+			IpTrackerBanTime: DefaultIpTrackerBanTime,
+		}
+	}
+
+	if config.IpTrackerConfig.ColocationLimit == 0 {
+		config.IpTrackerConfig.ColocationLimit = DefaultColocationLimit
+	}
+	if config.IpTrackerConfig.IpTrackerBanTime == 0 {
+		config.IpTrackerConfig.IpTrackerBanTime = DefaultIpTrackerBanTime
+	}
+	log.WithFields(logrus.Fields{
+		"colocationWhitelist": config.IpTrackerConfig.ColocationWhitelistCIDR,
+		"colocationLimit":     config.IpTrackerConfig.ColocationLimit,
+		"banTime":             config.IpTrackerConfig.IpTrackerBanTime,
+	}).Info("IP tracker config")
+
 	return &Status{
 		ctx:       ctx,
 		store:     store,
 		scorers:   scorers.NewService(ctx, store, config.ScorerParams),
 		ipTracker: map[string]uint64{},
+		lastSeen:  map[string]time.Time{},
 		// Random generator used to calculate dial backoff period.
 		// It is ok to use deterministic generator, no need for true entropy.
-		rand: rand.NewDeterministicGenerator(),
+		rand:            rand.NewDeterministicGenerator(),
+		ipTrackerConfig: config.IpTrackerConfig,
 	}
 }
 
@@ -122,9 +158,17 @@ func (p *Status) Scorers() *scorers.Service {
 	return p.scorers
 }
 
+func (p *Status) ColocationLimit() uint64 {
+	return p.ipTrackerConfig.ColocationLimit
+}
+
 // MaxPeerLimit returns the max peer limit stored in the current peer store.
 func (p *Status) MaxPeerLimit() int {
 	return p.store.Config().MaxPeers
+}
+
+func (p *Status) IPTrackerBanTime() time.Duration {
+	return p.ipTrackerConfig.IpTrackerBanTime
 }
 
 // Add adds a peer.
@@ -995,8 +1039,11 @@ func (p *Status) isfromBadIP(pid peer.ID) bool {
 		return true
 	}
 	if val, ok := p.ipTracker[ip.String()]; ok {
-		if val > CollocationLimit {
-			return true
+		if val > p.ColocationLimit() {
+			// check is ip is whitelisted
+			if !p.isWhitelist(ip) {
+				return true
+			}
 		}
 	}
 	return false
@@ -1023,10 +1070,12 @@ func (p *Status) addIpToTracker(pid peer.ID) {
 	}
 	stringIP := ip.String()
 	p.ipTracker[stringIP] += 1
+	p.lastSeen[stringIP] = time.Now()
 }
 
 func (p *Status) tallyIPTracker() {
 	tracker := map[string]uint64{}
+	lastSeen := map[string]time.Time{}
 	// Iterate through all peers.
 	for _, peerData := range p.store.Peers() {
 		if peerData.Address == nil {
@@ -1041,8 +1090,56 @@ func (p *Status) tallyIPTracker() {
 		}
 		stringIP := ip.String()
 		tracker[stringIP] += 1
+		// if lastSee is not empty then copy from p.lastSee
+		if _, ok := p.lastSeen[stringIP]; ok {
+			lastSeen[stringIP] = p.lastSeen[stringIP]
+		}
 	}
 	p.ipTracker = tracker
+	p.lastSeen = lastSeen
+}
+
+// Decrease IpTracker count if ip is not seen for IpTrackerBanTime
+func (p *Status) DecayBadIps() {
+	p.store.Lock()
+	defer p.store.Unlock()
+	for ip, count := range p.ipTracker {
+		if _, ok := p.lastSeen[ip]; !ok {
+			log.WithFields(logrus.Fields{
+				"ip":    ip,
+				"count": count,
+			}).Debug("Something Wrong Decrease count from ipTracker")
+			continue
+		}
+		// Decay Bad Ip only when count is > 1
+		if count > 1 && time.Since(p.lastSeen[ip]) > p.ipTrackerConfig.IpTrackerBanTime {
+			log.WithFields(logrus.Fields{
+				"ip":       ip,
+				"count":    count,
+				"lastSeen": p.lastSeen[ip],
+			}).Debug("Decrease count from ipTracker")
+			p.ipTracker[ip]--
+			p.lastSeen[ip] = time.Now()
+		}
+	}
+}
+
+// isWhitelist checks if the given ip is in the whitelist.
+func (p *Status) isWhitelist(ip net.IP) bool {
+	whitelist := p.ipTrackerConfig.ColocationWhitelistCIDR
+	if len(whitelist) > 0 {
+		for _, ipnet := range whitelist {
+			if ipnet.Contains(ip) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// GetIpTrackerBanCount returns the count of the given ip in the ip tracker.
+func (p *Status) GetIpTrackerBanCount(ip string) uint64 {
+	return p.ipTracker[ip]
 }
 
 func sameIP(firstAddr, secondAddr ma.Multiaddr) bool {

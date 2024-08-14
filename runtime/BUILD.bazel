@@ -22,7 +22,7 @@ genrule(
     name = "version_file",
     srcs = [],
     outs = ["version.txt"],
-    cmd = "cat bazel-out/stable-status.txt | grep STABLE_GIT_TAG | cut -d' ' -f2 | tr -d v > $@",
+    cmd = "cat bazel-out/stable-status.txt | grep STABLE_GIT_TAG | cut -d' ' -f2 | tr '_' '-' | tr -d v > $@",
     stamp = True,
     tags = ["local"],
     visibility = ["//visibility:public"],

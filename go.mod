@@ -41,7 +41,6 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/jedib0t/go-pretty/v6 v6.5.4
 	github.com/joonix/log v0.0.0-20200409080653-9c1d2ceb5f1d
-	github.com/json-iterator/go v1.1.12
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213
 	github.com/kr/pretty v0.3.1
 	github.com/libp2p/go-libp2p v0.35.0
@@ -96,6 +95,7 @@ require (
 	google.golang.org/grpc v1.56.3
 	google.golang.org/protobuf v1.34.1
 	gopkg.in/d4l3k/messagediff.v1 v1.2.1
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	honnef.co/go/tools v0.5.0-0.dev.0.20231205170804-aef76f4feee2
@@ -164,6 +164,7 @@ require (
 	github.com/ipfs/go-cid v0.4.1 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/karalabe/usb v0.0.3-0.20230711191512-61db3e06439c // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
@@ -257,7 +258,6 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect

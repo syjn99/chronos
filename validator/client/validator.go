@@ -104,7 +104,7 @@ type validator struct {
 	submittedAggregates                  map[submittedAttKey]*submittedAtt
 	logValidatorPerformance              bool
 	emitAccountMetrics                   bool
-	useWeb                               bool
+	useOverNode                          bool
 	distributed                          bool
 	isWaitingForKeymanagerInitialization bool // used to check if validator is waiting for keymanager to be initialized. Only for OverNode
 	domainDataLock                       sync.RWMutex
@@ -135,7 +135,7 @@ func (v *validator) Done() {
 
 // IsWaitingForKeymanagerInitialization returns true if the validator is waiting for the keymanager to be initialized. Only for OverNode
 func (v *validator) IsWaitingForKeymanagerInitialization() bool {
-	if v.useWeb && v.wallet == nil {
+	if v.useOverNode && v.wallet == nil {
 		return v.isWaitingForKeymanagerInitialization
 	}
 	return false
@@ -148,7 +148,7 @@ func (v *validator) WaitForKeymanagerInitialization(ctx context.Context) error {
 		return errors.Wrap(err, "unable to retrieve valid genesis validators root while initializing key manager")
 	}
 
-	if v.useWeb && v.wallet == nil {
+	if v.useOverNode && v.wallet == nil {
 		if !v.isWaitingForKeymanagerInitialization {
 			v.isWaitingForKeymanagerInitialization = true
 		}

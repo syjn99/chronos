@@ -163,6 +163,11 @@ func NewService(ctx context.Context, cfg *Config) (*Service, error) {
 				DecayInterval: time.Hour,
 			},
 		},
+		IpTrackerConfig: &peers.IpTrackerConfig{
+			ColocationLimit:         s.cfg.ColocationLimit,
+			IpTrackerBanTime:        s.cfg.IpTrackerBanTime,
+			ColocationWhitelistCIDR: s.cfg.ColocationWhitelist,
+		},
 	})
 
 	// Initialize Data maps.
@@ -234,6 +239,7 @@ func (s *Service) Start() {
 	})
 	async.RunEvery(s.ctx, 30*time.Minute, s.Peers().Prune)
 	async.RunEvery(s.ctx, time.Duration(params.BeaconConfig().RespTimeout)*time.Second, s.updateMetrics)
+	async.RunEvery(s.ctx, s.Peers().IPTrackerBanTime()/2, s.Peers().DecayBadIps) // run every IPBanTime /2
 	async.RunEvery(s.ctx, refreshRate, s.RefreshENR)
 	async.RunEvery(s.ctx, 1*time.Minute, func() {
 		inboundQUICCount := len(s.peers.InboundConnectedWithProtocol(peers.QUIC))

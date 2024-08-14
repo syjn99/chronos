@@ -1,0 +1,38 @@
+[Unit]
+Description=Chronos Overprotocol Validator Client
+Wants=network-online.target
+After=network-online.target
+Requires=overprotocol-beacon-chain.service
+
+[Service]
+User=overprotocol-validator
+Group=overprotocol-validator
+Type=simple
+ExecStart=/usr/bin/validator --config-file /etc/overprotocol/validator.yaml --accept-terms-of-use
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+PrivateDevices=yes
+PrivateUsers=yes
+PrivateTmp=yes
+
+ProtectSystem=strict
+ReadWritePaths=/var/lib/overprotocol/validator
+ProtectClock=yes
+ProtectHome=true
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectHostname=yes
+ProtectControlGroups=yes
+
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

@@ -124,19 +124,6 @@ func NewValidatorClient(cliCtx *cli.Context) (*ValidatorClient, error) {
 
 	// initialize router used for endpoints
 	router := newRouter(cliCtx)
-	// If the --web flag is enabled to administer the validator
-	// client via a web portal, we start the validator client in a different way.
-	// Change Web flag name to enable keymanager API, look at merging initializeFromCLI and initializeForWeb maybe after WebUI DEPRECATED.
-	if cliCtx.IsSet(flags.EnableWebFlag.Name) {
-		if cliCtx.IsSet(flags.Web3SignerURLFlag.Name) || cliCtx.IsSet(flags.Web3SignerPublicValidatorKeysFlag.Name) {
-			log.Warn("Remote Keymanager API enabled. Prysm web does not properly support web3signer at this time")
-		}
-		log.Info("Enabling web portal to manage the validator client")
-		if err := validatorClient.initializeForWeb(cliCtx, router); err != nil {
-			return nil, err
-		}
-		return validatorClient, nil
-	}
 
 	// If the --over-node flag is enabled to administer the validator
 	// client via OverNode, we start the validator client in a different way.
@@ -342,54 +329,6 @@ func (c *ValidatorClient) initializeFromCLI(cliCtx *cli.Context, router *mux.Rou
 	return nil
 }
 
-func (c *ValidatorClient) initializeForWeb(cliCtx *cli.Context, router *mux.Router) error {
-	if cliCtx.IsSet(flags.Web3SignerURLFlag.Name) {
-		// Custom Check For Web3Signer
-		c.wallet = wallet.NewWalletForWeb3Signer()
-	} else {
-		// Read the wallet password file from the cli context.
-		if err := setWalletPasswordFilePath(cliCtx); err != nil {
-			return errors.Wrap(err, "could not read wallet password file")
-		}
-
-		// Read the wallet from the specified path.
-		w, err := wallet.OpenWalletOrElseCli(cliCtx, func(cliCtx *cli.Context) (*wallet.Wallet, error) {
-			return nil, nil
-		})
-		if err != nil {
-			return errors.Wrap(err, "could not open wallet")
-		}
-		c.wallet = w
-	}
-
-	if err := c.initializeDB(cliCtx); err != nil {
-		return errors.Wrapf(err, "could not initialize database")
-	}
-
-	if !cliCtx.Bool(cmd.DisableMonitoringFlag.Name) {
-		if err := c.registerPrometheusService(cliCtx); err != nil {
-			return err
-		}
-	}
-	if err := c.registerValidatorService(cliCtx); err != nil {
-		return err
-	}
-
-	if err := c.registerRPCService(router); err != nil {
-		return err
-	}
-	if err := c.registerRPCGatewayService(router); err != nil {
-		return err
-	}
-	gatewayHost := cliCtx.String(flags.GRPCGatewayHost.Name)
-	gatewayPort := cliCtx.Int(flags.GRPCGatewayPort.Name)
-	webAddress := fmt.Sprintf("http://%s:%d", gatewayHost, gatewayPort)
-	log.WithField("address", webAddress).Info(
-		"Starting Prysm web UI on address, open in browser to access",
-	)
-	return nil
-}
-
 func (c *ValidatorClient) initializeDB(cliCtx *cli.Context) error {
 	fileSystemDataDir := cliCtx.String(cmd.DataDirFlag.Name)
 	kvDataDir := cliCtx.String(cmd.DataDirFlag.Name)
@@ -576,7 +515,7 @@ func (c *ValidatorClient) registerValidatorService(cliCtx *cli.Context) error {
 		Web3SignerConfig:        web3signerConfig,
 		ProposerSettings:        ps,
 		ValidatorsRegBatchSize:  c.cliCtx.Int(flags.ValidatorsRegistrationBatchSizeFlag.Name),
-		UseWeb:                  c.cliCtx.Bool(flags.EnableWebFlag.Name) || c.cliCtx.Bool(flags.EnableOverNodeFlag.Name),
+		UseOverNode:             c.cliCtx.Bool(flags.EnableOverNodeFlag.Name),
 		LogValidatorPerformance: !c.cliCtx.Bool(flags.DisablePenaltyRewardLogFlag.Name),
 		EmitAccountMetrics:      !c.cliCtx.Bool(flags.DisableAccountMetricsFlag.Name),
 		Distributed:             c.cliCtx.Bool(flags.EnableDistributed.Name),
@@ -771,34 +710,34 @@ func (c *ValidatorClient) registerRPCGatewayService(router *mux.Router) error {
 	return c.services.RegisterService(gw)
 }
 
-func setWalletPasswordFilePath(cliCtx *cli.Context) error {
-	walletDir := cliCtx.String(flags.WalletDirFlag.Name)
-	defaultWalletPasswordFilePath := filepath.Join(walletDir, wallet.DefaultWalletPasswordFile)
-	exists, err := file.Exists(defaultWalletPasswordFilePath, file.Regular)
-	if err != nil {
-		return errors.Wrap(err, "could not check if default wallet password file exists")
-	}
-
-	if exists {
-		// Ensure file has proper permissions.
-		hasPerms, err := file.HasReadWritePermissions(defaultWalletPasswordFilePath)
-		if err != nil {
-			return err
-		}
-		if !hasPerms {
-			return fmt.Errorf(
-				"wallet password file %s does not have proper 0600 permissions",
-				defaultWalletPasswordFilePath,
-			)
-		}
-
-		// Set the filepath into the cli context.
-		if err := cliCtx.Set(flags.WalletPasswordFileFlag.Name, defaultWalletPasswordFilePath); err != nil {
-			return errors.Wrap(err, "could not set default wallet password file path")
-		}
-	}
-	return nil
-}
+//func setWalletPasswordFilePath(cliCtx *cli.Context) error {
+//	walletDir := cliCtx.String(flags.WalletDirFlag.Name)
+//	defaultWalletPasswordFilePath := filepath.Join(walletDir, wallet.DefaultWalletPasswordFile)
+//	exists, err := file.Exists(defaultWalletPasswordFilePath, file.Regular)
+//	if err != nil {
+//		return errors.Wrap(err, "could not check if default wallet password file exists")
+//	}
+//
+//	if exists {
+//		// Ensure file has proper permissions.
+//		hasPerms, err := file.HasReadWritePermissions(defaultWalletPasswordFilePath)
+//		if err != nil {
+//			return err
+//		}
+//		if !hasPerms {
+//			return fmt.Errorf(
+//				"wallet password file %s does not have proper 0600 permissions",
+//				defaultWalletPasswordFilePath,
+//			)
+//		}
+//
+//		// Set the filepath into the cli context.
+//		if err := cliCtx.Set(flags.WalletPasswordFileFlag.Name, defaultWalletPasswordFilePath); err != nil {
+//			return errors.Wrap(err, "could not set default wallet password file path")
+//		}
+//	}
+//	return nil
+//}
 
 func clearDB(ctx context.Context, dataDir string, force bool, isDatabaseMinimal bool) error {
 	var (

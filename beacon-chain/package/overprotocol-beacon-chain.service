@@ -1,0 +1,37 @@
+[Unit]
+Description=OverProtocol Beacon Chain
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=overprotocol-beacon
+Group=overprotocol-beacon
+Type=simple
+ExecStart=/usr/bin/beacon-chain --config-file /etc/overprotocol/beacon-chain.yaml --accept-terms-of-use
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+PrivateDevices=yes
+PrivateUsers=yes
+PrivateTmp=yes
+
+ProtectSystem=strict
+ReadWritePaths=/var/lib/overprotocol/beacon-chain
+ProtectClock=yes
+ProtectHome=true
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectHostname=yes
+ProtectControlGroups=yes
+
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+
+[Install]
+WantedBy=multi-user.target

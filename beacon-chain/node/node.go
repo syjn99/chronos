@@ -690,6 +690,18 @@ func (b *BeaconNode) registerP2P(cliCtx *cli.Context) error {
 		return errors.Wrapf(err, "could not register p2p service")
 	}
 
+	colocationLimit := cliCtx.Uint64(cmd.P2PColocationLimitFlag.Name)
+	ipTrackerBanTime := cliCtx.Duration(cmd.P2PIpTrackerBanTimeFlag.Name)
+	wl := slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.P2PColocationWhitelistFlag.Name))
+	colocationWhitelist := make([]*net.IPNet, 0, len(wl))
+	for _, strIP := range wl {
+		_, ipNet, err := net.ParseCIDR(strIP)
+		if err != nil {
+			return err
+		}
+		colocationWhitelist = append(colocationWhitelist, ipNet)
+	}
+
 	svc, err := p2p.NewService(b.ctx, &p2p.Config{
 		NoDiscovery:          cliCtx.Bool(cmd.NoDiscovery.Name),
 		StaticPeers:          slice.SplitCommaSeparated(cliCtx.StringSlice(cmd.StaticPeers.Name)),
@@ -713,6 +725,9 @@ func (b *BeaconNode) registerP2P(cliCtx *cli.Context) error {
 		StateNotifier:        b,
 		DB:                   b.db,
 		ClockWaiter:          b.clockWaiter,
+		ColocationLimit:      colocationLimit,
+		IpTrackerBanTime:     ipTrackerBanTime,
+		ColocationWhitelist:  colocationWhitelist,
 	})
 	if err != nil {
 		return err

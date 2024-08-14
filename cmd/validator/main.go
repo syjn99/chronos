@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	runtimeDebug "runtime/debug"
@@ -17,7 +18,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/cmd/validator/flags"
 	slashingprotectioncommands "github.com/prysmaticlabs/prysm/v5/cmd/validator/slashing-protection"
 	walletcommands "github.com/prysmaticlabs/prysm/v5/cmd/validator/wallet"
-	"github.com/prysmaticlabs/prysm/v5/cmd/validator/web"
 	"github.com/prysmaticlabs/prysm/v5/config/features"
 	"github.com/prysmaticlabs/prysm/v5/io/file"
 	"github.com/prysmaticlabs/prysm/v5/io/logs"
@@ -30,6 +30,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/validator/node"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var log = logrus.WithField("prefix", "main")
@@ -72,7 +73,6 @@ var appFlags = []cli.Flag{
 	flags.SlasherCertFlag,
 	flags.WalletPasswordFileFlag,
 	flags.WalletDirFlag,
-	flags.EnableWebFlag,
 	flags.GraffitiFileFlag,
 	flags.EnableDistributed,
 	flags.AuthTokenPathFlag,
@@ -103,6 +103,11 @@ var appFlags = []cli.Flag{
 	cmd.TraceSampleFractionFlag,
 	cmd.LogFormat,
 	cmd.LogFileName,
+	cmd.LogRotateFlag,
+	cmd.LogMaxSizeMBsFlag,
+	cmd.LogMaxBackupsFlag,
+	cmd.LogMaxAgeFlag,
+	cmd.LogCompressFlag,
 	cmd.ConfigFileFlag,
 	cmd.ChainConfigFileFlag,
 	cmd.GrpcMaxCallRecvMsgSizeFlag,
@@ -125,7 +130,7 @@ func init() {
 func main() {
 	app := cli.App{
 		Name:    "validator",
-		Usage:   "Launches an Ethereum validator client that interacts with a beacon chain, starts proposer and attester services, p2p connections, and more.",
+		Usage:   "Launches an Over Protocol validator client that interacts with a beacon chain, starts proposer and attester services, p2p connections, and more.",
 		Version: version.Version(),
 		Action: func(ctx *cli.Context) error {
 			if err := startNode(ctx); err != nil {
@@ -139,7 +144,6 @@ func main() {
 			accountcommands.Commands,
 			slashingprotectioncommands.Commands,
 			dbcommands.Commands,
-			web.Commands,
 		},
 		Flags: appFlags,
 		Before: func(ctx *cli.Context) error {
@@ -176,8 +180,20 @@ func main() {
 				return fmt.Errorf("unknown log format %s", format)
 			}
 
+			rotation := ctx.Bool(cmd.LogRotateFlag.Name)
 			if logFileName != "" {
-				if err := logs.ConfigurePersistentLogging(logFileName); err != nil {
+				logrus.SetOutput(os.Stdout) // Set default output to stdout for log separation
+				if rotation {
+					lumberjackLogger := &lumberjack.Logger{
+						Filename:   logFileName,
+						MaxSize:    ctx.Int(cmd.LogMaxSizeMBsFlag.Name), // MB
+						MaxBackups: ctx.Int(cmd.LogMaxBackupsFlag.Name),
+						MaxAge:     ctx.Int(cmd.LogMaxAgeFlag.Name), // days
+						Compress:   ctx.Bool(cmd.LogCompressFlag.Name),
+					}
+					logs.AddLogWriter(io.MultiWriter(logrus.StandardLogger().Out, lumberjackLogger))
+					log.Info("Log rotation activated. path=", logFileName, ", MaxSize=", lumberjackLogger.MaxSize, ", MaxBackups=", lumberjackLogger.MaxBackups, ", MaxAge=", lumberjackLogger.MaxAge, ", Compress=", lumberjackLogger.Compress)
+				} else if err := logs.ConfigurePersistentLogging(logFileName); err != nil {
 					log.WithError(err).Error("Failed to configuring logging to disk.")
 				}
 			}

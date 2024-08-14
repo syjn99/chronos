@@ -3,6 +3,7 @@ package derived
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v5/crypto/rand"
@@ -22,6 +23,7 @@ type MnemonicGenerator struct {
 
 // ErrUnsupportedMnemonicLanguage is returned when trying to use an unsupported mnemonic language.
 var (
+	mutex                          sync.Mutex
 	DefaultMnemonicLanguage        = "english"
 	ErrUnsupportedMnemonicLanguage = errors.New("unsupported mnemonic language")
 )
@@ -95,6 +97,9 @@ func seedFromMnemonic(mnemonic, mnemonicLanguage, mnemonicPassphrase string) ([]
 }
 
 func setBip39Lang(lang string) error {
+	// mutex is used to prevent concurrent access to bip39.SetWordList
+	mutex.Lock()
+	defer mutex.Unlock()
 	var wordlist []string
 	allowedLanguages := map[string][]string{
 		"chinese_simplified":  wordlists.ChineseSimplified,

@@ -256,10 +256,10 @@ func ConfigureValidator(ctx *cli.Context) error {
 	if err := configureTestnet(ctx); err != nil {
 		return err
 	}
-	if ctx.Bool(writeWalletPasswordOnWebOnboarding.Name) {
-		logEnabled(writeWalletPasswordOnWebOnboarding)
-		cfg.WriteWalletPasswordOnWebOnboarding = true
-	}
+	//if ctx.Bool(writeWalletPasswordOnWebOnboarding.Name) {
+	//	logEnabled(writeWalletPasswordOnWebOnboarding)
+	//	cfg.WriteWalletPasswordOnWebOnboarding = true
+	//}
 	if ctx.Bool(attestTimely.Name) {
 		logEnabled(attestTimely)
 		cfg.AttestTimely = true

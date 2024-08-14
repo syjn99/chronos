@@ -8,11 +8,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/blocks"
 	fieldparams "github.com/prysmaticlabs/prysm/v5/config/fieldparams"
-	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/encoding/bytesutil"
 	"github.com/prysmaticlabs/prysm/v5/io/file"
 	eth "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
@@ -151,34 +149,9 @@ func prepareAllKeys(validatingKeys [][fieldparams.BLSPubkeyLength]byte) (raw [][
 
 func displayExitInfo(rawExitedKeys [][]byte, trimmedExitedKeys []string) {
 	if len(rawExitedKeys) > 0 {
-		urlFormattedPubKeys := make([]string, len(rawExitedKeys))
-		for i, key := range rawExitedKeys {
-			urlFormattedPubKeys[i] = formatBeaconChaURL(key)
-		}
-
-		ifaceKeys := make([]interface{}, len(urlFormattedPubKeys))
-		for i, k := range urlFormattedPubKeys {
-			ifaceKeys[i] = k
-		}
-
-		info := fmt.Sprintf("Voluntary exit was successful for the accounts listed. "+
-			"URLs where you can track each validator's exit:\n"+strings.Repeat("%s\n", len(ifaceKeys)), ifaceKeys...)
-
-		log.WithField("pubkeys", strings.Join(trimmedExitedKeys, ", ")).Info(info)
+		log.WithField("pubkeys", strings.Join(trimmedExitedKeys, ", ")).Info("Voluntary exit was successful for the accounts listed. ")
 	} else {
 		log.Info("No successful voluntary exits")
-	}
-}
-
-func formatBeaconChaURL(key []byte) string {
-	baseURL := "https://%sbeaconcha.in/validator/%s"
-	keyWithout0x := hexutil.Encode(key)[2:]
-
-	switch env := params.BeaconConfig().ConfigName; env {
-	case params.DolphinName:
-		return fmt.Sprintf(baseURL, "dolphin-", keyWithout0x)
-	default:
-		return fmt.Sprintf(baseURL, "", keyWithout0x)
 	}
 }
 

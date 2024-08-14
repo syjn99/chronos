@@ -30,7 +30,7 @@ var (
 var Commands = &cli.Command{
 	Name:     "db",
 	Category: "db",
-	Usage:    "Defines commands for interacting with the Prysm validator database.",
+	Usage:    "Defines commands for interacting with the Chronos validator database.",
 	Subcommands: []*cli.Command{
 		{
 			Name:        "restore",

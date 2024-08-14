@@ -16,7 +16,7 @@ import (
 
 const (
 	// WalletDefaultDirName for accounts.
-	WalletDefaultDirName = "prysm-wallet-v2"
+	WalletDefaultDirName = "chronos-wallet-v2"
 	// DefaultGatewayHost for the validator client.
 	DefaultGatewayHost = "127.0.0.1"
 )
@@ -143,10 +143,10 @@ var (
 		Aliases: []string{"validator-api-bearer-file"},
 	}
 
-	// WalletDirFlag defines the path to a wallet directory for Prysm accounts.
+	// WalletDirFlag defines the path to a wallet directory for Chronos accounts.
 	WalletDirFlag = &cli.StringFlag{
 		Name:  "wallet-dir",
-		Usage: "Path to a wallet directory on-disk for Prysm validator accounts.",
+		Usage: "Path to a wallet directory on-disk for Chronos validator accounts.",
 		Value: filepath.Join(DefaultValidatorDir(), WalletDefaultDirName),
 	}
 	// AccountPasswordFileFlag is path to a file containing a password for a validator account.
@@ -291,7 +291,7 @@ var (
 	// web3signer documentation can be found in Consensys' web3signer project docs
 	Web3SignerURLFlag = &cli.StringFlag{
 		Name:  "validators-external-signer-url",
-		Usage: "URL for consensys' web3signer software to use with the Prysm validator client.",
+		Usage: "URL for consensys' web3signer software to use with the Chronos validator client.",
 		Value: "",
 	}
 
@@ -314,12 +314,6 @@ var (
 	SkipDepositConfirmationFlag = &cli.BoolFlag{
 		Name:  "skip-deposit-confirmation",
 		Usage: "Skips the y/n confirmation userprompt for sending a deposit to the deposit contract.",
-		Value: false,
-	}
-	// EnableWebFlag enables controlling the validator client via the Prysm web ui. This is a work in progress.
-	EnableWebFlag = &cli.BoolFlag{
-		Name:  "web",
-		Usage: "(Work in progress): Enables the web portal for the validator client.",
 		Value: false,
 	}
 	// SlashingProtectionExportDirFlag allows specifying the output directory
@@ -383,10 +377,10 @@ var (
 		Value: 0,
 	}
 
-	// EnableDistributed enables the usage of prysm validator client in a Distributed Validator Cluster.
+	// EnableDistributed enables the usage of chronos validator client in a Distributed Validator Cluster.
 	EnableDistributed = &cli.BoolFlag{
 		Name:  "distributed",
-		Usage: "To enable the use of prysm validator client in Distributed Validator Cluster",
+		Usage: "To enable the use of Chronos validator client in Distributed Validator Cluster",
 		Value: false,
 	}
 

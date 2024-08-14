@@ -22,11 +22,11 @@ func TestDisplayExitInfo(t *testing.T) {
 	logHook := test.NewGlobal()
 	key := []byte("0x123456")
 	displayExitInfo([][]byte{key}, []string{string(key)})
-	assert.LogsContain(t, logHook, "https://beaconcha.in/validator/3078313233343536")
+	assert.LogsContain(t, logHook, "Voluntary exit was successful for the accounts listed.")
 
 	params.BeaconConfig().ConfigName = params.DolphinName
 	displayExitInfo([][]byte{key}, []string{string(key)})
-	assert.LogsContain(t, logHook, "https://dolphin-beaconcha.in/validator/3078313233343536")
+	assert.LogsContain(t, logHook, "Voluntary exit was successful for the accounts listed.")
 }
 
 func TestDisplayExitInfo_NoKeys(t *testing.T) {

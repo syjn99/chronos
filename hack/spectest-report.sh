@@ -21,7 +21,7 @@ do
 done
 
 # Run spectests
-bazel test //testing/spectest/... --test_env=SPEC_TEST_REPORT_OUTPUT_DIR="$BAZEL_DIR" $BAZEL_FLAGS
+#bazel test //testing/spectest/... --test_env=SPEC_TEST_REPORT_OUTPUT_DIR="$BAZEL_DIR" $BAZEL_FLAGS
 
 # Ensure the SPEC_DIR exists and is a git repository
 if [ -d "$SPEC_DIR/.git" ]; then

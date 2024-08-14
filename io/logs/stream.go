@@ -40,7 +40,7 @@ func NewStreamServer() *StreamServer {
 		feed:  new(event.Feed),
 		cache: lruwrpr.New(logCacheSize),
 	}
-	addLogWriter(ss)
+	AddLogWriter(ss)
 	return ss
 }
 

@@ -11,13 +11,13 @@ var (
 	// DolphinTestnet flag for the multiclient Ethereum consensus testnet.
 	DolphinTestnet = &cli.BoolFlag{
 		Name:  "dolphin",
-		Usage: "Runs Prysm configured for the Dolphin test network.",
+		Usage: "Runs Chronos configured for the Dolphin test network.",
 	}
 	// Mainnet flag for easier tooling, no-op
 	Mainnet = &cli.BoolFlag{
 		Value: true,
 		Name:  "mainnet",
-		Usage: "Runs on Ethereum main network. This is the default and can be omitted.",
+		Usage: "Runs on Over Protocol main network. This is the default and can be omitted.",
 	}
 	devModeFlag = &cli.BoolFlag{
 		Name:  "dev",
@@ -47,11 +47,11 @@ var (
 		Name:  "disable-peer-scorer",
 		Usage: "(Danger): Disables P2P peer scorer. Do NOT use this in production!",
 	}
-	writeWalletPasswordOnWebOnboarding = &cli.BoolFlag{
-		Name: "write-wallet-password-on-web-onboarding",
-		Usage: `(Danger): Writes the wallet password to the wallet directory on completing Prysm web onboarding.
-	We recommend against this flag unless you are an advanced user.`,
-	}
+	//writeWalletPasswordOnWebOnboarding = &cli.BoolFlag{
+	//	Name: "write-wallet-password-on-web-onboarding",
+	//	Usage: `(Danger): Writes the wallet password to the wallet directory on completing Prysm web onboarding.
+	//We recommend against this flag unless you are an advanced user.`,
+	//}
 	aggregateFirstInterval = &cli.DurationFlag{
 		Name:   "aggregate-first-interval",
 		Usage:  "(Advanced): Specifies the first interval in which attestations are aggregated in the slot (typically unnaggregated attestations are aggregated in this interval).",
@@ -172,7 +172,7 @@ var devModeFlags = []cli.Flag{
 
 // ValidatorFlags contains a list of all the feature flags that apply to the validator client.
 var ValidatorFlags = append(deprecatedFlags, []cli.Flag{
-	writeWalletPasswordOnWebOnboarding,
+	//writeWalletPasswordOnWebOnboarding,
 	DolphinTestnet,
 	Mainnet,
 	dynamicKeyReloadDebounceInterval,

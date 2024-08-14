@@ -174,7 +174,7 @@ func TestValidator_SignValidatorRegistrationRequest(t *testing.T) {
 					v := validator{
 						pubkeyToValidatorIndex:       make(map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex),
 						signedValidatorRegistrations: make(map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1),
-						useWeb:                       false,
+						useOverNode:                  false,
 						genesisTime:                  0,
 					}
 					v.signedValidatorRegistrations[bytesutil.ToBytes48(validatorKey.PublicKey().Marshal())] = &ethpb.SignedValidatorRegistrationV1{
@@ -202,7 +202,7 @@ func TestValidator_SignValidatorRegistrationRequest(t *testing.T) {
 					v := validator{
 						pubkeyToValidatorIndex:       make(map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex),
 						signedValidatorRegistrations: make(map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1),
-						useWeb:                       false,
+						useOverNode:                  false,
 						genesisTime:                  0,
 					}
 					v.signedValidatorRegistrations[bytesutil.ToBytes48(validatorKey.PublicKey().Marshal())] = &ethpb.SignedValidatorRegistrationV1{
@@ -230,7 +230,7 @@ func TestValidator_SignValidatorRegistrationRequest(t *testing.T) {
 					v := validator{
 						pubkeyToValidatorIndex:       make(map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex),
 						signedValidatorRegistrations: make(map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1),
-						useWeb:                       false,
+						useOverNode:                  false,
 						genesisTime:                  0,
 					}
 					v.signedValidatorRegistrations[bytesutil.ToBytes48(validatorKey.PublicKey().Marshal())] = &ethpb.SignedValidatorRegistrationV1{
@@ -258,7 +258,7 @@ func TestValidator_SignValidatorRegistrationRequest(t *testing.T) {
 					v := validator{
 						pubkeyToValidatorIndex:       make(map[[fieldparams.BLSPubkeyLength]byte]primitives.ValidatorIndex),
 						signedValidatorRegistrations: make(map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1),
-						useWeb:                       false,
+						useOverNode:                  false,
 						genesisTime:                  0,
 					}
 					return &v

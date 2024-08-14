@@ -1,5 +1,5 @@
 name: 🐞 Bug report
-description: Report a bug or problem with running Prysm
+description: Report a bug or problem with running Chronos
 labels: ["Bug"]
 body:
   - type: markdown
@@ -27,7 +27,7 @@ body:
       label: 🔬 Minimal Reproduction
       description: |
         Please let us know how we can reproduce this issue. 
-        Include the exact method you used to run Prysm along with any flags used in your beacon chain and/or validator. 
+        Include the exact method you used to run Chronos along with any flags used in your beacon chain and/or validator. 
         Make sure you don't upload any confidential files or private keys.
       placeholder: |
         Steps to reproduce:
@@ -59,8 +59,8 @@ body:
         - Windows (ARM)
   - type: input
     attributes:
-      label: What version of Prysm are you running? (Which release)
-      description: You can check your Prysm version by running your beacon node or validator with the `--version` flag.
+      label: What version of Chronos are you running? (Which release)
+      description: You can check your Chronos version by running your beacon node or validator with the `--version` flag.
   - type: textarea
     attributes:
       label: Anything else relevant (validator index / public key)?

@@ -17,7 +17,7 @@ var log = logrus.WithField("prefix", "accounts")
 var Commands = &cli.Command{
 	Name:     "accounts",
 	Category: "accounts",
-	Usage:    "Defines commands for interacting with Ethereum validator accounts.",
+	Usage:    "Defines commands for interacting with Over Protocol validator accounts.",
 	Subcommands: []*cli.Command{
 		{
 			Name:        "delete",

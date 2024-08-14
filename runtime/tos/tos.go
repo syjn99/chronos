@@ -17,18 +17,18 @@ import (
 const (
 	acceptTosFilename   = "tosaccepted"
 	acceptTosPromptText = `
-Prysm Terms of Use
+Overprotocol Terms of Use
 
-By downloading, accessing or using the Prysm implementation (“Prysm”), you (referenced herein
+By downloading, accessing or using the Overprotocol's' beacon-chain implementation (“Chronos”), you (referenced herein
 as “you” or the “user”) certify that you have read and agreed to the terms and conditions below.
 
-TERMS AND CONDITIONS: https://github.com/prysmaticlabs/prysm/blob/develop/TERMS_OF_SERVICE.md
+TERMS AND CONDITIONS: https://github.com/overprotocol/chronos/blob/master/LICENSE.md
 
 
 Type "accept" to accept this terms and conditions [accept/decline]:`
 	acceptTosPromptErrText = `could not scan text input, if you are trying to run in non-interactive environment, you
 can use the --accept-terms-of-use flag after reading the terms and conditions here: 
-https://github.com/prysmaticlabs/prysm/blob/develop/TERMS_OF_SERVICE.md`
+https://github.com/overprotocol/chronos/blob/master/LICENSE.md`
 )
 
 var (

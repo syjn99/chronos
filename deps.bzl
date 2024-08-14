@@ -3573,8 +3573,8 @@ def prysm_deps():
     go_repository(
         name = "com_github_valyala_fasthttp",
         importpath = "github.com/valyala/fasthttp",
-        sum = "h1:8b30A5JlZ6C7AS81RsWjYMQmrZG6feChmgAolCl1SqA=",
-        version = "v1.51.0",
+        sum = "h1:CRq/00MfruPGFLTQKY8b+8SfdK60TxNztjRMnH0t1Yc=",
+        version = "v1.40.0",
     )
     go_repository(
         name = "com_github_valyala_fasttemplate",
@@ -4602,8 +4602,8 @@ def prysm_deps():
     go_repository(
         name = "in_gopkg_natefinch_lumberjack_v2",
         importpath = "gopkg.in/natefinch/lumberjack.v2",
-        sum = "h1:1Lc07Kr7qY4U2YPouBjpCLxpiyxIVoxqXgkXLknAOE8=",
-        version = "v2.0.0",
+        sum = "h1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=",
+        version = "v2.2.1",
     )
     go_repository(
         name = "in_gopkg_natefinch_npipe_v2",

@@ -126,7 +126,7 @@ var appHelpFlagGroups = []flagGroup{
 			flags.Eth1HeaderReqLimit,
 			flags.MinPeersPerSubnet,
 			flags.MaxConcurrentDials,
-			flags.MevRelayEndpoint,
+			//flags.MevRelayEndpoint,
 			flags.MaxBuilderEpochMissedSlots,
 			flags.MaxBuilderConsecutiveMissedSlots,
 			flags.EngineEndpointTimeoutSeconds,
@@ -178,6 +178,11 @@ var appHelpFlagGroups = []flagGroup{
 		Flags: []cli.Flag{
 			cmd.LogFormat,
 			cmd.LogFileName,
+			cmd.LogRotateFlag,
+			cmd.LogMaxSizeMBsFlag,
+			cmd.LogMaxBackupsFlag,
+			cmd.LogMaxAgeFlag,
+			cmd.LogCompressFlag,
 		},
 	},
 	{

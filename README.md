@@ -1,32 +1,30 @@
-# Prysm: An Ethereum Consensus Implementation Written in Go
+# Chronos: An Over Protocol Consensus Implementation Written in Go
 
-[![Build status](https://badge.buildkite.com/b555891daf3614bae4284dcf365b2340cefc0089839526f096.svg?branch=master)](https://buildkite.com/prysmatic-labs/prysm)
-[![Go Report Card](https://goreportcard.com/badge/github.com/prysmaticlabs/prysm)](https://goreportcard.com/report/github.com/prysmaticlabs/prysm)
-[![Consensus_Spec_Version 1.4.0](https://img.shields.io/badge/Consensus%20Spec%20Version-v1.4.0-blue.svg)](https://github.com/ethereum/consensus-specs/tree/v1.4.0)
-[![Execution_API_Version 1.0.0-beta.2](https://img.shields.io/badge/Execution%20API%20Version-v1.0.0.beta.2-blue.svg)](https://github.com/ethereum/execution-apis/tree/v1.0.0-beta.2/src/engine)
-[![Discord](https://user-images.githubusercontent.com/7288322/34471967-1df7808a-efbb-11e7-9088-ed0b04151291.png)](https://discord.gg/prysmaticlabs)
-[![GitPOAP Badge](https://public-api.gitpoap.io/v1/repo/prysmaticlabs/prysm/badge)](https://www.gitpoap.io/gh/prysmaticlabs/prysm)
+Official Go implementation of the [Over protocol](https://over.network/) consensus layer. Chronos is a fork of [Prysm](https://github.com/prysmaticlabs/prysm), a [Golang](https://golang.org/) implementation of the [Ethereum Consensus](https://ethereum.org/en/developers/docs/consensus-mechanisms/#proof-of-stake) specification.
 
-This is the core repository for Prysm, a [Golang](https://golang.org/) implementation of the [Ethereum Consensus](https://ethereum.org/en/developers/docs/consensus-mechanisms/#proof-of-stake) [specification](https://github.com/ethereum/consensus-specs), developed by [Offchain Labs](https://www.offchainlabs.com). See the [Changelog](https://github.com/prysmaticlabs/prysm/releases) for details of the latest releases and upcoming breaking changes.
+## Getting Started
 
-### Getting Started
+A detailed set of installation and usage instructions, as well as breakdowns of each individual component, refer to [Prysm's documentation portal](https://docs.prylabs.network). If you still have questions, feel free to stop by our [Discord](https://discord.com/invite/overprotocol).
 
-A detailed set of installation and usage instructions as well as breakdowns of each individual component are available in the [official documentation portal](https://docs.prylabs.network). If you still have questions, feel free to stop by our [Discord](https://discord.gg/prysmaticlabs).
+### Building the Source
 
-### Staking on Mainnet
+Chronos can be installed using [Bazel](https://bazel.build/). You can install Bazel using Bazelisk, a handy tool for launching Bazel. Please refer to [Bazelisk official repository](https://github.com/bazelbuild/bazelisk?tab=readme-ov-file#installation) for installation instructions.
 
-To participate in staking, you can join the [official eth2 launchpad](https://launchpad.ethereum.org). The launchpad is the only recommended way to become a validator on mainnet. You can explore validator rewards/penalties via Bitfly's block explorer: [beaconcha.in](https://beaconcha.in), and follow the latest blocks added to the chain on [beaconscan](https://beaconscan.com).
+Once the dependencies, including Bazel, are installed, run the following command:
 
+```shell
+bazel build //cmd/beacon-chain:beacon-chain //cmd/validator:validator
+```
+
+Bazel will automatically generate symlinks at `bazel-bin/`. You can find the beacon-chain binary at `bazel-bin/cmd/beacon-chain/beacon-chain_/beacon-chain`, and the `validator` binary likewise.
+
+### Operating Validators
+
+To operate validators with Chronos, follow the steps outlined in [our official documentation](https://docs.over.network/operators/operate-validators).
 
 ## Contributing
-### Branches
-Prysm maintains two permanent branches:
 
-* [master](https://github.com/prysmaticlabs/prysm/tree/master): This points to the latest stable release. It is ideal for most users.
-* [develop](https://github.com/prysmaticlabs/prysm/tree/develop): This is used for development, it contains the latest PRs. Developers should base their PRs on this branch.
-
-### Guide
-Want to get involved? Check out our [Contribution Guide](https://docs.prylabs.network/docs/contribute/contribution-guidelines/) to learn more!
+We welcome contributions from the community. Please refer to our [contributing guidelines](CONTRIBUTING.md) to get started.
 
 ## License
 

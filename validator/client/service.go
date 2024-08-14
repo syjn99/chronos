@@ -52,7 +52,7 @@ type ValidatorService struct {
 	web3SignerConfig        *remoteweb3signer.SetupConfig
 	proposerSettings        *proposer.Settings
 	validatorsRegBatchSize  int
-	useWeb                  bool
+	useOverNode             bool
 	emitAccountMetrics      bool
 	logValidatorPerformance bool
 	distributed             bool
@@ -78,7 +78,7 @@ type Config struct {
 	Web3SignerConfig        *remoteweb3signer.SetupConfig
 	ProposerSettings        *proposer.Settings
 	ValidatorsRegBatchSize  int
-	UseWeb                  bool
+	UseOverNode             bool
 	LogValidatorPerformance bool
 	EmitAccountMetrics      bool
 	Distributed             bool
@@ -101,7 +101,7 @@ func NewValidatorService(ctx context.Context, cfg *Config) (*ValidatorService, e
 		web3SignerConfig:        cfg.Web3SignerConfig,
 		proposerSettings:        cfg.ProposerSettings,
 		validatorsRegBatchSize:  cfg.ValidatorsRegBatchSize,
-		useWeb:                  cfg.UseWeb,
+		useOverNode:             cfg.UseOverNode,
 		emitAccountMetrics:      cfg.EmitAccountMetrics,
 		logValidatorPerformance: cfg.LogValidatorPerformance,
 		distributed:             cfg.Distributed,
@@ -204,7 +204,7 @@ func (v *ValidatorService) Start() {
 		submittedAggregates:            make(map[submittedAttKey]*submittedAtt),
 		logValidatorPerformance:        v.logValidatorPerformance,
 		emitAccountMetrics:             v.emitAccountMetrics,
-		useWeb:                         v.useWeb,
+		useOverNode:                    v.useOverNode,
 		distributed:                    v.distributed,
 	}
 
@@ -237,6 +237,9 @@ func (v *ValidatorService) InteropKeysConfig() *local.InteropKeymanagerConfig {
 
 // Keymanager returns the underlying keymanager in the validator
 func (v *ValidatorService) Keymanager() (keymanager.IKeymanager, error) {
+	if v.validator == nil {
+		return nil, errors.New("validator not initialized")
+	}
 	return v.validator.Keymanager()
 }
 
@@ -247,6 +250,9 @@ func (v *ValidatorService) RemoteSignerConfig() *remoteweb3signer.SetupConfig {
 
 // ProposerSettings returns a deep copy of the underlying proposer settings in the validator
 func (v *ValidatorService) ProposerSettings() *proposer.Settings {
+	if v.validator == nil {
+		return nil
+	}
 	settings := v.validator.ProposerSettings()
 	if settings != nil {
 		return settings.Clone()
@@ -256,6 +262,9 @@ func (v *ValidatorService) ProposerSettings() *proposer.Settings {
 
 // SetProposerSettings sets the proposer settings on the validator service as well as the underlying validator
 func (v *ValidatorService) SetProposerSettings(ctx context.Context, settings *proposer.Settings) error {
+	if v.validator == nil {
+		return errors.New("validator not initialized")
+	}
 	// validator service proposer settings is only used for pass through from node -> validator service -> validator.
 	// in memory use of proposer settings happens on validator.
 	v.proposerSettings = settings
