@@ -206,6 +206,7 @@ func TestUnmarshalState(t *testing.T) {
 
 func TestDetectAndUnmarshalBlock(t *testing.T) {
 	undo := util.HackDenebMaxuint(t)
+	params.SetupForkEpochConfigForTest()
 	defer undo()
 	altairS, err := slots.EpochStart(params.BeaconConfig().AltairForkEpoch)
 	require.NoError(t, err)
@@ -279,6 +280,7 @@ func TestDetectAndUnmarshalBlock(t *testing.T) {
 			marshaled, err := b.MarshalSSZ()
 			require.NoError(t, err)
 			cf, err := FromBlock(marshaled)
+			cf.Config = params.BeaconConfig()
 			require.NoError(t, err)
 			bcf, err := cf.UnmarshalBeaconBlock(marshaled)
 			if c.errExists {
@@ -297,6 +299,7 @@ func TestDetectAndUnmarshalBlock(t *testing.T) {
 
 func TestUnmarshalBlock(t *testing.T) {
 	undo := util.HackDenebMaxuint(t)
+	params.SetupForkEpochConfigForTest()
 	defer undo()
 	genv := bytesutil.ToBytes4(params.BeaconConfig().GenesisForkVersion)
 	altairv := bytesutil.ToBytes4(params.BeaconConfig().AltairForkVersion)
@@ -392,6 +395,7 @@ func TestUnmarshalBlock(t *testing.T) {
 			marshaled, err := b.MarshalSSZ()
 			require.NoError(t, err)
 			cf, err := FromForkVersion(c.version)
+			cf.Config = params.BeaconConfig()
 			require.NoError(t, err)
 			bcf, err := cf.UnmarshalBeaconBlock(marshaled)
 			if c.err != nil {
@@ -410,6 +414,7 @@ func TestUnmarshalBlock(t *testing.T) {
 
 func TestUnmarshalBlindedBlock(t *testing.T) {
 	undo := util.HackDenebMaxuint(t)
+	params.SetupForkEpochConfigForTest()
 	defer undo()
 	genv := bytesutil.ToBytes4(params.BeaconConfig().GenesisForkVersion)
 	altairv := bytesutil.ToBytes4(params.BeaconConfig().AltairForkVersion)
@@ -505,6 +510,7 @@ func TestUnmarshalBlindedBlock(t *testing.T) {
 			marshaled, err := b.MarshalSSZ()
 			require.NoError(t, err)
 			cf, err := FromForkVersion(c.version)
+			cf.Config = params.BeaconConfig()
 			require.NoError(t, err)
 			bcf, err := cf.UnmarshalBlindedBeaconBlock(marshaled)
 			if c.err != nil {

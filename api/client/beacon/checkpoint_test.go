@@ -404,12 +404,12 @@ func TestDownloadFinalizedData(t *testing.T) {
 	ctx := context.Background()
 	cfg := params.MainnetConfig().Copy()
 
-	// avoid the altair zone because genesis tests are easier to set up
-	epoch := cfg.AltairForkEpoch - 1
+	// pick bellatrix zone because our genesis starts from bellatrix
+	epoch := cfg.BellatrixForkEpoch
 	// set up checkpoint state, using the epoch that will be computed as the ws checkpoint state based on the head state
 	slot, err := slots.EpochStart(epoch)
 	require.NoError(t, err)
-	st, err := util.NewBeaconState()
+	st, err := util.NewBeaconStateBellatrix()
 	require.NoError(t, err)
 	fork, err := forkForEpoch(cfg, epoch)
 	require.NoError(t, err)
@@ -417,7 +417,7 @@ func TestDownloadFinalizedData(t *testing.T) {
 	require.NoError(t, st.SetSlot(slot))
 
 	// set up checkpoint block
-	b, err := blocks.NewSignedBeaconBlock(util.NewBeaconBlock())
+	b, err := blocks.NewSignedBeaconBlock(util.NewBeaconBlockBellatrix())
 	require.NoError(t, err)
 	b, err = blocktest.SetBlockParentRoot(b, cfg.ZeroHash)
 	require.NoError(t, err)

@@ -106,7 +106,15 @@ func prepareConfigSpec() (map[string]string, error) {
 		case reflect.Slice:
 			data[tagValue] = hexutil.Encode(vField.Bytes())
 		case reflect.Array:
-			data[tagValue] = hexutil.Encode(reflect.ValueOf(&config).Elem().Field(i).Slice(0, vField.Len()).Bytes())
+			if vField.Type().Elem().Kind() == reflect.Uint64 && vField.Len() == 11 {
+				var arrayValues []string
+				for j := 0; j < vField.Len(); j++ {
+					arrayValues = append(arrayValues, strconv.FormatUint(vField.Index(j).Uint(), 10))
+				}
+				data[tagValue] = "[" + strings.Join(arrayValues, ",") + "]"
+			} else {
+				data[tagValue] = hexutil.Encode(reflect.ValueOf(&config).Elem().Field(i).Slice(0, vField.Len()).Bytes())
+			}
 		case reflect.String:
 			data[tagValue] = vField.String()
 		case reflect.Uint8:

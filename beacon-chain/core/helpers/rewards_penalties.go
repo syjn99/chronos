@@ -226,16 +226,16 @@ func FinalityDelay(prevEpoch, finalizedEpoch primitives.Epoch) primitives.Epoch 
 	return prevEpoch - finalizedEpoch
 }
 
-// EpochIssuance returns the total amount of ETH(in Gwei) to be issued in the given epoch.
+// EpochIssuance returns the total amount of OVER(in Gwei) to be issued in the given epoch.
 func EpochIssuance(epoch primitives.Epoch) uint64 {
 	cfg := params.BeaconConfig()
-	year := uint64(epoch.Div(cfg.EpochsPerYear))
+	year := EpochToYear(epoch)
 
 	// After year 10, no more issuance left.
-	if year > 9 {
-		return 0
+	if year >= len(cfg.IssuanceRate) {
+		year = len(cfg.IssuanceRate) - 1
 	}
-	return cfg.EpochIssuance
+	return cfg.MaxTokenSupply / cfg.IssuancePrecision * cfg.IssuanceRate[year] / cfg.EpochsPerYear
 }
 
 // TargetDepositPlan returns the target deposit plan for the given epoch.
@@ -297,28 +297,54 @@ func EpochFeedbackBoost(s state.ReadOnlyBeaconState) uint64 {
 //
 // Spec code:
 //
-//	def process_validator_reward(epoch, parent, deposit, pending_deposit, exit_deposit):
+//	def calc_feedback(
+//		deposit,
+//		target_deposit,
+//		pending_deposit,
+//		exit_deposit,
+//		target_change_rate,
+//		threshold
+//	):
 //		deposit_delta = pending_deposit - exit_deposit
-//		future_deposit = deposit + deposit_delta
+//
+//	 	future_deposit = deposit + deposit_delta
+//	 	error_rate = abs(future_deposit - target_deposit) / target_deposit
+//
+//	 	scale = max(min_change_rate, min(1.0, error_rate / threshold))
+//
+//	 	if future_deposit > target_deposit:
+//	     	return -target_change_rate * scale
+//	 	else:
+//	     	return target_change_rate * scale
+//
+//	def process_feedback(epoch, deposit, pending_deposit, exit_deposit):
+//
 //		target_deposit = TARGET_DEPOSIT_PLAN[epoch]
 //
-//		error_rate = abs(future_deposit - target_deposit) / target_deposit
-//		mitigating_factor = max(1e-6, min(1.0, error_rate / threshold))
-//		change_rate = target_change_rate * mitigating_factor
+//		bias_delta = calc_feedback(
+//			deposit,
+//			target_deposit,
+//			pending_deposit,
+//			exit_deposit,
+//			threshold=FEEDBACK_THRESHOLD
+//			target_change_rate = TARGET_CHANGE_RATE
+//		)
 //
-//		if future_deposit >= target_deposit:
-//			bias_delta = -change_rate
-//		else:
-//			bias_delta =  change_rate
+//		return bias_delta
+//
+//	def process_validator_reward(epoch, parent, deposit, pending_deposit, exit_deposit):
 //
 //		prev_bias = parent.bias
+//
+//		bias_delta = process_feedback(epoch, deposit, pending_deposit, exit_deposit)
 //		bias = prev_bias + bias_delta
-//		bias = max(MIN_YIELD - TARGET_YIELD, bias)
-//		bias = min(bias, INCENIVE_LIMIT * TARGET_YIELD)
+//		bias = max(0, bias)
+//		bias = min(bias, MAX_BOOST_YIELD[epoch])
 //
 //		return bias
 func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (uint64, error) {
 	cfg := params.BeaconConfig()
+	epoch := slots.ToEpoch(state.Slot())
 	futureDeposit, err := TotalBalanceWithQueue(state)
 	if err != nil {
 		return 0, err
@@ -351,17 +377,36 @@ func CalculateRewardAdjustmentFactor(state state.ReadOnlyBeaconState) (uint64, e
 		bias += changeRate
 	}
 
-	return TruncateRewardAdjustmentFactor(bias), nil
+	return TruncateRewardAdjustmentFactor(bias, epoch), nil
 }
 
 // TruncateRewardAdjustmentFactor truncates the given bias to the min and max bounds.
 // The min and max bounds are defined in the spec.
-func TruncateRewardAdjustmentFactor(bias uint64) uint64 {
-	cfg := params.BeaconConfig()
-	if cfg.TargetYield < bias {
-		bias = cfg.TargetYield
+func TruncateRewardAdjustmentFactor(bias uint64, epoch primitives.Epoch) uint64 {
+	maxBoostYield := MaxBoostYield(epoch)
+	if maxBoostYield < bias {
+		bias = maxBoostYield
 	}
+
 	return bias
+}
+
+// MaxBoostYield gets the maximum boost yield of corresponding year for the given epoch.
+func MaxBoostYield(epoch primitives.Epoch) uint64 {
+	cfg := params.BeaconConfig()
+	year := EpochToYear(epoch)
+	if year >= len(cfg.MaxBoostYield) {
+		year = len(cfg.MaxBoostYield) - 1
+	}
+
+	return cfg.MaxBoostYield[year]
+}
+
+// EpochToYear converts an epoch to a year.
+func EpochToYear(epoch primitives.Epoch) int {
+	cfg := params.BeaconConfig()
+	year := int(epoch.Div(cfg.EpochsPerYear)) // lint:ignore uintcast -- Time is always positive.
+	return year
 }
 
 // DecreaseCurrentReserve reduces the current reserve by the given amount.

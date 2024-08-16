@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prysmaticlabs/prysm/v5/api/server/structs"
 	chainMock "github.com/prysmaticlabs/prysm/v5/beacon-chain/blockchain/testing"
+	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/rpc/testutil"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/state"
 	"github.com/prysmaticlabs/prysm/v5/config/params"
@@ -187,8 +188,6 @@ func TestEstimatedActivation_NoPendingValidators(t *testing.T) {
 }
 
 func TestGetEpochReward(t *testing.T) {
-	cfg := params.BeaconConfig().Copy()
-
 	st, err := util.NewBeaconState()
 	require.NoError(t, err)
 	currentEpoch := primitives.Epoch(100)
@@ -218,7 +217,8 @@ func TestGetEpochReward(t *testing.T) {
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 
 		// minimum epoch issuance = 243531202435
-		want := strconv.Itoa(int(cfg.EpochIssuance))
+		reward, _ := helpers.TotalRewardWithReserveUsage(st)
+		want := strconv.Itoa(int(reward))
 		assert.Equal(t, want, resp.Reward)
 	})
 
@@ -244,7 +244,8 @@ func TestGetEpochReward(t *testing.T) {
 		require.NoError(t, json.Unmarshal(writer.Body.Bytes(), resp))
 
 		// minimum epoch issuance = 243531202435
-		want := strconv.Itoa(int(cfg.EpochIssuance))
+		reward, _ := helpers.TotalRewardWithReserveUsage(st)
+		want := strconv.Itoa(int(reward))
 		assert.Equal(t, want, resp.Reward)
 	})
 

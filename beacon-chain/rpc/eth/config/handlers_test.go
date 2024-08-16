@@ -134,23 +134,24 @@ func TestGetSpec(t *testing.T) {
 	config.BailOutScoreBias = 77
 	config.BailOutScoreThreshold = 78
 	config.ChurnLimitBias = 79
-	config.EpochIssuance = 80
-	config.DepositPlanEarlyEnd = 81
-	config.DepositPlanEarlySlope = 82
-	config.DepositPlanEarlyOffset = 83
-	config.DepositPlanLaterEnd = 84
-	config.DepositPlanLaterSlope = 85
-	config.DepositPlanLaterOffset = 86
-	config.DepositPlanFinal = 87
-	config.RewardFeedbackPrecision = 88
-	config.RewardFeedbackThresholdReciprocal = 89
-	config.TargetChangeRate = 90
-	config.TargetYield = 91
-	config.MaxTokenSupply = 92
-	config.EpochsPerYear = 93
-	config.IssuancePerYear = 94
-	config.LightLayerWeight = 95
-	config.MaxBailOuts = 96
+	config.IssuanceRate = [11]uint64{80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80}
+	config.IssuancePrecision = 81
+	config.DepositPlanEarlyEnd = 82
+	config.DepositPlanEarlySlope = 83
+	config.DepositPlanEarlyOffset = 84
+	config.DepositPlanLaterEnd = 85
+	config.DepositPlanLaterSlope = 86
+	config.DepositPlanLaterOffset = 87
+	config.DepositPlanFinal = 88
+	config.RewardFeedbackPrecision = 89
+	config.RewardFeedbackThresholdReciprocal = 90
+	config.MaxBoostYield = [11]uint64{91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91}
+	config.TargetChangeRate = 92
+	config.MaxTokenSupply = 93
+	config.EpochsPerYear = 94
+	config.IssuancePerYear = 95
+	config.LightLayerWeight = 96
+	config.MaxBailOuts = 97
 
 	var dbp [4]byte
 	copy(dbp[:], []byte{'0', '0', '0', '1'})
@@ -190,7 +191,7 @@ func TestGetSpec(t *testing.T) {
 	data, ok := resp.Data.(map[string]interface{})
 	require.Equal(t, true, ok)
 
-	assert.Equal(t, 148, len(data))
+	assert.Equal(t, 150, len(data))
 	for k, v := range data {
 		switch k {
 		case "CONFIG_NAME":
@@ -480,40 +481,42 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "78", v)
 		case "CHURN_LIMIT_BIAS":
 			assert.Equal(t, "79", v)
-		case "EPOCH_ISSUANCE":
-			assert.Equal(t, "80", v)
-		case "DEPOSIT_PLAN_EARLY_END":
+		case "ISSUANCE_RATE":
+			assert.Equal(t, "[80,80,80,80,80,80,80,80,80,80,80]", v)
+		case "ISSUANCE_PRECISION":
 			assert.Equal(t, "81", v)
-		case "DEPOSIT_PLAN_EARLY_SLOPE":
+		case "DEPOSIT_PLAN_EARLY_END":
 			assert.Equal(t, "82", v)
-		case "DEPOSIT_PLAN_EARLY_OFFSET":
+		case "DEPOSIT_PLAN_EARLY_SLOPE":
 			assert.Equal(t, "83", v)
-		case "DEPOSIT_PLAN_LATER_END":
+		case "DEPOSIT_PLAN_EARLY_OFFSET":
 			assert.Equal(t, "84", v)
-		case "DEPOSIT_PLAN_LATER_SLOPE":
+		case "DEPOSIT_PLAN_LATER_END":
 			assert.Equal(t, "85", v)
-		case "DEPOSIT_PLAN_LATER_OFFSET":
+		case "DEPOSIT_PLAN_LATER_SLOPE":
 			assert.Equal(t, "86", v)
-		case "DEPOSIT_PLAN_FINAL":
+		case "DEPOSIT_PLAN_LATER_OFFSET":
 			assert.Equal(t, "87", v)
-		case "REWARD_FEEDBACK_PRECISION":
+		case "DEPOSIT_PLAN_FINAL":
 			assert.Equal(t, "88", v)
-		case "REWARD_FEEDBACK_THRESHOLD_RECIPROCAL":
+		case "REWARD_FEEDBACK_PRECISION":
 			assert.Equal(t, "89", v)
-		case "TARGET_CHANGE_RATE":
+		case "REWARD_FEEDBACK_THRESHOLD_RECIPROCAL":
 			assert.Equal(t, "90", v)
-		case "TARGET_YIELD":
-			assert.Equal(t, "91", v)
-		case "MAX_TOKEN_SUPPLY":
+		case "MAX_BOOST_YIELD":
+			assert.Equal(t, "[91,91,91,91,91,91,91,91,91,91,91]", v)
+		case "TARGET_CHANGE_RATE":
 			assert.Equal(t, "92", v)
-		case "EPOCHS_PER_YEAR":
+		case "MAX_TOKEN_SUPPLY":
 			assert.Equal(t, "93", v)
-		case "ISSUANCE_PER_YEAR":
+		case "EPOCHS_PER_YEAR":
 			assert.Equal(t, "94", v)
-		case "LIGHT_LAYER_WEIGHT":
+		case "ISSUANCE_PER_YEAR":
 			assert.Equal(t, "95", v)
-		case "MAX_BAIL_OUTS":
+		case "LIGHT_LAYER_WEIGHT":
 			assert.Equal(t, "96", v)
+		case "MAX_BAIL_OUTS":
+			assert.Equal(t, "97", v)
 		default:
 			t.Errorf("Incorrect key: %s", k)
 		}
