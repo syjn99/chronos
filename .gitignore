@@ -41,13 +41,3 @@ jwt.hex
 
 # manual testing
 tmp
-
-# Ignore generated files
-testnet/*/node-*
-testnet/*/validator-*
-testnet/*/genesis.ssz
-testnet/*/bootnode.yaml
-testnet/*/config.yml
-testnet/*/logs
-testnet/devnet/node
-testnet/devnet/validator

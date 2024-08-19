@@ -1,8 +1,0 @@
----
-proposer_config:
-  '0xafa514e6e4099eb51fefb0ec5ac215e873b2a479f47c18738e664cfc9b8457583c6f59eca142280adc9c85a73a6c5d42':
-    fee_recipient: '0x3f44c14e26a12884da7ff545ed4328de6f50f5a4'
-  '0xb542cfc9091d4f6f9542ac37a8d12864254e9244fb48336f9911a0843efd28d22653a2de2c60cde1dde9d62dae9e444a':
-    fee_recipient: '0x3f44c14e26a12884da7ff545ed4328de6f50f5a4'
-default_config:
-  fee_recipient: '0xd9b6fa15e8ae1374333015bff6ed41f62977234c'
