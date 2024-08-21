@@ -9,7 +9,7 @@ on:
 jobs:
   formatting:
     name: Formatting
-    runs-on: [self-hosted, Linux, docker]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -21,18 +21,13 @@ jobs:
 
   gosec:
     name: Gosec scan
-    runs-on: [self-hosted, Linux, docker]
+    runs-on: ubuntu-latest
     env:
       GO111MODULE: on
-      GOPRIVATE: github.com/superblock-dev
       GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Setup Github Token
-        run: |
-          git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
 
       - name: Set up Go 1.20.3
         uses: actions/setup-go@v4
@@ -48,17 +43,12 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: [self-hosted, Linux, docker]
+    runs-on: ubuntu-latest
     env:
-      GOPRIVATE: github.com/superblock-dev
       GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      
-      - name: Setup Github Token
-        run: |
-          git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
 
       - name: Set up Go 1.20.3
         uses: actions/setup-go@v4
@@ -75,9 +65,8 @@ jobs:
 
   build:
     name: Build
-    runs-on: [self-hosted, Linux, docker]
+    runs-on: ubuntu-latest
     env:
-        GOPRIVATE: github.com/superblock-dev
         GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Set up Go 1.20.3
@@ -89,10 +78,6 @@ jobs:
 
       - name: Check out code into the Go module directoryrm -rf bo  
         uses: actions/checkout@v3
-
-      - name: Setup Github Token
-        run: |
-          git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
 
       - name: Get dependencies
         run: |

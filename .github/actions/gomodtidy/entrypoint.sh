@@ -5,9 +5,6 @@ export PATH="$PATH:/usr/local/go/bin"
 
 cd "/github/workspace"
 
-go env -w GOPRIVATE=github.com/superblock-dev
-git config --global url."https://$1@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
-
 cp go.mod go.mod.orig
 cp go.sum go.sum.orig
 
