@@ -60,10 +60,8 @@ container_image(
 container_bundle(
     name = "image_bundle",
     images = {
-        "gcr.io/prysmaticlabs/prysm/validator:latest": ":image_with_creation_time",
-        "gcr.io/prysmaticlabs/prysm/validator:{DOCKER_TAG}": ":image_with_creation_time",
-        "index.docker.io/prysmaticlabs/prysm-validator:latest": ":image_with_creation_time",
-        "index.docker.io/prysmaticlabs/prysm-validator:{DOCKER_TAG}": ":image_with_creation_time",
+        "overfoundation/chronos-validator:latest": ":image_with_creation_time",
+        "overfoundation/chronos-validator:{DOCKER_TAG}": ":image_with_creation_time",
     },
     tags = ["manual"],
     visibility = ["//validator:__pkg__"],
@@ -79,10 +77,8 @@ go_image_debug(
 container_bundle(
     name = "image_bundle_debug",
     images = {
-        "gcr.io/prysmaticlabs/prysm/validator:latest-debug": ":image_debug",
-        "gcr.io/prysmaticlabs/prysm/validator:{DOCKER_TAG}-debug": ":image_debug",
-        "index.docker.io/prysmaticlabs/prysm-validator:latest-debug": ":image_debug",
-        "index.docker.io/prysmaticlabs/prysm-validator:{DOCKER_TAG}-debug": ":image_debug",
+        "overfoundation/chronos-validator:latest-debug": ":image_debug",
+        "overfoundation/chronos-validator:{DOCKER_TAG}-debug": ":image_debug",
     },
     tags = ["manual"],
     visibility = ["//validator:__pkg__"],
@@ -98,10 +94,8 @@ go_image_alpine(
 container_bundle(
     name = "image_bundle_alpine",
     images = {
-        "gcr.io/prysmaticlabs/prysm/validator:latest-alpine": ":image_alpine",
-        "gcr.io/prysmaticlabs/prysm/validator:{DOCKER_TAG}-alpine": ":image_alpine",
-        "index.docker.io/prysmaticlabs/prysm-validator:latest-alpine": ":image_alpine",
-        "index.docker.io/prysmaticlabs/prysm-validator:{DOCKER_TAG}-alpine": ":image_alpine",
+        "overfoundation/chronos-validator:latest-alpine": ":image_alpine",
+        "overfoundation/chronos-validator:{DOCKER_TAG}-alpine": ":image_alpine",
     },
     tags = ["manual"],
     visibility = ["//validator:__pkg__"],

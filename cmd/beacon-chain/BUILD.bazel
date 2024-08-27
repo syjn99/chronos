@@ -66,10 +66,8 @@ container_image(
 container_bundle(
     name = "image_bundle",
     images = {
-        "chronos-beacon-chain:latest": ":image_with_creation_time",
-        # "gcr.io/prysmaticlabs/prysm/beacon-chain:latest": ":image_with_creation_time",
-        # "index.docker.io/prysmaticlabs/prysm-beacon-chain:latest": ":image_with_creation_time",
-        # "index.docker.io/prysmaticlabs/prysm-beacon-chain:{DOCKER_TAG}": ":image_with_creation_time",
+        "overfoundation/chronos-beacon-chain:latest": ":image_with_creation_time",
+        "overfoundation/chronos-beacon-chain:{DOCKER_TAG}": ":image_with_creation_time",
     },
     tags = ["manual"],
     visibility = ["//beacon-chain:__pkg__"],
@@ -85,11 +83,8 @@ go_image_debug(
 container_bundle(
     name = "image_bundle_debug",
     images = {
-        "chronos-beacon-chain:latest-debug": ":image_with_creation_time",
-        # "gcr.io/prysmaticlabs/prysm/beacon-chain:latest-debug": ":image_debug",
-        # "gcr.io/prysmaticlabs/prysm/beacon-chain:{DOCKER_TAG}-debug": ":image_debug",
-        # "index.docker.io/prysmaticlabs/prysm-beacon-chain:latest-debug": ":image_debug",
-        # "index.docker.io/prysmaticlabs/prysm-beacon-chain:{DOCKER_TAG}-debug": ":image_debug",
+        "overfoundation/chronos-beacon-chain:latest-debug": ":image_debug",
+        "overfoundation/chronos-beacon-chain:{DOCKER_TAG}-debug": ":image_debug",
     },
     tags = ["manual"],
     visibility = ["//beacon-chain:__pkg__"],
@@ -105,11 +100,8 @@ go_image_alpine(
 container_bundle(
     name = "image_bundle_alpine",
     images = {
-        "chronos-beacon-chain:latest-alpine": ":image_with_creation_time",
-        # "gcr.io/prysmaticlabs/prysm/beacon-chain:latest-alpine": ":image_alpine",
-        # "gcr.io/prysmaticlabs/prysm/beacon-chain:{DOCKER_TAG}-alpine": ":image_alpine",
-        # "index.docker.io/prysmaticlabs/prysm-beacon-chain:latest-alpine": ":image_alpine",
-        # "index.docker.io/prysmaticlabs/prysm-beacon-chain:{DOCKER_TAG}-alpine": ":image_alpine",
+        "overfoundation/beacon-chain:latest-alpine": ":image_alpine",
+        "overfoundation/beacon-chain:{DOCKER_TAG}-alpine": ":image_alpine",
     },
     tags = ["manual"],
     visibility = ["//beacon-chain:__pkg__"],

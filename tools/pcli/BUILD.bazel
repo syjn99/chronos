@@ -42,8 +42,8 @@ go_binary(
 container_bundle(
     name = "image_bundle",
     images = {
-        "gcr.io/prysmaticlabs/prysm/pcli:latest": ":image",
-        "gcr.io/prysmaticlabs/prysm/pcli:{DOCKER_TAG}": ":image",
+        "overfoundation/pcli:latest": ":image",
+        "overfoundation/pcli:{DOCKER_TAG}": ":image",
     },
     tags = ["manual"],
 )

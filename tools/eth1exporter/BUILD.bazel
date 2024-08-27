@@ -35,8 +35,8 @@ go_image(
 container_bundle(
     name = "image_bundle",
     images = {
-        "gcr.io/prysmaticlabs/prysm/eth1monitor:latest": ":image",
-        "gcr.io/prysmaticlabs/prysm/eth1monitor:{DOCKER_TAG}": ":image",
+        "overfoundation/eth1monitor:latest": ":image",
+        "overfoundation/eth1monitor:{DOCKER_TAG}": ":image",
     },
     tags = ["manual"],
 )
