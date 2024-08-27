@@ -103,8 +103,8 @@ def prysm_deps():
     go_repository(
         name = "com_github_andybalholm_brotli",
         importpath = "github.com/andybalholm/brotli",
-        sum = "h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=",
-        version = "v1.0.5",
+        sum = "h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=",
+        version = "v1.0.4",
     )
     go_repository(
         name = "com_github_anmitsu_go_shlex",
@@ -978,9 +978,9 @@ def prysm_deps():
         patches = [
             "//third_party:com_github_ethereum_go_ethereum_secp256k1.patch",
         ],
-        replace = "github.com/superblock-dev/kairos",
-        sum = "h1:Ks/b2MLaA+cMYW4MPaTSzEuXjWI2TzhSZNYd5yePzqw=",
-        version = "v0.0.0-20240806080046-732949afc3ea",
+        replace = "github.com/overprotocol/kairos",
+        sum = "h1:xix3HYuWGnMJo7+t7w6nVDlILID3pU8DkU7rjUmjXBU=",
+        version = "v1.2.0",
     )
     go_repository(
         name = "com_github_evanphx_json_patch",
@@ -1389,12 +1389,6 @@ def prysm_deps():
         importpath = "github.com/godbus/dbus/v5",
         sum = "h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=",
         version = "v5.1.0",
-    )
-    go_repository(
-        name = "com_github_gofiber_fiber_v2",
-        importpath = "github.com/gofiber/fiber/v2",
-        sum = "h1:S+qXi7y+/Pgvqq4DrSmREGiFwtB7Bu6+QFLuIHYw/UE=",
-        version = "v2.52.0",
     )
     go_repository(
         name = "com_github_gofrs_flock",
@@ -3137,12 +3131,6 @@ def prysm_deps():
         version = "v1.2.0",
     )
     go_repository(
-        name = "com_github_philhofer_fwd",
-        importpath = "github.com/philhofer/fwd",
-        sum = "h1:bnDivRJ1EWPjUIRXV5KfORO897HTbpFAQddBdE8t7Gw=",
-        version = "v1.1.2",
-    )
-    go_repository(
         name = "com_github_phpdave11_gofpdf",
         importpath = "github.com/phpdave11/gofpdf",
         sum = "h1:KPKiIbfwbvC/wOncwhrpRdXVj2CZTCFlw4wnoyjtHfQ=",
@@ -3805,12 +3793,6 @@ def prysm_deps():
         version = "v0.0.0-20160323211736-5dc6d854e46e",
     )
     go_repository(
-        name = "com_github_tinylib_msgp",
-        importpath = "github.com/tinylib/msgp",
-        sum = "h1:FCXC1xanKO4I8plpHGH2P7koL/RzZs12l/+r7vakfm0=",
-        version = "v1.1.8",
-    )
-    go_repository(
         name = "com_github_tjfoc_gmsm",
         importpath = "github.com/tjfoc/gmsm",
         sum = "h1:i7c6Za/IlgBvnGxYpfD7L3TGuaS+v6oGcgq+J9/ecEA=",
@@ -3903,8 +3885,8 @@ def prysm_deps():
     go_repository(
         name = "com_github_valyala_fasthttp",
         importpath = "github.com/valyala/fasthttp",
-        sum = "h1:8b30A5JlZ6C7AS81RsWjYMQmrZG6feChmgAolCl1SqA=",
-        version = "v1.51.0",
+        sum = "h1:CRq/00MfruPGFLTQKY8b+8SfdK60TxNztjRMnH0t1Yc=",
+        version = "v1.40.0",
     )
     go_repository(
         name = "com_github_valyala_fasttemplate",
@@ -3915,8 +3897,8 @@ def prysm_deps():
     go_repository(
         name = "com_github_valyala_tcplisten",
         importpath = "github.com/valyala/tcplisten",
-        sum = "h1:rBHj/Xf+E1tRGZyWIWwJDiRY0zc1Js+CV5DqwacVSA8=",
-        version = "v1.0.0",
+        sum = "h1:0R4NLDRDZX6JcmhJgXi5E4b8Wg84ihbmUKp/GvSPEzc=",
+        version = "v0.0.0-20161114210144-ceec8f93295a",
     )
     go_repository(
         name = "com_github_viant_assertly",
