@@ -346,14 +346,14 @@ func TestTargetDepositPlan(t *testing.T) {
 		e    primitives.Epoch
 		want uint64
 	}{
-		{name: "TargetDepositPlan of Epoch 0 (year 1)", e: primitives.Epoch(0), want: 40000000000000000},
-		{name: "TargetDepositPlan of Epoch 41063 (year 1)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear + 1) / 2), want: 60000243531176810},
-		{name: "TargetDepositPlan of Epoch 82125 (Year 2)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear), want: 79999999999948750},
-		{name: "TargetDepositPlan of Epoch 123188 (Year 2)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*3 + 1) / 2), want: 100000243531125560},
-		{name: "TargetDepositPlan of Epoch 164250 (Year 3)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 2), want: 119999999999897500},
-		{name: "TargetDepositPlan of Epoch 205313 (Year 3)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*5 + 1) / 2), want: 140000243531074310},
-		{name: "TargetDepositPlan of Epoch 246375 (Year 4)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 3), want: 159999999999846250},
-		{name: "TargetDepositPlan of Epoch 287438 (Year 4)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*7 + 1) / 2), want: 180000243531023060},
+		{name: "TargetDepositPlan of Epoch 0 (year 1)", e: primitives.Epoch(0), want: 20000000000000000},
+		{name: "TargetDepositPlan of Epoch 41063 (year 1)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear + 1) / 2), want: 42500273972584177},
+		{name: "TargetDepositPlan of Epoch 82125 (Year 2)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear), want: 64999999999962875},
+		{name: "TargetDepositPlan of Epoch 123188 (Year 2)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*3 + 1) / 2), want: 87500273972547052},
+		{name: "TargetDepositPlan of Epoch 164250 (Year 3)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 2), want: 109999999999925750},
+		{name: "TargetDepositPlan of Epoch 205313 (Year 3)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*5 + 1) / 2), want: 132500273972509927},
+		{name: "TargetDepositPlan of Epoch 246375 (Year 4)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 3), want: 154999999999888625},
+		{name: "TargetDepositPlan of Epoch 287438 (Year 4)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*7 + 1) / 2), want: 177500273972472802},
 		{name: "TargetDepositPlan of Epoch 328500 (Year 5)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 4), want: 200000000666636000},
 		{name: "TargetDepositPlan of Epoch 369563 (Year 5)", e: primitives.Epoch((params.BeaconConfig().EpochsPerYear*9 + 1) / 2), want: 208333435471299848},
 		{name: "TargetDepositPlan of Epoch 410625 (Year 6)", e: primitives.Epoch(params.BeaconConfig().EpochsPerYear * 5), want: 216666667333295000},
@@ -386,10 +386,10 @@ func TestProcessRewardfactorUpdate_OK(t *testing.T) {
 		currReserve  uint64
 		wantFactor   uint64
 	}{
-		{name: "Case 1 : first year, smaller valset, base factor", epoch: 1, valCnt: 10000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 0},
-		{name: "Case 2 : first year, slight small valset, base factor", epoch: 1, valCnt: 150000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 0},
-		{name: "Case 3 : first year, slight large valset, base factor", epoch: 1, valCnt: 160000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 0},
-		{name: "Case 4 : first year, larger valset, base factor", epoch: 1, valCnt: 200000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 0},
+		{name: "Case 1 : first year, smaller valset, base factor", epoch: 1, valCnt: 10000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 1001500000},
+		{name: "Case 2 : first year, slight small valset, base factor", epoch: 1, valCnt: 150000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 998500000},
+		{name: "Case 3 : first year, slight large valset, base factor", epoch: 1, valCnt: 160000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 998500000},
+		{name: "Case 4 : first year, larger valset, base factor", epoch: 1, valCnt: 200000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 998500000},
 		{name: "Case 5 : later year, smaller valset, base factor", epoch: 410625, valCnt: 500000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 1001500000},
 		{name: "Case 6 : later year, slight small valset, base factor", epoch: 410625, valCnt: 840000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 1000112629},
 		{name: "Case 7 : later year, slight large valset, base factor", epoch: 410625, valCnt: 850000, currReserve: 1000000000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, wantFactor: 999935399},
@@ -452,14 +452,14 @@ func TestCalculateRewardAdjustmentFactor_OK(t *testing.T) {
 		rewardFactor uint64
 		want         uint64
 	}{
-		{name: "Case 1 : early year, smaller valset, 0 factor", epoch: 1, valCnt: 10000, want: 0},
+		{name: "Case 1 : early year, smaller valset, 0 factor", epoch: 1, valCnt: 10000, want: 1500000},
 		{name: "Case 2 : early year, slight small valset, 0 factor", epoch: 1, valCnt: 150000, want: 0},
 		{name: "Case 3 : early year, slight large valset, 0 factor", epoch: 1, valCnt: 160000, want: 0},
 		{name: "Case 4 : early year, larger valset, 0 factor", epoch: 1, valCnt: 200000, want: 0},
-		{name: "Case 1-1 : early year, smaller valset, base factor", epoch: 1, valCnt: 10000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 0},
-		{name: "Case 2-1 : early year, slight small valset, base factor", epoch: 1, valCnt: 150000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 0},
-		{name: "Case 3-1 : early year, slight large valset, base factor", epoch: 1, valCnt: 160000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 0},
-		{name: "Case 4-1 : early year, larger valset, base factor", epoch: 1, valCnt: 200000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 0},
+		{name: "Case 1-1 : early year, smaller valset, base factor", epoch: 1, valCnt: 10000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 1001500000},
+		{name: "Case 2-1 : early year, slight small valset, base factor", epoch: 1, valCnt: 150000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 998500000},
+		{name: "Case 3-1 : early year, slight large valset, base factor", epoch: 1, valCnt: 160000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 998500000},
+		{name: "Case 4-1 : early year, larger valset, base factor", epoch: 1, valCnt: 200000, rewardFactor: params.BeaconConfig().RewardFeedbackPrecision / 1000, want: 998500000},
 		{name: "Case 5 : later year, smaller valset, 0 factor", epoch: 410625, valCnt: 500000, want: 1500000},
 		{name: "Case 6 : later year, slight small valset, 0 factor", epoch: 410625, valCnt: 840000, want: 112629},
 		{name: "Case 7 : later year, slight large valset, 0 factor", epoch: 410625, valCnt: 850000, want: 0},
@@ -497,9 +497,9 @@ func TestTruncateRewardAdjustmentFactor_OK(t *testing.T) {
 		want  uint64
 	}{
 		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 0, want: 0},
-		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 5000000000, want: 0},
-		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 10000000000, want: 0},
-		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 10000000001, want: 0},
+		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 5000000000, want: 5000000000},
+		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 10000000000, want: 10000000000},
+		{name: "TruncateRewardAdjustmentFactor of Epoch 41063 (year 1)", epoch: (params.BeaconConfig().EpochsPerYear + 1) / 2, in: 10000000001, want: 10000000000},
 		{name: "TruncateRewardAdjustmentFactor of Epoch 82125 (Year 2)", epoch: params.BeaconConfig().EpochsPerYear, in: 0, want: 0},
 		{name: "TruncateRewardAdjustmentFactor of Epoch 82125 (Year 2)", epoch: params.BeaconConfig().EpochsPerYear, in: 5000000000, want: 5000000000},
 		{name: "TruncateRewardAdjustmentFactor of Epoch 82125 (Year 2)", epoch: params.BeaconConfig().EpochsPerYear, in: 10000000000, want: 10000000000},
