@@ -48,8 +48,8 @@ var mainnetNetworkConfig = &NetworkConfig{
 	ContractDeploymentBlock:         0, // Note: contract was deployed in genesis block.
 	BootstrapNodes: []string{
 		// Over Mainnet Bootnodes
-		"enr:-LG4QPSpG5B2-RqEPFTIqioW9FPf3zbdihMzgcjq0EoDqrKWaHSNp9_cdJu1NqW801NQqbMIbu4ulMM6etZAUuzVfuOGAZAqEhQLh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEIi9wdIRvdmVykIxhDBUAAAAS__________-Jc2VjcDI1NmsxoQKfJRWSiWQNWAC4yGT0aXhtsK9a2nHgWCtKZDSbmGAZD4N1ZHCCyyA", // Bootnode1
-		"enr:-LG4QAeEVPoRW5d6wPm64dT0-q0dLxEHKN-GJteOZ9FzRuhbIODSAz6ri5aTh8h1RVBdtZCyzjQio9EapAgHo1Zx1nWGAZAqEhaqh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEIiABaYRvdmVykIxhDBUAAAAS__________-Jc2VjcDI1NmsxoQMutqRIiYjhL4_ZMDKyZBChUA7X2i7SmEx_Pqu7o8-LOIN1ZHCCyyA", // Bootnode2
+		"enr:-LG4QMDxg9JWyQFDFDmNWYgsTBhH5dFmIW-X8q6g6S-3ZpDcMu6ouv4NnCOvZ9BGsIkWrwtx2iVaUAJn7dgS_TEA_XOGAZGN3idXh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEj8Zt-YRvdmVykNBNsU8AAAAY__________-Jc2VjcDI1NmsxoQOuL8NQY7JaHKQ43e9HleHJNX0fBiGnX80b5y0z1fl82oN1ZHCCyyA", // Bootnode1
+		"enr:-LG4QCu6n9asLF4GydPqGVMhGvM3QJ4CPdGTmxehYTnYWh17eh26of_NXeeh7f5YxMtR3MOnibbQ_iWo_WjREufzv-SGAZGN3icdh2F0dG5ldHOIAAAAAAAAAACCaWSCdjSCaXCEmCriZYRvdmVykNBNsU8AAAAY__________-Jc2VjcDI1NmsxoQJUB5E3lpebYb4TgRatlNrvOxqhSmeX9ZwWOCEND5cllIN1ZHCCyyA", // Bootnode2
 	},
 }
 
@@ -82,7 +82,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	RewardFeedbackPrecision:           1000000000000,
 	RewardFeedbackThresholdReciprocal: 10,
 	TargetChangeRate:                  1500000,
-	MaxBoostYield:                     [11]uint64{0, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000},
+	MaxBoostYield:                     [11]uint64{10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000, 10000000000},
 
 	// Gwei value constants.
 	MinDepositAmount:          1 * 1e9,
