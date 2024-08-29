@@ -286,4 +286,4 @@ replace github.com/json-iterator/go => github.com/prestonvanloon/go v1.1.7-0.201
 // See https://github.com/prysmaticlabs/grpc-gateway/issues/2
 replace github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/prysmaticlabs/grpc-gateway/v2 v2.3.1-0.20230315201114-09284ba20446
 
-replace github.com/ethereum/go-ethereum => github.com/superblock-dev/kairos v0.0.0-20240806080046-732949afc3ea
+replace github.com/ethereum/go-ethereum => github.com/overprotocol/kairos v1.2.0

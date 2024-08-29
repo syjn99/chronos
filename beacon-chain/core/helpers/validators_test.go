@@ -382,10 +382,10 @@ func TestChurnLimit_OK(t *testing.T) {
 		epoch          primitives.Epoch
 		wantedChurn    uint64
 	}{
-		{validatorCount: 234375, epoch: 41063, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
-		{validatorCount: 234376, epoch: 41063, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
-		{validatorCount: 703125, epoch: 287438, wantedChurn: 11}, // pending_churn when deposit < plan = chrun_limit++
-		{validatorCount: 703126, epoch: 287438, wantedChurn: 10}, // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 166016, epoch: 41063, wantedChurn: 5},   // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 166017, epoch: 41063, wantedChurn: 4},   // pending_churn when deposit > plan = chrun_limit
+		{validatorCount: 693360, epoch: 287438, wantedChurn: 11}, // pending_churn when deposit < plan = chrun_limit++
+		{validatorCount: 693361, epoch: 287438, wantedChurn: 10}, // pending_churn when deposit > plan = chrun_limit
 	}
 	for _, test := range tests {
 		helpers.ClearCache()
@@ -419,10 +419,10 @@ func TestExitChurnLimit_OK(t *testing.T) {
 		epoch          primitives.Epoch
 		wantedChurn    uint64
 	}{
-		{validatorCount: 234375, epoch: 41063, wantedChurn: 4},   // exit_churn when deposit < plan = chrun_limit
-		{validatorCount: 234376, epoch: 41063, wantedChurn: 5},   // exit_churn when deposit > plan = chrun_limit++
-		{validatorCount: 703125, epoch: 287438, wantedChurn: 10}, // exit_churn when deposit < plan = chrun_limit
-		{validatorCount: 703126, epoch: 287438, wantedChurn: 11}, // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 166016, epoch: 41063, wantedChurn: 4},   // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 166017, epoch: 41063, wantedChurn: 5},   // exit_churn when deposit > plan = chrun_limit++
+		{validatorCount: 693360, epoch: 287438, wantedChurn: 10}, // exit_churn when deposit < plan = chrun_limit
+		{validatorCount: 693361, epoch: 287438, wantedChurn: 11}, // exit_churn when deposit > plan = chrun_limit++
 	}
 	for _, test := range tests {
 		helpers.ClearCache()
@@ -456,8 +456,8 @@ func TestChurnLimitDeneb_OK(t *testing.T) {
 		wantedChurn    uint64
 		epoch          primitives.Epoch
 	}{
-		{234375, 5, 41063},
-		{234376, 4, 41063},
+		{166016, 5, 41063},
+		{166017, 4, 41063},
 		{1000000, params.BeaconConfig().MaxPerEpochActivationChurnLimit, 0},
 		{2000000, params.BeaconConfig().MaxPerEpochActivationChurnLimit, 0},
 	}

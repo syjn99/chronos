@@ -326,6 +326,15 @@ func (b *BeaconChainConfig) CurrentEpochAttestationsLength() uint64 {
 
 // InitializeDepositPlan initializes the deposit plan of consensus.
 func (b *BeaconChainConfig) InitializeDepositPlan() {
+	b.DepositPlanEarlySlope = 180000000 * 1e9 / (b.EpochsPerYear * b.DepositPlanEarlyEnd)
+	b.DepositPlanEarlyOffset = 20000000 * 1e9
+	b.DepositPlanLaterSlope = 100000000 * 1e9 / (b.EpochsPerYear * (b.DepositPlanLaterEnd - b.DepositPlanEarlyEnd))
+	b.DepositPlanLaterOffset = 133333334 * 1e9
+	b.DepositPlanFinal = 300000000 * 1e9
+}
+
+// InitializeDolphinDepositPlan initializes the deposit plan of Dolphin testnet consensus.
+func (b *BeaconChainConfig) InitializeDolphinDepositPlan() {
 	b.DepositPlanEarlySlope = 160000000 * 1e9 / (b.EpochsPerYear * b.DepositPlanEarlyEnd)
 	b.DepositPlanEarlyOffset = 40000000 * 1e9
 	b.DepositPlanLaterSlope = 100000000 * 1e9 / (b.EpochsPerYear * (b.DepositPlanLaterEnd - b.DepositPlanEarlyEnd))
