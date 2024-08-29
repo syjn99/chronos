@@ -25,7 +25,7 @@ func DolphinConfig() *BeaconChainConfig {
 	cfg.AltairForkVersion = []byte{0x1, 0x00, 0x00, 0x28}
 	cfg.BellatrixForkEpoch = 0
 	cfg.BellatrixForkVersion = []byte{0x2, 0x00, 0x00, 0x28}
-	cfg.CapellaForkEpoch = 4
+	cfg.CapellaForkEpoch = 10
 	cfg.CapellaForkVersion = []byte{0x3, 0x00, 0x00, 0x28}
 	cfg.DenebForkEpoch = math.MaxUint64
 	cfg.DenebForkVersion = []byte{0x4, 0x00, 0x00, 0x28}
