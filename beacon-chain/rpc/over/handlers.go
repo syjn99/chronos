@@ -100,18 +100,12 @@ func (s *Server) EstimatedActivation(w http.ResponseWriter, r *http.Request) {
 	// If validator is not found, it will return an estimation based on current state
 	// when new deposit is included. (Status = 0)
 	status := uint64(0)
-	eth1DataVotesLength := params.BeaconConfig().Eth1DataVotesLength()
-	remainingSlotsInPeriod := eth1DataVotesLength - uint64(headSlot.ModSlot(primitives.Slot(eth1DataVotesLength)))
-	baseEligibleSlots := params.BeaconConfig().Eth1FollowDistance +
-		eth1DataVotesLength/2 +
-		uint64(params.BeaconConfig().SlotsPerEpoch.Mul(3)) +
-		remainingSlotsInPeriod
-	eligibleEpoch := slots.ToEpoch(headSlot.Add(baseEligibleSlots))
+	eligibleEpoch := calculateEligibleEpoch(headSlot)
 
 	if pendingQueuedCount == 0 {
 		httputil.WriteJson(w, &structs.EstimatedActivationResponse{
 			WaitingEpoch:  uint64(0),
-			EligibleEpoch: uint64(eligibleEpoch),
+			EligibleEpoch: eligibleEpoch,
 			Status:        status,
 		})
 		return
@@ -119,9 +113,22 @@ func (s *Server) EstimatedActivation(w http.ResponseWriter, r *http.Request) {
 
 	httputil.WriteJson(w, &structs.EstimatedActivationResponse{
 		WaitingEpoch:  calculateWaitingEpoch(activeCount, pendingQueuedCount),
-		EligibleEpoch: uint64(eligibleEpoch),
+		EligibleEpoch: eligibleEpoch,
 		Status:        status,
 	})
+}
+
+func calculateEligibleEpoch(headSlot primitives.Slot) uint64 {
+	epochsPerEth1VotingPeriod := params.BeaconConfig().EpochsPerEth1VotingPeriod
+
+	currentEpoch := slots.ToEpoch(headSlot)
+	currentPeriodStartEpoch := currentEpoch - currentEpoch.Mod(uint64(epochsPerEth1VotingPeriod))
+	midEpochInThisPeriod := currentPeriodStartEpoch + epochsPerEth1VotingPeriod/2
+	if currentEpoch < midEpochInThisPeriod {
+		return uint64(currentPeriodStartEpoch.Add(uint64(epochsPerEth1VotingPeriod))+epochsPerEth1VotingPeriod/2) + 1
+	} else {
+		return uint64(currentPeriodStartEpoch.Add(uint64(epochsPerEth1VotingPeriod.Mul(2)))+epochsPerEth1VotingPeriod/2) + 1
+	}
 }
 
 // GetEpochReward returns total reward at given epoch.
