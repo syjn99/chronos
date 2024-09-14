@@ -806,7 +806,7 @@ func (s *Service) overEndpoints(stater lookup.Stater) []endpoint {
 			template: "/chronos/validator/estimated_activation/{validator_id}",
 			name:     namespace + ".EstimatedActivation",
 			handler:  server.EstimatedActivation,
-			methods:  []string{http.MethodGet},
+			methods:  []string{http.MethodGet, http.MethodPost},
 		},
 		{
 			template: "/chronos/states/epoch_reward/{epoch}",
