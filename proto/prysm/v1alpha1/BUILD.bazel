@@ -318,12 +318,13 @@ go_library(
         "eip_7521.go",
         "sync_committee_mainnet.go",
         "sync_committee_minimal.go",  # keep
+        ":ssz_generated_non_core",  # keep
+        ":ssz_generated_phase0",  # keep
         ":ssz_generated_altair",  # keep
         ":ssz_generated_bellatrix",  # keep
         ":ssz_generated_capella",  # keep
         ":ssz_generated_deneb",  # keep
-        ":ssz_generated_non_core",  # keep
-        ":ssz_generated_phase0",  # keep
+        ":ssz_generated_electra",  # keep
     ],
     embed = [
         ":go_grpc_gateway_library",
