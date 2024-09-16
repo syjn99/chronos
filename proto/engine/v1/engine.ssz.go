@@ -1255,8 +1255,6 @@ func (e *ExecutionPayloadDeneb) HashTreeRootWith(hh *ssz.Hasher) (err error) {
 	hh.PutUint64(e.ExcessBlobGas)
 
 	hh.Merkleize(indx)
-<<<<<<< HEAD
-=======
 	return
 }
 
@@ -1876,7 +1874,6 @@ func (e *ExecutionPayloadElectra) HashTreeRootWith(hh *ssz.Hasher) (err error) {
 	}
 
 	hh.Merkleize(indx)
->>>>>>> v5.1.0
 	return
 }
 
@@ -2862,8 +2859,6 @@ func (e *ExecutionPayloadHeaderDeneb) HashTreeRootWith(hh *ssz.Hasher) (err erro
 	hh.PutUint64(e.ExcessBlobGas)
 
 	hh.Merkleize(indx)
-<<<<<<< HEAD
-=======
 	return
 }
 
@@ -3271,7 +3266,6 @@ func (e *ExecutionPayloadHeaderElectra) HashTreeRootWith(hh *ssz.Hasher) (err er
 	hh.PutBytes(e.ConsolidationRequestsRoot)
 
 	hh.Merkleize(indx)
->>>>>>> v5.1.0
 	return
 }
 
@@ -3591,8 +3585,6 @@ func (b *BlobsBundle) HashTreeRootWith(hh *ssz.Hasher) (err error) {
 	}
 
 	hh.Merkleize(indx)
-<<<<<<< HEAD
-=======
 	return
 }
 
@@ -3906,6 +3898,5 @@ func (c *ConsolidationRequest) HashTreeRootWith(hh *ssz.Hasher) (err error) {
 	hh.PutBytes(c.TargetPubkey)
 
 	hh.Merkleize(indx)
->>>>>>> v5.1.0
 	return
 }
