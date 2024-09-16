@@ -19,7 +19,7 @@ import (
 var (
 	InitializePrecomputeValidators       = altair.InitializePrecomputeValidators
 	ProcessEpochParticipation            = altair.ProcessEpochParticipation
-	ProcessInactivityScores              = altair.ProcessInactivityScores
+	ProcessInactivityAndBailOutScores    = altair.ProcessInactivityAndBailOutScores
 	ProcessRewardsAndPenaltiesPrecompute = altair.ProcessRewardsAndPenaltiesPrecompute
 	ProcessSlashings                     = e.ProcessSlashings
 	ProcessEth1DataReset                 = e.ProcessEth1DataReset
@@ -68,9 +68,9 @@ func ProcessEpoch(ctx context.Context, state state.BeaconState) error {
 	if err != nil {
 		return errors.Wrap(err, "could not process justification")
 	}
-	state, vp, err = ProcessInactivityScores(ctx, state, vp)
+	state, vp, err = ProcessInactivityAndBailOutScores(ctx, state, vp)
 	if err != nil {
-		return errors.Wrap(err, "could not process inactivity updates")
+		return errors.Wrap(err, "could not process inactivity/bail out updates")
 	}
 	state, err = ProcessRewardsAndPenaltiesPrecompute(state, bp, vp)
 	if err != nil {
