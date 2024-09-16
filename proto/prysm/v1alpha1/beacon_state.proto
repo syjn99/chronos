@@ -612,6 +612,7 @@ message BeaconStateOldDeneb {
   repeated uint64 inactivity_scores = 9001 [(ethereum.eth.ext.ssz_max) = "1099511627776"];
   SyncCommittee current_sync_committee = 9002;
   SyncCommittee next_sync_committee = 9003;
+  repeated uint64 bail_out_scores = 9004 [(ethereum.eth.ext.ssz_max) = "1099511627776"]; // [New in Altair]
 
   // Fields introduced in Bellatrix fork [10001-11000]
   ethereum.engine.v1.ExecutionPayloadHeaderDeneb latest_execution_payload_header = 10001; // [New in Deneb]
