@@ -64,7 +64,7 @@ func MaxExitEpochAndChurn(s state.BeaconState) (maxExitEpoch primitives.Epoch, c
 //	    # Set validator exit epoch and withdrawable epoch
 //	    validator.exit_epoch = exit_queue_epoch
 //	    validator.withdrawable_epoch = Epoch(validator.exit_epoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
-func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primitives.ValidatorIndex, exitQueueEpoch primitives.Epoch, churn uint64) (state.BeaconState, primitives.Epoch, error) {
+func InitiateValidatorExit(ctx context.Context, s state.BeaconState, idx primitives.ValidatorIndex, exitQueueEpoch primitives.Epoch, churn uint64, isBailOut bool) (state.BeaconState, primitives.Epoch, error) {
 	validator, err := s.ValidatorAtIndex(idx)
 	if err != nil {
 		return nil, 0, err
