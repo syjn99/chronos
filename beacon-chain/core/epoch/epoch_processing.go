@@ -138,7 +138,7 @@ func ProcessRegistryUpdates(ctx context.Context, st state.BeaconState) (state.Be
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get active validator count")
 	}
-	activeValidatorDeposit, err := helpers.TotalActiveBalance(state)
+	activeValidatorDeposit, err := helpers.TotalActiveBalance(st)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not calculate active balance")
 	}

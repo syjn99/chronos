@@ -106,7 +106,7 @@ func (vs *Server) WaitForActivation(req *ethpb.ValidatorActivationRequest, strea
 	defer ticker.Stop()
 
 	for {
-		timer.Reset(waitTime)
+		ticker.Reset(waitTime)
 		select {
 		// Pinging every slot for activation.
 		case <-ticker.C:

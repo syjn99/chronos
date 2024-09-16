@@ -883,7 +883,14 @@ func (s *Service) ValidatorActiveSetChanges(
 	}
 	vs := requestedState.Validators()
 	activatedIndices := validators.ActivatedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs)
-	exitedIndices, err := validators.ExitedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount)
+	activeDeposit, err := helpers.TotalActiveBalance(requestedState)
+	if err != nil {
+		return nil, &RpcError{
+			Err:    errors.Wrap(err, "could not get active deposit"),
+			Reason: Internal,
+		}
+	}
+	exitedIndices, err := validators.ExitedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount, activeDeposit)
 	if err != nil {
 		return nil, &RpcError{
 			Err:    errors.Wrap(err, "could not determine exited validator indices"),
@@ -891,7 +898,7 @@ func (s *Service) ValidatorActiveSetChanges(
 		}
 	}
 	slashedIndices := validators.SlashedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs)
-	ejectedIndices, err := validators.EjectedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount)
+	ejectedIndices, err := validators.EjectedValidatorIndices(coreTime.CurrentEpoch(requestedState), vs, activeValidatorCount, activeDeposit)
 	if err != nil {
 		return nil, &RpcError{
 			Err:    errors.Wrap(err, "could not determine ejected validator indices"),
