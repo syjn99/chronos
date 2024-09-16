@@ -177,7 +177,7 @@ ssz_gen_marshal(
     out = "altair.ssz.go",
     includes = [
         "//consensus-types/primitives:go_default_library",
-        "//proto/engine/v1:go_defaultxw_library",
+        "//proto/engine/v1:go_default_library",
         "//math:go_default_library",
     ],
     objs = ssz_altair_objs,
