@@ -685,21 +685,3 @@ message BeaconStateElectra {
   repeated PendingPartialWithdrawal pending_partial_withdrawals = 12008 [(ethereum.eth.ext.ssz_max) = "pending_partial_withdrawals_limit"];
   repeated PendingConsolidation pending_consolidations = 12009 [(ethereum.eth.ext.ssz_max) = "pending_consolidations_limit"];
 }
-
-// PowBlock is a definition from Bellatrix fork choice spec to represent a block with total difficulty in the PoW chain.
-// Spec:
-// class PowBlock(Container):
-//    block_hash: Hash32
-//    parent_hash: Hash32
-//    total_difficulty: uint256
-message PowBlock {
-  bytes block_hash = 1 [(ethereum.eth.ext.ssz_size) = "32"];
-  bytes parent_hash = 2 [(ethereum.eth.ext.ssz_size) = "32"];
-  bytes total_difficulty = 3 [(ethereum.eth.ext.ssz_size) = "32"];
-}
-
-// HistoricalSummary matches the components of the phase0 `HistoricalBatch` making the two hash_tree_root-compatible.
-message HistoricalSummary {
-  bytes block_summary_root = 1 [(ethereum.eth.ext.ssz_size) = "32"];
-  bytes state_summary_root = 2 [(ethereum.eth.ext.ssz_size) = "32"];
-}
