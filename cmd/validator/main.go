@@ -63,10 +63,10 @@ var appFlags = []cli.Flag{
 	flags.RPCPort,
 	flags.GRPCGatewayPort,
 	flags.GRPCGatewayHost,
-	flags.GrpcRetriesFlag,
-	flags.GrpcRetryDelayFlag,
-	flags.GrpcHeadersFlag,
-	flags.GPRCGatewayCorsDomain,
+	flags.GRPCRetriesFlag,
+	flags.GRPCRetryDelayFlag,
+	flags.GRPCHeadersFlag,
+	flags.GRPCGatewayCorsDomain,
 	flags.DisableAccountMetricsFlag,
 	flags.MonitoringPortFlag,
 	flags.SlasherRPCProviderFlag,
@@ -80,6 +80,7 @@ var appFlags = []cli.Flag{
 	// Consensys' Web3Signer flags
 	flags.Web3SignerURLFlag,
 	flags.Web3SignerPublicValidatorKeysFlag,
+	flags.Web3SignerKeyFileFlag,
 	flags.SuggestedFeeRecipientFlag,
 	flags.ProposerSettingsURLFlag,
 	flags.ProposerSettingsFlag,
@@ -207,6 +208,10 @@ func main() {
 
 			if err := debug.Setup(ctx); err != nil {
 				return errors.Wrap(err, "failed to setup debug")
+			}
+
+			if err := features.ValidateNetworkFlags(ctx); err != nil {
+				return errors.Wrap(err, "provided multiple network flags")
 			}
 
 			return cmd.ValidateNoArgs(ctx)

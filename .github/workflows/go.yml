@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ '*' ]
+    branches: ["*"]
 
 jobs:
   formatting:
@@ -29,23 +29,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set Github Token
-        run: |
-          git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
-
-      - name: Set up Go 1.21.5
+      - name: Set up Go 1.22
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21.5'
-        #          cache: false
-        id: go
-
+          go-version: "1.22.3"
       - name: Run Gosec Security Scanner
         run: | # https://github.com/securego/gosec/issues/469
           export PATH=$PATH:$(go env GOPATH)/bin
-          go install github.com/securego/gosec/v2/cmd/gosec@v2.15.0
-          gosec -exclude=G307 -exclude-dir=crypto/bls/herumi ./...
+          go install github.com/securego/gosec/v2/cmd/gosec@v2.19.0
+          gosec -exclude-generated -exclude=G307 -exclude-dir=crypto/bls/herumi ./...
 
   lint:
     name: Lint
@@ -61,11 +53,11 @@ jobs:
         run: |
           git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
 
-      - name: Set up Go 1.21
+      - name: Set up Go 1.22
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.5'
-          id: go
+          go-version: "1.22.3"
+        id: go
 
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v3
@@ -89,8 +81,7 @@ jobs:
       - name: Set up Go 1.21.5
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21.5'
-        #          cache: false
+          go-version: "1.22.3"
         id: go
 
       - name: Check out code into the Go module directoryrm -rf bo
@@ -112,8 +103,6 @@ jobs:
         run: go test  -tags=fuzz,develop ./...  -test.run=^Fuzz
         env:
           CGO_CFLAGS: "-O2 -D__BLST_PORTABLE__"
-
-
 # # Tests run via Bazel for now...
 #      - name: Test
 #        run: go test -v ./...

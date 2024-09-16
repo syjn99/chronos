@@ -27,7 +27,9 @@ const (
 	// Capella Fork Epoch for mainnet config.
 	mainnetCapellaForkEpoch = 10 // epoch 10
 	// Deneb Fork Epoch for mainnet config.
-	mainnetDenebForkEpoch = math.MaxInt // not activated
+	mainnetDenebForkEpoch = math.MaxUint64 // not activated
+	// Electra Fork Epoch for mainnet config
+	mainnetElectraForkEpoch = math.MaxUint64 // Far future / to be defined
 )
 
 var mainnetNetworkConfig = &NetworkConfig{
@@ -85,6 +87,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Initial value constants.
 	BLSWithdrawalPrefixByte:         byte(0),
 	ETH1AddressWithdrawalPrefixByte: byte(1),
+	CompoundingWithdrawalPrefixByte: byte(2),
 	ZeroHash:                        [32]byte{},
 
 	// Time parameter constants.
@@ -143,7 +146,9 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	// Max operations per block constants.
 	MaxProposerSlashings:             16,
 	MaxAttesterSlashings:             2,
+	MaxAttesterSlashingsElectra:      1,
 	MaxAttestations:                  128,
+	MaxAttestationsElectra:           8,
 	MaxDeposits:                      16,
 	MaxVoluntaryExits:                16,
 	MaxBailOuts:                      16,
@@ -165,6 +170,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	DomainApplicationMask:             bytesutil.Uint32ToBytes4(0x00000001),
 	DomainApplicationBuilder:          bytesutil.Uint32ToBytes4(0x00000001),
 	DomainBLSToExecutionChange:        bytesutil.Uint32ToBytes4(0x0A000000),
+	DomainConsolidation:               bytesutil.Uint32ToBytes4(0x0B000000),
 
 	// Prysm constants.
 	GweiPerEth:                     1000000000,
@@ -186,6 +192,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	BeaconStateBellatrixFieldCount: 29,
 	BeaconStateCapellaFieldCount:   32,
 	BeaconStateDenebFieldCount:     32,
+	BeaconStateElectraFieldCount:   41,
 
 	// Slasher related values.
 	WeakSubjectivityPeriod:          54000,
@@ -206,6 +213,8 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	CapellaForkEpoch:     mainnetCapellaForkEpoch,
 	DenebForkVersion:     []byte{0x04, 0x00, 0x00, 0x18},
 	DenebForkEpoch:       mainnetDenebForkEpoch,
+	ElectraForkVersion:   []byte{5, 0, 0, 0},
+	ElectraForkEpoch:     mainnetElectraForkEpoch,
 
 	// New values introduced in Altair hard fork 1.
 	// Participation flag indices.
@@ -267,6 +276,25 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	MaxRequestBlobSidecars:           768,
 	MaxRequestBlocksDeneb:            128,
 
+	// Values related to electra
+	MaxRequestDataColumnSidecars:          16384,
+	DataColumnSidecarSubnetCount:          32,
+	MinPerEpochChurnLimitElectra:          128_000_000_000,
+	MaxPerEpochActivationExitChurnLimit:   256_000_000_000,
+	MaxEffectiveBalanceElectra:            2048_000_000_000,
+	MinSlashingPenaltyQuotientElectra:     4096,
+	WhistleBlowerRewardQuotientElectra:    4096,
+	PendingBalanceDepositLimit:            134_217_728,
+	PendingPartialWithdrawalsLimit:        134_217_728,
+	PendingConsolidationsLimit:            262_144,
+	MinActivationBalance:                  32_000_000_000,
+	MaxConsolidationsRequestsPerPayload:   1,
+	MaxPendingPartialsPerWithdrawalsSweep: 8,
+	FullExitRequestAmount:                 0,
+	MaxWithdrawalRequestsPerPayload:       16,
+	MaxDepositRequestsPerPayload:          8192, // 2**13 (= 8192)
+	UnsetDepositRequestsStartIndex:        math.MaxUint64,
+
 	// Values related to networking parameters.
 	GossipMaxSize:                   10 * 1 << 20, // 10 MiB
 	MaxChunkSize:                    10 * 1 << 20, // 10 MiB
@@ -284,6 +312,10 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	AttestationSubnetPrefixBits:     6,
 	SubnetsPerNode:                  2,
 	NodeIdBits:                      256,
+
+	// PeerDAS
+	NumberOfColumns:          128,
+	MaxCellsInExtendedMatrix: 768,
 }
 
 // MainnetTestConfig provides a version of the mainnet config that has a different name
@@ -304,16 +336,19 @@ func FillTestVersions(c *BeaconChainConfig, b byte) {
 	c.BellatrixForkVersion = make([]byte, fieldparams.VersionLength)
 	c.CapellaForkVersion = make([]byte, fieldparams.VersionLength)
 	c.DenebForkVersion = make([]byte, fieldparams.VersionLength)
+	c.ElectraForkVersion = make([]byte, fieldparams.VersionLength)
 
 	c.GenesisForkVersion[fieldparams.VersionLength-1] = b
 	c.AltairForkVersion[fieldparams.VersionLength-1] = b
 	c.BellatrixForkVersion[fieldparams.VersionLength-1] = b
 	c.CapellaForkVersion[fieldparams.VersionLength-1] = b
 	c.DenebForkVersion[fieldparams.VersionLength-1] = b
+	c.ElectraForkVersion[fieldparams.VersionLength-1] = b
 
 	c.GenesisForkVersion[0] = 0
 	c.AltairForkVersion[0] = 1
 	c.BellatrixForkVersion[0] = 2
 	c.CapellaForkVersion[0] = 3
 	c.DenebForkVersion[0] = 4
+	c.ElectraForkVersion[0] = 5
 }

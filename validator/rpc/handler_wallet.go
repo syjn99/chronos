@@ -35,7 +35,7 @@ func (s *Server) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	var req CreateWalletRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	switch {
-	case err == io.EOF:
+	case errors.Is(err, io.EOF):
 		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
 		return
 	case err != nil:
@@ -180,7 +180,7 @@ func (s *Server) RecoverWallet(w http.ResponseWriter, r *http.Request) {
 	var req RecoverWalletRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	switch {
-	case err == io.EOF:
+	case errors.Is(err, io.EOF):
 		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
 		return
 	case err != nil:
@@ -282,7 +282,7 @@ func (*Server) ValidateKeystores(w http.ResponseWriter, r *http.Request) {
 	var req ValidateKeystoresRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	switch {
-	case err == io.EOF:
+	case errors.Is(err, io.EOF):
 		httputil.HandleError(w, "No data submitted", http.StatusBadRequest)
 		return
 	case err != nil:

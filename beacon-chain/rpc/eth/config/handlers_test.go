@@ -12,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/prysmaticlabs/prysm/v5/api/server/structs"
-
 	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v5/encoding/bytesutil"
@@ -78,6 +77,8 @@ func TestGetSpec(t *testing.T) {
 	config.CapellaForkEpoch = 103
 	config.DenebForkVersion = []byte("DenebForkVersion")
 	config.DenebForkEpoch = 105
+	config.ElectraForkVersion = []byte("ElectraForkVersion")
+	config.ElectraForkEpoch = 107
 	config.BLSWithdrawalPrefixByte = byte('b')
 	config.ETH1AddressWithdrawalPrefixByte = byte('c')
 	config.GenesisDelay = 24
@@ -152,6 +153,24 @@ func TestGetSpec(t *testing.T) {
 	config.IssuancePerYear = 95
 	config.LightLayerWeight = 96
 	config.MaxBailOuts = 97
+	config.MinSlashingPenaltyQuotientElectra = 98
+	config.MaxEffectiveBalanceElectra = 99
+	config.CompoundingWithdrawalPrefixByte = byte('d')
+	config.WhistleBlowerRewardQuotientElectra = 100
+	config.PendingPartialWithdrawalsLimit = 101
+	config.MinActivationBalance = 102
+	config.PendingBalanceDepositLimit = 103
+	config.MaxPendingPartialsPerWithdrawalsSweep = 104
+	config.PendingConsolidationsLimit = 105
+	config.MaxPartialWithdrawalsPerPayload = 106
+	config.FullExitRequestAmount = 107
+	config.MaxConsolidationsRequestsPerPayload = 108
+	config.MaxAttesterSlashingsElectra = 109
+	config.MaxAttestationsElectra = 110
+	config.MaxWithdrawalRequestsPerPayload = 111
+	config.MaxCellsInExtendedMatrix = 112
+	config.UnsetDepositRequestsStartIndex = 113
+	config.MaxDepositRequestsPerPayload = 114
 
 	var dbp [4]byte
 	copy(dbp[:], []byte{'0', '0', '0', '1'})
@@ -177,6 +196,9 @@ func TestGetSpec(t *testing.T) {
 	var dam [4]byte
 	copy(dam[:], []byte{'1', '0', '0', '0'})
 	config.DomainApplicationMask = dam
+	var dc [4]byte
+	copy(dc[:], []byte{'1', '1', '0', '0'})
+	config.DomainConsolidation = dc
 
 	params.OverrideBeaconConfig(config)
 
@@ -191,7 +213,7 @@ func TestGetSpec(t *testing.T) {
 	data, ok := resp.Data.(map[string]interface{})
 	require.Equal(t, true, ok)
 
-	assert.Equal(t, 150, len(data))
+	assert.Equal(t, 168, len(data))
 	for k, v := range data {
 		switch k {
 		case "CONFIG_NAME":
@@ -517,6 +539,44 @@ func TestGetSpec(t *testing.T) {
 			assert.Equal(t, "96", v)
 		case "MAX_BAIL_OUTS":
 			assert.Equal(t, "97", v)
+		case "MIN_SLASHING_PENALTY_QUOTIENT_ELECTRA":
+			assert.Equal(t, "98", v)
+		case "MAX_EFFECTIVE_BALANCE_ELECTRA":
+			assert.Equal(t, "99", v)
+		case "COMPOUNDING_WITHDRAWAL_PREFIX":
+			assert.Equal(t, "0x64", v)
+		case "WHISTLEBLOWER_REWARD_QUOTIENT_ELECTRA":
+			assert.Equal(t, "100", v)
+		case "PENDING_PARTIAL_WITHDRAWALS_LIMIT":
+			assert.Equal(t, "101", v)
+		case "MIN_ACTIVATION_BALANCE":
+			assert.Equal(t, "102", v)
+		case "PENDING_BALANCE_DEPOSITS_LIMIT":
+			assert.Equal(t, "103", v)
+		case "MAX_PENDING_PARTIALS_PER_WITHDRAWALS_SWEEP":
+			assert.Equal(t, "104", v)
+		case "PENDING_CONSOLIDATIONS_LIMIT":
+			assert.Equal(t, "105", v)
+		case "MAX_PARTIAL_WITHDRAWALS_PER_PAYLOAD":
+			assert.Equal(t, "106", v)
+		case "FULL_EXIT_REQUEST_AMOUNT":
+			assert.Equal(t, "107", v)
+		case "MAX_CONSOLIDATION_REQUESTS_PER_PAYLOAD":
+			assert.Equal(t, "108", v)
+		case "DOMAIN_CONSOLIDATION":
+			assert.Equal(t, "0x31313030", v)
+		case "MAX_ATTESTER_SLASHINGS_ELECTRA":
+			assert.Equal(t, "109", v)
+		case "MAX_ATTESTATIONS_ELECTRA":
+			assert.Equal(t, "110", v)
+		case "MAX_WITHDRAWAL_REQUESTS_PER_PAYLOAD":
+			assert.Equal(t, "111", v)
+		case "MAX_CELLS_IN_EXTENDED_MATRIX":
+			assert.Equal(t, "112", v)
+		case "UNSET_DEPOSIT_REQUESTS_START_INDEX":
+			assert.Equal(t, "113", v)
+		case "MAX_DEPOSIT_REQUESTS_PER_PAYLOAD":
+			assert.Equal(t, "114", v)
 		default:
 			t.Errorf("Incorrect key: %s", k)
 		}

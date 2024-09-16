@@ -20,7 +20,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	apigateway "github.com/prysmaticlabs/prysm/v5/api/gateway"
-	"github.com/prysmaticlabs/prysm/v5/api/server"
+	"github.com/prysmaticlabs/prysm/v5/api/server/middleware"
 	"github.com/prysmaticlabs/prysm/v5/async/event"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/blockchain"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/builder"
@@ -123,7 +123,6 @@ type BeaconNode struct {
 	initialSyncComplete     chan struct{}
 	BlobStorage             *filesystem.BlobStorage
 	BlobStorageOptions      []filesystem.BlobStorageOption
-	blobRetentionEpochs     primitives.Epoch
 	verifyInitWaiter        *verification.InitializerWaiter
 	syncChecker             *initialsync.SyncChecker
 }
@@ -411,8 +410,8 @@ func newRouter(cliCtx *cli.Context) *mux.Router {
 		allowedOrigins = strings.Split(flags.GPRCGatewayCorsDomain.Value, ",")
 	}
 	r := mux.NewRouter()
-	r.Use(server.NormalizeQueryValuesHandler)
-	r.Use(server.CorsHandler(allowedOrigins))
+	r.Use(middleware.NormalizeQueryValuesHandler)
+	r.Use(middleware.CorsHandler(allowedOrigins))
 	return r
 }
 
@@ -577,7 +576,7 @@ func (b *BeaconNode) startDB(cliCtx *cli.Context, depositAddress string) error {
 
 	if b.GenesisInitializer != nil {
 		if err := b.GenesisInitializer.Initialize(b.ctx, d); err != nil {
-			if err == db.ErrExistingGenesisState {
+			if errors.Is(err, db.ErrExistingGenesisState) {
 				return errors.Errorf("Genesis state flag specified but a genesis state "+
 					"exists already. Run again with --%s and/or ensure you are using the "+
 					"appropriate testnet flag to load the given genesis state.", cmd.ClearDB.Name)
@@ -983,10 +982,9 @@ func (b *BeaconNode) registerRPCService(router *mux.Router) error {
 	cert := b.cliCtx.String(flags.CertFlag.Name)
 	key := b.cliCtx.String(flags.KeyFlag.Name)
 	mockEth1DataVotes := b.cliCtx.Bool(flags.InteropMockEth1DataVotesFlag.Name)
-
 	maxMsgSize := b.cliCtx.Int(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
-	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
 	enableOverNodeRPCEndpoints := b.cliCtx.Bool(flags.EnableOverNodeRPCEndpoints.Name)
+	enableDebugRPCEndpoints := !b.cliCtx.Bool(flags.DisableDebugRPCEndpoints.Name)
 
 	p2pService := b.fetchP2P()
 
@@ -1084,11 +1082,10 @@ func (b *BeaconNode) registerGRPCGateway(router *mux.Router) error {
 	gatewayPort := b.cliCtx.Int(flags.GRPCGatewayPort.Name)
 	rpcHost := b.cliCtx.String(flags.RPCHost.Name)
 	rpcPort := b.cliCtx.Int(flags.RPCPort.Name)
-
+	enableDebugRPCEndpoints := !b.cliCtx.Bool(flags.DisableDebugRPCEndpoints.Name)
 	selfAddress := net.JoinHostPort(rpcHost, strconv.Itoa(rpcPort))
 	gatewayAddress := net.JoinHostPort(gatewayHost, strconv.Itoa(gatewayPort))
 	allowedOrigins := strings.Split(b.cliCtx.String(flags.GPRCGatewayCorsDomain.Name), ",")
-	enableDebugRPCEndpoints := b.cliCtx.Bool(flags.EnableDebugRPCEndpoints.Name)
 	selfCert := b.cliCtx.String(flags.CertFlag.Name)
 	maxCallSize := b.cliCtx.Uint64(cmd.GrpcMaxCallRecvMsgSizeFlag.Name)
 	httpModules := b.cliCtx.String(flags.HTTPModules.Name)

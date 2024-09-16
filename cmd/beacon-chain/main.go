@@ -65,8 +65,8 @@ var appFlags = []cli.Flag{
 	flags.InteropNumValidatorsFlag,
 	flags.InteropGenesisTimeFlag,
 	flags.SlotsPerArchivedPoint,
-	flags.EnableDebugRPCEndpoints,
 	flags.EnableOverNodeRPCEndpoints,
+	flags.DisableDebugRPCEndpoints,
 	flags.SubscribeToAllSubnets,
 	flags.HistoricalSlasherNode,
 	flags.ChainID,
@@ -84,6 +84,8 @@ var appFlags = []cli.Flag{
 	flags.MaxBuilderConsecutiveMissedSlots,
 	flags.EngineEndpointTimeoutSeconds,
 	flags.LocalBlockValueBoost,
+	flags.MinBuilderBid,
+	flags.MinBuilderDiff,
 	cmd.BackupWebhookOutputDir,
 	cmd.MinimalConfigFlag,
 	cmd.E2EConfigFlag,
@@ -183,6 +185,10 @@ func before(ctx *cli.Context) error {
 
 	if err := fdlimits.SetMaxFdLimits(); err != nil {
 		return errors.Wrap(err, "failed to set max fd limits")
+	}
+
+	if err := features.ValidateNetworkFlags(ctx); err != nil {
+		return errors.Wrap(err, "provided multiple network flags")
 	}
 
 	return cmd.ValidateNoArgs(ctx)
