@@ -213,7 +213,7 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	CapellaForkEpoch:     mainnetCapellaForkEpoch,
 	DenebForkVersion:     []byte{0x04, 0x00, 0x00, 0x18},
 	DenebForkEpoch:       mainnetDenebForkEpoch,
-	ElectraForkVersion:   []byte{5, 0, 0, 0},
+	ElectraForkVersion:   []byte{0x05, 0x00, 0x00, 0x18},
 	ElectraForkEpoch:     mainnetElectraForkEpoch,
 
 	// New values introduced in Altair hard fork 1.
@@ -277,17 +277,18 @@ var mainnetBeaconConfig = &BeaconChainConfig{
 	MaxRequestBlocksDeneb:            128,
 
 	// Values related to electra
+	// TODO: Fix electra values
 	MaxRequestDataColumnSidecars:          16384,
 	DataColumnSidecarSubnetCount:          32,
 	MinPerEpochChurnLimitElectra:          128_000_000_000,
 	MaxPerEpochActivationExitChurnLimit:   256_000_000_000,
-	MaxEffectiveBalanceElectra:            2048_000_000_000,
+	MaxEffectiveBalanceElectra:            16384_000_000_000,
 	MinSlashingPenaltyQuotientElectra:     4096,
 	WhistleBlowerRewardQuotientElectra:    4096,
 	PendingBalanceDepositLimit:            134_217_728,
 	PendingPartialWithdrawalsLimit:        134_217_728,
 	PendingConsolidationsLimit:            262_144,
-	MinActivationBalance:                  32_000_000_000,
+	MinActivationBalance:                  256_000_000_000,
 	MaxConsolidationsRequestsPerPayload:   1,
 	MaxPendingPartialsPerWithdrawalsSweep: 8,
 	FullExitRequestAmount:                 0,
