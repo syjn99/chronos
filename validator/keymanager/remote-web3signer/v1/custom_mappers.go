@@ -368,7 +368,7 @@ func MapBeaconBlockBodyAltair(body *ethpb.BeaconBlockBodyAltair) (*BeaconBlockBo
 	for i, bo := range body.BailOuts {
 		bailOut, err := MapBailOut(bo)
 		if err != nil {
-			return nil, fmt.Errorf("could not map bail out at index %v: %v", i, err)
+			return nil, fmt.Errorf("could not map bail out at index %v: %w", i, err)
 		}
 		block.BailOuts[i] = bailOut
 	}
