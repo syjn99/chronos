@@ -18,6 +18,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gorilla/mux"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"

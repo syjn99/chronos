@@ -178,7 +178,7 @@ func (s *Server) GetStatus(w http.ResponseWriter, r *http.Request) {
 	var isConnectionWithBeaconNode bool
 	var isBeaconNodeSyncing bool
 
-	syncStatus, err := s.nodeClient.GetSyncStatus(ctx, &emptypb.Empty{})
+	syncStatus, err := s.nodeClient.SyncStatus(ctx, &emptypb.Empty{})
 	if err != nil || s.validatorService.Status() != nil {
 		isConnectionWithBeaconNode = false
 		isBeaconNodeSyncing = false

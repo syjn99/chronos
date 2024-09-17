@@ -203,7 +203,7 @@ func TestServer_GetStatus(t *testing.T) {
 		validatorService: &client.ValidatorService{},
 		useOverNode:      true,
 	}
-	mockNodeClient.EXPECT().GetSyncStatus(gomock.Any(), gomock.Any()).Return(&eth.SyncStatus{
+	mockNodeClient.EXPECT().SyncStatus(gomock.Any(), gomock.Any()).Return(&eth.SyncStatus{
 		Syncing: false,
 	}, nil)
 	r := httptest.NewRequest("GET", "/v2/validator/health/status", nil)

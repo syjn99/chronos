@@ -1303,7 +1303,7 @@ func TestGetDuties_GetDutiesForEpochFailed(t *testing.T) {
 		gomock.Any(),
 	).Times(2)
 
-	dutiesProvider.EXPECT().GetSyncDuties(
+	dutiesProvider.EXPECT().SyncDuties(
 		ctx,
 		gomock.Any(),
 		gomock.Any(),
