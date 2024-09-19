@@ -66,54 +66,54 @@ var (
 )
 
 type validator struct {
-	duties                             *ethpb.DutiesResponse
-	ticker                             slots.Ticker
-	genesisTime                        uint64
-	highestValidSlot                   primitives.Slot
-	slotFeed                           *event.Feed
-	startBalances                      map[[fieldparams.BLSPubkeyLength]byte]uint64
-	prevEpochBalances                  map[[fieldparams.BLSPubkeyLength]byte]uint64
-	blacklistedPubkeys                 map[[fieldparams.BLSPubkeyLength]byte]bool
-	pubkeyToStatus                     map[[fieldparams.BLSPubkeyLength]byte]*validatorStatus
-	wallet                             *wallet.Wallet
-	walletInitializedChan              chan *wallet.Wallet
-	walletInitializedFeed              *event.Feed
-	graffiti                           []byte
-	graffitiStruct                     *graffiti.Graffiti
-	graffitiOrderedIndex               uint64
-	beaconNodeHosts                    []string
-	currentHostIndex                   uint64
-	validatorClient                    iface.ValidatorClient
-	chainClient                        iface.ChainClient
-	nodeClient                         iface.NodeClient
-	prysmChainClient                   iface.PrysmChainClient
-	db                                 db.Database
-	km                                 keymanager.IKeymanager
-	web3SignerConfig                   *remoteweb3signer.SetupConfig
-	proposerSettings                   *proposer.Settings
-	signedValidatorRegistrations       map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1
-	validatorsRegBatchSize             int
-	interopKeysConfig                  *local.InteropKeymanagerConfig
-	attSelections                      map[attSelectionKey]iface.BeaconCommitteeSelection
-	aggregatedSlotCommitteeIDCache     *lru.Cache
-	domainDataCache                    *ristretto.Cache
-	voteStats                          voteStats
-	syncCommitteeStats                 syncCommitteeStats
-	submittedAtts                      map[submittedAttKey]*submittedAtt
-	submittedAggregates                map[submittedAttKey]*submittedAtt
-	logValidatorPerformance            bool
-	emitAccountMetrics                 bool
+	duties                               *ethpb.DutiesResponse
+	ticker                               slots.Ticker
+	genesisTime                          uint64
+	highestValidSlot                     primitives.Slot
+	slotFeed                             *event.Feed
+	startBalances                        map[[fieldparams.BLSPubkeyLength]byte]uint64
+	prevEpochBalances                    map[[fieldparams.BLSPubkeyLength]byte]uint64
+	blacklistedPubkeys                   map[[fieldparams.BLSPubkeyLength]byte]bool
+	pubkeyToStatus                       map[[fieldparams.BLSPubkeyLength]byte]*validatorStatus
+	wallet                               *wallet.Wallet
+	walletInitializedChan                chan *wallet.Wallet
+	walletInitializedFeed                *event.Feed
+	graffiti                             []byte
+	graffitiStruct                       *graffiti.Graffiti
+	graffitiOrderedIndex                 uint64
+	beaconNodeHosts                      []string
+	currentHostIndex                     uint64
+	validatorClient                      iface.ValidatorClient
+	chainClient                          iface.ChainClient
+	nodeClient                           iface.NodeClient
+	prysmChainClient                     iface.PrysmChainClient
+	db                                   db.Database
+	km                                   keymanager.IKeymanager
+	web3SignerConfig                     *remoteweb3signer.SetupConfig
+	proposerSettings                     *proposer.Settings
+	signedValidatorRegistrations         map[[fieldparams.BLSPubkeyLength]byte]*ethpb.SignedValidatorRegistrationV1
+	validatorsRegBatchSize               int
+	interopKeysConfig                    *local.InteropKeymanagerConfig
+	attSelections                        map[attSelectionKey]iface.BeaconCommitteeSelection
+	aggregatedSlotCommitteeIDCache       *lru.Cache
+	domainDataCache                      *ristretto.Cache
+	voteStats                            voteStats
+	syncCommitteeStats                   syncCommitteeStats
+	submittedAtts                        map[submittedAttKey]*submittedAtt
+	submittedAggregates                  map[submittedAttKey]*submittedAtt
+	logValidatorPerformance              bool
+	emitAccountMetrics                   bool
 	useOverNode                          bool
 	isWaitingForKeymanagerInitialization bool
-	distributed                        bool
-	domainDataLock                     sync.RWMutex
-	attLogsLock                        sync.Mutex
-	aggregatedSlotCommitteeIDCacheLock sync.Mutex
-	highestValidSlotLock               sync.Mutex
-	prevEpochBalancesLock              sync.RWMutex
-	blacklistedPubkeysLock             sync.RWMutex
-	attSelectionLock                   sync.Mutex
-	dutiesLock                         sync.RWMutex
+	distributed                          bool
+	domainDataLock                       sync.RWMutex
+	attLogsLock                          sync.Mutex
+	aggregatedSlotCommitteeIDCacheLock   sync.Mutex
+	highestValidSlotLock                 sync.Mutex
+	prevEpochBalancesLock                sync.RWMutex
+	blacklistedPubkeysLock               sync.RWMutex
+	attSelectionLock                     sync.Mutex
+	dutiesLock                           sync.RWMutex
 }
 
 type validatorStatus struct {

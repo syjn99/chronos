@@ -24,7 +24,7 @@ func BeaconStateFromConsensus(st beaconState.BeaconState) (*BeaconState, error) 
 	}
 	srcHr, err := st.HistoricalRoots()
 	if err != nil {
-	return nil, err
+		return nil, err
 	}
 	hr := make([]string, len(srcHr))
 	for i, r := range srcHr {
@@ -804,14 +804,14 @@ func BeaconStateElectraFromConsensus(st beaconState.BeaconState) (*BeaconStateEl
 		BlockRoots:                    br,
 		StateRoots:                    sr,
 		HistoricalRoots:               hr,
-		RewardAdjustmentFactor:       st.RewardAdjustmentFactor(),
+		RewardAdjustmentFactor:        st.RewardAdjustmentFactor(),
 		Eth1Data:                      Eth1DataFromConsensus(st.Eth1Data()),
 		Eth1DataVotes:                 votes,
 		Eth1DepositIndex:              fmt.Sprintf("%d", st.Eth1DepositIndex()),
 		Validators:                    vals,
 		Balances:                      bals,
-		PreviousEpochReserve:         st.PreviousEpochReserve(),
-		CurrentEpochReserve:          st.CurrentEpochReserve(),
+		PreviousEpochReserve:          st.PreviousEpochReserve(),
+		CurrentEpochReserve:           st.CurrentEpochReserve(),
 		RandaoMixes:                   rm,
 		Slashings:                     slashings,
 		PreviousEpochParticipation:    prevPart,

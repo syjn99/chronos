@@ -369,7 +369,7 @@ type BeaconBlockBodyElectra struct {
 	Deposits              []*Deposit                    `json:"deposits"`
 	VoluntaryExits        []*SignedVoluntaryExit        `json:"voluntary_exits"`
 	SyncAggregate         *SyncAggregate                `json:"sync_aggregate"`
-	BailOuts               []*BailOut                    `json:"bail_outs"`
+	BailOuts              []*BailOut                    `json:"bail_outs"`
 	ExecutionPayload      *ExecutionPayloadElectra      `json:"execution_payload"`
 	BLSToExecutionChanges []*SignedBLSToExecutionChange `json:"bls_to_execution_changes"`
 	BlobKzgCommitments    []string                      `json:"blob_kzg_commitments"`
@@ -408,7 +408,7 @@ type BlindedBeaconBlockBodyElectra struct {
 	Deposits               []*Deposit                     `json:"deposits"`
 	VoluntaryExits         []*SignedVoluntaryExit         `json:"voluntary_exits"`
 	SyncAggregate          *SyncAggregate                 `json:"sync_aggregate"`
-	BailOuts               []*BailOut                    `json:"bail_outs"`
+	BailOuts               []*BailOut                     `json:"bail_outs"`
 	ExecutionPayloadHeader *ExecutionPayloadHeaderElectra `json:"execution_payload_header"`
 	BLSToExecutionChanges  []*SignedBLSToExecutionChange  `json:"bls_to_execution_changes"`
 	BlobKzgCommitments     []string                       `json:"blob_kzg_commitments"`

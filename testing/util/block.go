@@ -38,7 +38,7 @@ type BlockGenConfig struct {
 	NumAttestations          uint64
 	NumDeposits              uint64
 	NumVoluntaryExits        uint64
-	NumBailOuts          uint64 // Only for post Altair blocks
+	NumBailOuts              uint64 // Only for post Altair blocks
 	NumTransactions          uint64 // Only for post Bellatrix blocks
 	FullSyncAggregate        bool
 	NumBLSChanges            uint64 // Only for post Capella blocks
@@ -57,7 +57,7 @@ func DefaultBlockGenConfig() *BlockGenConfig {
 		NumAttestations:          1,
 		NumDeposits:              0,
 		NumVoluntaryExits:        0,
-		NumBailOuts:          0,
+		NumBailOuts:              0,
 		NumTransactions:          0,
 		NumBLSChanges:            0,
 		NumWithdrawals:           0,

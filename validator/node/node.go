@@ -584,7 +584,7 @@ func (c *ValidatorClient) registerRPCService(router *mux.Router) error {
 		CloseFunc: c.Close,
 		CloseCh:   c.stop,
 	}
-	
+
 	host := c.cliCtx.String(flags.HTTPServerHost.Name)
 	if host != flags.DefaultHTTPServerHost {
 		log.WithField("webHost", host).Warn(
