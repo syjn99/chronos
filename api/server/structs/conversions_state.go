@@ -24,7 +24,7 @@ func BeaconStateFromConsensus(st beaconState.BeaconState) (*BeaconState, error) 
 	}
 	srcHr, err := st.HistoricalRoots()
 	if err != nil {
-		return nil, err
+	return nil, err
 	}
 	hr := make([]string, len(srcHr))
 	for i, r := range srcHr {
@@ -714,6 +714,14 @@ func BeaconStateElectraFromConsensus(st beaconState.BeaconState) (*BeaconStateEl
 	for i, s := range srcIs {
 		is[i] = fmt.Sprintf("%d", s)
 	}
+	srcBo, err := st.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
+	bo := make([]string, len(srcBo))
+	for i, s := range srcBo {
+		bo[i] = fmt.Sprintf("%d", s)
+	}
 	currSc, err := st.CurrentSyncCommittee()
 	if err != nil {
 		return nil, err
@@ -796,11 +804,14 @@ func BeaconStateElectraFromConsensus(st beaconState.BeaconState) (*BeaconStateEl
 		BlockRoots:                    br,
 		StateRoots:                    sr,
 		HistoricalRoots:               hr,
+		RewardAdjustmentFactor:       st.RewardAdjustmentFactor(),
 		Eth1Data:                      Eth1DataFromConsensus(st.Eth1Data()),
 		Eth1DataVotes:                 votes,
 		Eth1DepositIndex:              fmt.Sprintf("%d", st.Eth1DepositIndex()),
 		Validators:                    vals,
 		Balances:                      bals,
+		PreviousEpochReserve:         st.PreviousEpochReserve(),
+		CurrentEpochReserve:          st.CurrentEpochReserve(),
 		RandaoMixes:                   rm,
 		Slashings:                     slashings,
 		PreviousEpochParticipation:    prevPart,
@@ -812,6 +823,7 @@ func BeaconStateElectraFromConsensus(st beaconState.BeaconState) (*BeaconStateEl
 		InactivityScores:              is,
 		CurrentSyncCommittee:          SyncCommitteeFromConsensus(currSc),
 		NextSyncCommittee:             SyncCommitteeFromConsensus(nextSc),
+		BailOutScores:                 bo,
 		LatestExecutionPayloadHeader:  payload,
 		NextWithdrawalIndex:           fmt.Sprintf("%d", nwi),
 		NextWithdrawalValidatorIndex:  fmt.Sprintf("%d", nwvi),

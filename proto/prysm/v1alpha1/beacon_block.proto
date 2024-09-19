@@ -911,13 +911,16 @@ message BlindedBeaconBlockBodyElectra {
     // Sync aggregate object for the beacon chain to track sync committee votes. New in Altair network upgrade.
     SyncAggregate sync_aggregate = 9;
 
+    // At most Bail Out. New in Altair network upgrade.
+    repeated BailOut bail_outs = 10 [(ethereum.eth.ext.ssz_max) = "16"];
+
     // Execution payload header from the execution chain. New in Bellatrix network upgrade to accommodate MEV interaction.
-    ethereum.engine.v1.ExecutionPayloadHeaderElectra execution_payload_header = 10;
+    ethereum.engine.v1.ExecutionPayloadHeaderElectra execution_payload_header = 11;
 
     // At most MAX_BLS_TO_EXECUTION_CHANGES. New in Capella network upgrade.
-    repeated SignedBLSToExecutionChange bls_to_execution_changes = 11 [(ethereum.eth.ext.ssz_max) = "16"];
+    repeated SignedBLSToExecutionChange bls_to_execution_changes = 12 [(ethereum.eth.ext.ssz_max) = "16"];
 
-    repeated bytes blob_kzg_commitments = 12 [(ethereum.eth.ext.ssz_size) = "?,48", (ethereum.eth.ext.ssz_max)  = "max_blob_commitments.size"];
+    repeated bytes blob_kzg_commitments = 13 [(ethereum.eth.ext.ssz_size) = "?,48", (ethereum.eth.ext.ssz_max)  = "max_blob_commitments.size"];
 }
 
 message ValidatorRegistrationV1 {
