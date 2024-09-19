@@ -17,6 +17,7 @@ func UseDolphinNetworkConfig() {
 // DolphinConfig defines the config for the Dolphin beacon chain testnet.
 func DolphinConfig() *BeaconChainConfig {
 	cfg := MainnetConfig().Copy()
+	cfg.GenesisValidatorsRoot = [32]byte{72, 53, 56, 66, 146, 92, 179, 239, 84, 134, 155, 20, 196, 84, 186, 245, 125, 16, 110, 201, 247, 155, 198, 125, 119, 186, 120, 204, 89, 247, 6, 37}
 	cfg.ConfigName = DolphinName
 	cfg.GenesisForkVersion = []byte{0x0, 0x00, 0x00, 0x28}
 	cfg.DepositChainID = 541764
