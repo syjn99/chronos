@@ -22,7 +22,6 @@ import (
 	iface "github.com/prysmaticlabs/prysm/v5/validator/client/iface"
 	"github.com/prysmaticlabs/prysm/v5/validator/db"
 	closehandler "github.com/prysmaticlabs/prysm/v5/validator/node/close-handler"
-	"github.com/prysmaticlabs/prysm/v5/validator/web"
 )
 
 // Config options for the HTTP server.
@@ -174,9 +173,6 @@ func (s *Server) InitializeRoutesWithWebHandler() error {
 		if strings.HasPrefix(r.URL.Path, "/api") {
 			r.URL.Path = strings.Replace(r.URL.Path, "/api", "", 1) // used to redirect apis to standard rest APIs
 			s.router.ServeHTTP(w, r)
-		} else {
-			// Finally, we handle with the web server.
-			web.Handler(w, r)
 		}
 	})
 	return nil
