@@ -22,6 +22,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/crypto/aes"
 	"github.com/prysmaticlabs/prysm/v5/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v5/encoding/bytesutil"
+	"github.com/prysmaticlabs/prysm/v5/monitoring/tracing/trace"
 	"github.com/prysmaticlabs/prysm/v5/network/httputil"
 	ethpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
 	validatorpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1/validator-client"
@@ -32,7 +33,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/derived"
 	"github.com/prysmaticlabs/prysm/v5/validator/keymanager/local"
 	keystorev4 "github.com/wealdtech/go-eth2-wallet-encryptor-keystorev4"
-	"go.opencensus.io/trace"
 )
 
 var tempPassword = "temp-password"

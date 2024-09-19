@@ -12,7 +12,8 @@ jobs:
     runs-on: [self-hosted, Linux, docker]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Go mod tidy checker
         id: gomodtidy
         run: docker build --build-arg CACHEBUST=$(date +%s) -f .github/actions/gomodtidy/Dockerfile -t gomodtidy ${{ github.workspace }}
@@ -28,11 +29,11 @@ jobs:
       GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Go 1.22
         uses: actions/setup-go@v4
         with:
-          go-version: "1.22.3"
+          go-version: "1.22.6"
       - name: Run Gosec Security Scanner
         run: | # https://github.com/securego/gosec/issues/469
           export PATH=$PATH:$(go env GOPATH)/bin
@@ -47,20 +48,16 @@ jobs:
       GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set Github Token
-        run: |
-          git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
+        uses: actions/checkout@v4
 
       - name: Set up Go 1.22
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: "1.22.3"
-        id: go
+          go-version: "1.22.6"
+          id: go
 
       - name: Golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v5
         with:
           version: v1.55.2
           args: --config=.golangci.yml --out-${NO_FUTURE}format colored-line-number
@@ -74,18 +71,14 @@ jobs:
       GOPRIVATE: github.com/superblock-dev
       GH_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
-      - name: Set Github Token
-        run: |
-          git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/superblock-dev".insteadOf "https://github.com/superblock-dev"
-
-      - name: Set up Go 1.21.5
+      - name: Set up Go 1.x
         uses: actions/setup-go@v4
         with:
-          go-version: "1.22.3"
+          go-version: "1.22.6"
         id: go
 
-      - name: Check out code into the Go module directoryrm -rf bo
-        uses: actions/checkout@v3
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
 
       - name: Get dependencies
         run: |

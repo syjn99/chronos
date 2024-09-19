@@ -14,9 +14,10 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v5/encoding/bytesutil"
+	"github.com/prysmaticlabs/prysm/v5/monitoring/tracing/trace"
 	"github.com/prysmaticlabs/prysm/v5/time/slots"
 	"github.com/prysmaticlabs/prysm/v5/validator/client/iface"
-	"go.opencensus.io/trace"
+	goTrace "go.opencensus.io/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -61,7 +62,7 @@ func run(ctx context.Context, v iface.Validator) {
 		log.Warn("Validator client started without proposer settings such as fee recipient" +
 			" and will continue to use settings provided in the beacon node.")
 	}
-	if err := v.PushProposerSettings(ctx, km, headSlot); err != nil {
+	if err := v.PushProposerSettings(ctx, km, headSlot, true); err != nil {
 		log.WithError(err).Fatal("Failed to update proposer settings")
 	}
 	for {
@@ -96,7 +97,7 @@ func run(ctx context.Context, v iface.Validator) {
 			// call push proposer settings often to account for the following edge cases:
 			// proposer is activated at the start of epoch and tries to propose immediately
 			// account has changed in the middle of an epoch
-			if err := v.PushProposerSettings(ctx, km, slot); err != nil {
+			if err := v.PushProposerSettings(ctx, km, slot, false); err != nil {
 				log.WithError(err).Warn("Failed to update proposer settings")
 			}
 
@@ -225,7 +226,7 @@ func initializeValidatorAndGetHeadSlot(ctx context.Context, v iface.Validator) (
 	return headSlot, nil
 }
 
-func performRoles(slotCtx context.Context, allRoles map[[48]byte][]iface.ValidatorRole, v iface.Validator, slot primitives.Slot, wg *sync.WaitGroup, span *trace.Span) {
+func performRoles(slotCtx context.Context, allRoles map[[48]byte][]iface.ValidatorRole, v iface.Validator, slot primitives.Slot, wg *sync.WaitGroup, span *goTrace.Span) {
 	for pubKey, roles := range allRoles {
 		wg.Add(len(roles))
 		for _, role := range roles {
@@ -315,7 +316,7 @@ func runHealthCheckRoutine(ctx context.Context, v iface.Validator, eventsChan ch
 					log.WithError(err).Error("Could not get canonical head slot")
 					return
 				}
-				if err := v.PushProposerSettings(ctx, km, slot); err != nil {
+				if err := v.PushProposerSettings(ctx, km, slot, true); err != nil {
 					log.WithError(err).Warn("Failed to update proposer settings")
 				}
 			}

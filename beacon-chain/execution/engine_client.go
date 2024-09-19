@@ -21,11 +21,11 @@ import (
 	payloadattribute "github.com/prysmaticlabs/prysm/v5/consensus-types/payload-attribute"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/primitives"
 	"github.com/prysmaticlabs/prysm/v5/encoding/bytesutil"
+	"github.com/prysmaticlabs/prysm/v5/monitoring/tracing/trace"
 	pb "github.com/prysmaticlabs/prysm/v5/proto/engine/v1"
 	"github.com/prysmaticlabs/prysm/v5/runtime/version"
 	"github.com/prysmaticlabs/prysm/v5/time/slots"
 	"github.com/sirupsen/logrus"
-	"go.opencensus.io/trace"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -526,7 +526,7 @@ func (s *Service) ReconstructFullBellatrixBlockBatch(
 func fullPayloadFromPayloadBody(
 	header interfaces.ExecutionData, body *pb.ExecutionPayloadBody, bVersion int,
 ) (interfaces.ExecutionData, error) {
-	if header.IsNil() || body == nil {
+	if header == nil || header.IsNil() || body == nil {
 		return nil, errors.New("execution block and header cannot be nil")
 	}
 
