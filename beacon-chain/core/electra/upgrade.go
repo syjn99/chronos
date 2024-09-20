@@ -150,6 +150,10 @@ func UpgradeToElectra(beaconState state.BeaconState) (state.BeaconState, error) 
 	if err != nil {
 		return nil, err
 	}
+	bailoutScores, err := beaconState.BailOutScores()
+	if err != nil {
+		return nil, err
+	}
 	payloadHeader, err := beaconState.LatestExecutionPayloadHeader()
 	if err != nil {
 		return nil, err
@@ -228,11 +232,14 @@ func UpgradeToElectra(beaconState state.BeaconState) (state.BeaconState, error) 
 		BlockRoots:                  beaconState.BlockRoots(),
 		StateRoots:                  beaconState.StateRoots(),
 		HistoricalRoots:             historicalRoots,
+		RewardAdjustmentFactor:      beaconState.RewardAdjustmentFactor(),
 		Eth1Data:                    beaconState.Eth1Data(),
 		Eth1DataVotes:               beaconState.Eth1DataVotes(),
 		Eth1DepositIndex:            beaconState.Eth1DepositIndex(),
 		Validators:                  beaconState.Validators(),
 		Balances:                    beaconState.Balances(),
+		PreviousEpochReserve:        beaconState.PreviousEpochReserve(),
+		CurrentEpochReserve:         beaconState.CurrentEpochReserve(),
 		RandaoMixes:                 beaconState.RandaoMixes(),
 		Slashings:                   beaconState.Slashings(),
 		PreviousEpochParticipation:  prevEpochParticipation,
@@ -244,6 +251,7 @@ func UpgradeToElectra(beaconState state.BeaconState) (state.BeaconState, error) 
 		InactivityScores:            inactivityScores,
 		CurrentSyncCommittee:        currentSyncCommittee,
 		NextSyncCommittee:           nextSyncCommittee,
+		BailOutScores:               bailoutScores,
 		LatestExecutionPayloadHeader: &enginev1.ExecutionPayloadHeaderElectra{
 			ParentHash:                payloadHeader.ParentHash(),
 			FeeRecipient:              payloadHeader.FeeRecipient(),
