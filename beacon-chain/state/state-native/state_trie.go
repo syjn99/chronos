@@ -768,9 +768,12 @@ func InitializeFromProtoUnsafeElectra(st *ethpb.BeaconStateElectra) (state.Beaco
 		fork:                                st.Fork,
 		latestBlockHeader:                   st.LatestBlockHeader,
 		historicalRoots:                     hRoots,
+		rewardAdjustmentFactor:              st.RewardAdjustmentFactor,
 		eth1Data:                            st.Eth1Data,
 		eth1DataVotes:                       st.Eth1DataVotes,
 		eth1DepositIndex:                    st.Eth1DepositIndex,
+		previousEpochReserve:                st.PreviousEpochReserve,
+		currentEpochReserve:                 st.CurrentEpochReserve,
 		slashings:                           st.Slashings,
 		previousEpochParticipation:          st.PreviousEpochParticipation,
 		currentEpochParticipation:           st.CurrentEpochParticipation,
@@ -809,6 +812,7 @@ func InitializeFromProtoUnsafeElectra(st *ethpb.BeaconStateElectra) (state.Beaco
 		b.balancesMultiValue = NewMultiValueBalances(st.Balances)
 		b.validatorsMultiValue = NewMultiValueValidators(st.Validators)
 		b.inactivityScoresMultiValue = NewMultiValueInactivityScores(st.InactivityScores)
+		b.bailoutScoresMultiValue = NewMultiValueBailOutScores(st.BailOutScores)
 		b.sharedFieldReferences = make(map[types.FieldIndex]*stateutil.Reference, experimentalStateElectraSharedFieldRefCount)
 	} else {
 		bRoots := make([][32]byte, fieldparams.BlockRootsLength)
@@ -832,6 +836,7 @@ func InitializeFromProtoUnsafeElectra(st *ethpb.BeaconStateElectra) (state.Beaco
 		b.balances = st.Balances
 		b.validators = st.Validators
 		b.inactivityScores = st.InactivityScores
+		b.bailoutScores = st.BailOutScores
 
 		b.sharedFieldReferences = make(map[types.FieldIndex]*stateutil.Reference, electraSharedFieldRefCount)
 	}
@@ -865,6 +870,7 @@ func InitializeFromProtoUnsafeElectra(st *ethpb.BeaconStateElectra) (state.Beaco
 		b.sharedFieldReferences[types.Balances] = stateutil.NewRef(1)
 		b.sharedFieldReferences[types.Validators] = stateutil.NewRef(1)
 		b.sharedFieldReferences[types.InactivityScores] = stateutil.NewRef(1)
+		b.sharedFieldReferences[types.BailOutScores] = stateutil.NewRef(1)
 	}
 
 	state.Count.Inc()
