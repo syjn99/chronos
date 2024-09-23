@@ -40,6 +40,9 @@ func AddValidatorToRegistry(beaconState state.BeaconState, pubKey []byte, withdr
 	if err := beaconState.AppendPendingBalanceDeposit(index, amount); err != nil {
 		return err
 	}
+	if err := beaconState.AppendBailOutScore(0); err != nil {
+		return err
+	}
 	if err := beaconState.AppendInactivityScore(0); err != nil {
 		return err
 	}
