@@ -237,6 +237,7 @@ func (s *Service) validateBeaconBlock(ctx context.Context, blk interfaces.ReadOn
 	defer span.End()
 
 	if err := validateDenebBeaconBlock(blk.Block()); err != nil {
+		log.WithError(err).Error("### FOR DEBUG ### before bad block, validateDenebBeaconBlock")
 		s.setBadBlock(ctx, blockRoot)
 		return err
 	}
@@ -247,6 +248,7 @@ func (s *Service) validateBeaconBlock(ctx context.Context, blk interfaces.ReadOn
 	}
 
 	if err = s.validateBellatrixBeaconBlock(ctx, parentState, blk.Block()); err != nil {
+		log.WithError(err).Error("### FOR DEBUG ### before bad block, validateBellatrixBeaconBlock")
 		if errors.Is(err, ErrOptimisticParent) {
 			return err
 		}
@@ -263,6 +265,7 @@ func (s *Service) validateBeaconBlock(ctx context.Context, blk interfaces.ReadOn
 // - Validates that the proposer index is valid.
 func (s *Service) validatePhase0Block(ctx context.Context, blk interfaces.ReadOnlySignedBeaconBlock, blockRoot [32]byte) (state.BeaconState, error) {
 	if !s.cfg.chain.InForkchoice(blk.Block().ParentRoot()) {
+		log.Error("### FOR DEBUG ### before bad block, validatePhase0Block (fork choice)")
 		s.setBadBlock(ctx, blockRoot)
 		return nil, blockchain.ErrNotDescendantOfFinalized
 	}
@@ -287,6 +290,7 @@ func (s *Service) validatePhase0Block(ctx context.Context, blk interfaces.ReadOn
 		return nil, err
 	}
 	if blk.Block().ProposerIndex() != idx {
+		log.Error("### FOR DEBUG ### before bad block, validatePhase0Block (incorrect proposer)")
 		s.setBadBlock(ctx, blockRoot)
 		return nil, errors.New("incorrect proposer index")
 	}
@@ -374,6 +378,7 @@ func (s *Service) verifyPendingBlockSignature(ctx context.Context, blk interface
 		return pubsub.ValidationIgnore, err
 	}
 	if err := blocks.VerifyBlockSignatureUsingCurrentFork(roState, blk, blkRoot); err != nil {
+		log.WithError(err).Error("### FOR DEBUG ### before bad block, verifyPendingBlockSignature")
 		s.setBadBlock(ctx, blkRoot)
 		return pubsub.ValidationReject, err
 	}
